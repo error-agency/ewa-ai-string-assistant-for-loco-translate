@@ -2,7 +2,7 @@
 Contributors: errorwebagency
 Tags: translation, ai, localization, gettext, loco translate
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 6.7
 Stable tag: 1.6.1
 Requires PHP: 7.4
 License: GPL v2 or later
@@ -95,6 +95,11 @@ OpenRouter and custom endpoints generally require an API key. A locally running 
 = Are AI-generated translations guaranteed to be accurate? =
 
 AI-generated translations provide a baseline and should be reviewed for context and accuracy before being deployed into production.
+
+== Screenshots ==
+
+1. Settings page to configure AI provider (OpenRouter, Ollama, Custom Endpoint), API key, model selection, temperature, and batch size.
+2. AI Translate integration inside the Loco Translate PO file editor toolbar with real-time translation progress.
 
 == Changelog ==
 

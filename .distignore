@@ -11,3 +11,6 @@
 scratch/
 tests/
 node_modules/
+assets-wp-repo/
+.wordpress-org/
+README.md
