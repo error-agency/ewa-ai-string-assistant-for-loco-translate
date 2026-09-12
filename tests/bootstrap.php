@@ -150,6 +150,29 @@ if ( ! function_exists( 'get_theme_root' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_rand' ) ) {
+	function wp_rand( $min = 0, $max = 0 ) {
+		return rand( $min, $max );
+	}
+}
+
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	function wp_strip_all_tags( $string, $remove_breaks = false ) {
+		$string = preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', $string );
+		$string = strip_tags( $string );
+		return trim( $string );
+	}
+}
+
+if ( ! function_exists( 'wp_delete_file' ) ) {
+	function wp_delete_file( $file ) {
+		if ( file_exists( $file ) ) {
+			return @unlink( $file );
+		}
+		return false;
+	}
+}
+
 // Require plugin files
 require_once __DIR__ . '/../includes/class-settings.php';
 require_once __DIR__ . '/../includes/class-translation-validator.php';

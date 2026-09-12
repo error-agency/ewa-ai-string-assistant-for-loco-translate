@@ -69,20 +69,11 @@ final class Plugin {
 	}
 
 	private function init_hooks() {
-		add_action( 'init', [ $this, 'load_textdomain' ] );
 		add_action( 'plugins_loaded', [ $this, 'check_requirements' ] );
 
 		Settings::instance();
 		Ajax::instance();
 		Admin::instance();
-	}
-
-	public function load_textdomain() {
-		load_plugin_textdomain(
-			'ewa-ai-translator-for-loco-translate',
-			false,
-			dirname( EWA_BASENAME ) . '/languages'
-		);
 	}
 
 	public function check_requirements() {

@@ -398,12 +398,20 @@ class Po_Handler {
 	 * @return true|\WP_Error
 	 */
 	public static function save( string $po_path, array $entries ) {
+		global $wp_filesystem;
+		if ( empty( $wp_filesystem ) && function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			WP_Filesystem();
+		}
+
 		$dir = dirname( $po_path );
-		if ( ! is_dir( $dir ) || ! is_writable( $dir ) ) {
+		$is_dir_writable = $wp_filesystem ? $wp_filesystem->is_writable( $dir ) : is_writable( $dir ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
+		if ( ! is_dir( $dir ) || ! $is_dir_writable ) {
 			return new \WP_Error( 'not_writable', 'Директорията на PO файла не е достъпна за запис: ' . $dir );
 		}
 
-		if ( file_exists( $po_path ) && ! is_writable( $po_path ) ) {
+		$is_file_writable = $wp_filesystem ? $wp_filesystem->is_writable( $po_path ) : is_writable( $po_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
+		if ( file_exists( $po_path ) && ! $is_file_writable ) {
 			return new \WP_Error( 'not_writable', 'PO файлът не е достъпен за запис: ' . $po_path );
 		}
 
@@ -413,7 +421,11 @@ class Po_Handler {
 		$written = file_put_contents( $tmp_path, $content, LOCK_EX );
 		if ( false === $written || $written !== strlen( $content ) ) {
 			if ( file_exists( $tmp_path ) ) {
-				@unlink( $tmp_path );
+				if ( function_exists( 'wp_delete_file' ) ) {
+					wp_delete_file( $tmp_path );
+				} else {
+					@unlink( $tmp_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+				}
 			}
 			return new \WP_Error( 'write_error', 'Грешка при запис на временния PO файл.' );
 		}
@@ -421,13 +433,28 @@ class Po_Handler {
 		if ( file_exists( $po_path ) ) {
 			$perms = @fileperms( $po_path );
 			if ( false !== $perms ) {
-				@chmod( $tmp_path, $perms & 0777 );
+				if ( $wp_filesystem ) {
+					$wp_filesystem->chmod( $tmp_path, $perms & 0777 );
+				} else {
+					@chmod( $tmp_path, $perms & 0777 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod
+				}
 			}
 		}
 
-		$renamed = @rename( $tmp_path, $po_path );
+		$renamed = false;
+		if ( $wp_filesystem ) {
+			$renamed = $wp_filesystem->move( $tmp_path, $po_path, true );
+		}
 		if ( ! $renamed ) {
-			@unlink( $tmp_path );
+			$renamed = @rename( $tmp_path, $po_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
+		}
+
+		if ( ! $renamed ) {
+			if ( function_exists( 'wp_delete_file' ) ) {
+				wp_delete_file( $tmp_path );
+			} else {
+				@unlink( $tmp_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+			}
 			return new \WP_Error( 'atomic_save_failed', 'Не можа да се замени атомарно PO файла.' );
 		}
 
@@ -511,7 +538,7 @@ class Po_Handler {
 			return true;
 		}
 
-		$stripped = strip_tags( $str );
+		$stripped = function_exists( 'wp_strip_all_tags' ) ? wp_strip_all_tags( $str ) : strip_tags( $str ); // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags
 		$stripped = html_entity_decode( $stripped );
 		$stripped = preg_replace( '/&[a-zA-Z0-9#]+;/', '', $stripped );
 		if ( ! preg_match( '/[a-zA-Z\p{L}0-9]/u', $stripped ) ) {

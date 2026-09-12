@@ -10,27 +10,25 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-/**
- * Delete plugin options for a single site.
- */
-function ewa_delete_plugin_options() {
-	delete_option( 'ewa_settings' );
-	delete_option( 'ewa_schema_version' );
-	delete_option( 'error_lait_settings' );
-	delete_option( 'error_lait_schema_version' );
-	delete_option( 'lat_settings' );
-}
+( function () {
+	$delete_options = static function () {
+		delete_option( 'ewa_settings' );
+		delete_option( 'ewa_schema_version' );
+		delete_option( 'error_lait_settings' );
+		delete_option( 'error_lait_schema_version' );
+		delete_option( 'lat_settings' );
+	};
 
-// Handle multisite network uninstall vs single site.
-if ( is_multisite() ) {
-	$ewa_sites = get_sites( [ 'number' => 0 ] );
-	if ( ! empty( $ewa_sites ) ) {
-		foreach ( $ewa_sites as $ewa_site ) {
-			switch_to_blog( (int) $ewa_site->blog_id );
-			ewa_delete_plugin_options();
-			restore_current_blog();
+	if ( is_multisite() ) {
+		$sites = get_sites( [ 'number' => 0 ] );
+		if ( ! empty( $sites ) ) {
+			foreach ( $sites as $site ) {
+				switch_to_blog( (int) $site->blog_id );
+				$delete_options();
+				restore_current_blog();
+			}
 		}
+	} else {
+		$delete_options();
 	}
-} else {
-	ewa_delete_plugin_options();
-}
+} )();

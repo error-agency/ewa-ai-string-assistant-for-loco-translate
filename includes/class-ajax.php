@@ -30,7 +30,8 @@ class Ajax {
 			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
 		}
 
-		$po_path = $this->validate_po_path( wp_unslash( $_POST['po_path'] ?? '' ) );
+		$raw_path = isset( $_POST['po_path'] ) ? sanitize_text_field( wp_unslash( $_POST['po_path'] ) ) : '';
+		$po_path  = $this->validate_po_path( $raw_path );
 		if ( is_wp_error( $po_path ) ) {
 			wp_send_json_error( [ 'message' => $po_path->get_error_message() ] );
 		}
@@ -61,11 +62,12 @@ class Ajax {
 			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
 		}
 
-		if ( ! ini_get( 'safe_mode' ) ) {
+		if ( ! ini_get( 'safe_mode' ) && function_exists( 'set_time_limit' ) ) {
+			// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- Extended execution time for long-running batch AI translation.
 			@set_time_limit( 300 );
 		}
 
-		$raw_path    = wp_unslash( $_POST['po_path'] ?? '' );
+		$raw_path    = isset( $_POST['po_path'] ) ? sanitize_text_field( wp_unslash( $_POST['po_path'] ) ) : '';
 		$po_path     = $this->validate_po_path( $raw_path );
 		$target_lang = sanitize_text_field( wp_unslash( $_POST['target_lang'] ?? 'Bulgarian' ) );
 		$job_id      = sanitize_key( $_POST['job_id'] ?? '' );
@@ -261,7 +263,7 @@ class Ajax {
 
 		while ( $attempt <= $max_retries ) {
 			if ( $attempt > 0 ) {
-				$sleep_sec = min( (int) pow( 2, $attempt - 1 ), 8 ) + rand( 0, 1000 ) / 1000;
+				$sleep_sec = min( (int) pow( 2, $attempt - 1 ), 8 ) + wp_rand( 0, 1000 ) / 1000;
 				usleep( (int) ( $sleep_sec * 1000000 ) );
 			}
 
@@ -453,10 +455,13 @@ class Ajax {
 			$overrides['provider'] = sanitize_text_field( wp_unslash( $_POST['provider'] ) );
 		}
 		if ( ! empty( $_POST['api_endpoint'] ) ) {
-			$overrides['api_endpoint'] = esc_url_raw( trim( wp_unslash( $_POST['api_endpoint'] ) ) );
+			$overrides['api_endpoint'] = sanitize_url( wp_unslash( $_POST['api_endpoint'] ) );
 		}
-		if ( isset( $_POST['api_key'] ) && '' !== trim( $_POST['api_key'] ) ) {
-			$overrides['api_key'] = sanitize_text_field( wp_unslash( $_POST['api_key'] ) );
+		if ( isset( $_POST['api_key'] ) ) {
+			$raw_api_key = sanitize_text_field( wp_unslash( $_POST['api_key'] ) );
+			if ( '' !== $raw_api_key ) {
+				$overrides['api_key'] = $raw_api_key;
+			}
 		}
 
 		$client = new Api_Client( $overrides );
@@ -480,10 +485,13 @@ class Ajax {
 			$overrides['provider'] = sanitize_text_field( wp_unslash( $_POST['provider'] ) );
 		}
 		if ( ! empty( $_POST['api_endpoint'] ) ) {
-			$overrides['api_endpoint'] = esc_url_raw( trim( wp_unslash( $_POST['api_endpoint'] ) ) );
+			$overrides['api_endpoint'] = sanitize_url( wp_unslash( $_POST['api_endpoint'] ) );
 		}
-		if ( isset( $_POST['api_key'] ) && '' !== trim( $_POST['api_key'] ) ) {
-			$overrides['api_key'] = sanitize_text_field( wp_unslash( $_POST['api_key'] ) );
+		if ( isset( $_POST['api_key'] ) ) {
+			$raw_api_key = sanitize_text_field( wp_unslash( $_POST['api_key'] ) );
+			if ( '' !== $raw_api_key ) {
+				$overrides['api_key'] = $raw_api_key;
+			}
 		}
 		if ( ! empty( $_POST['model'] ) ) {
 			$overrides['model'] = sanitize_text_field( wp_unslash( $_POST['model'] ) );

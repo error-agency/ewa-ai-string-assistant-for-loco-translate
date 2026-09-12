@@ -52,8 +52,10 @@ class Admin {
 		}
 
 		// Inject into Loco Translate editor pages.
-		$current_page   = sanitize_text_field( wp_unslash( $_GET['page'] ?? '' ) );
-		$current_action = sanitize_text_field( wp_unslash( $_GET['action'] ?? '' ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check to determine admin screen for script enqueuing.
+		$current_page   = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check to determine admin screen for script enqueuing.
+		$current_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 
 		$loco_hooks = [
 			'loco-translate_page_loco-plugin',
@@ -72,6 +74,7 @@ class Admin {
 			) ||
 			(
 				false !== strpos( $current_page, 'loco' ) &&
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check to determine admin screen for script enqueuing.
 				! empty( $_GET['path'] )
 			)
 		);
@@ -116,7 +119,8 @@ class Admin {
 
 	private function get_loco_js_data() {
 		$base     = $this->get_js_data();
-		$raw_path = sanitize_text_field( wp_unslash( $_GET['path'] ?? '' ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only retrieval of edited PO file path in Loco editor.
+		$raw_path = isset( $_GET['path'] ) ? sanitize_text_field( wp_unslash( $_GET['path'] ) ) : '';
 
 		$detected_locale = '';
 		if ( $raw_path ) {

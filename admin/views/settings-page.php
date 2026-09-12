@@ -8,8 +8,8 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	return;
 }
 
-$settings = Settings::instance()->get();
-$provider = $settings['provider'];
+$ewa_ai_translator_settings = Settings::instance()->get();
+$ewa_ai_translator_provider = $ewa_ai_translator_settings['provider'];
 ?>
 <div class="wrap ewa-settings-wrap">
 	<h1 class="ewa-page-title">
@@ -32,23 +32,23 @@ $provider = $settings['provider'];
 					<h2 class="ewa-card-title">⚡ <?php esc_html_e( 'Provider', 'ewa-ai-translator-for-loco-translate' ); ?></h2>
 
 					<div class="ewa-provider-tabs">
-						<label class="ewa-provider-tab <?php echo 'openrouter' === $provider ? 'active' : ''; ?>">
+						<label class="ewa-provider-tab <?php echo 'openrouter' === $ewa_ai_translator_provider ? 'active' : ''; ?>">
 							<input type="radio" name="ewa_settings[provider]" value="openrouter"
-								<?php checked( $provider, 'openrouter' ); ?>>
+								<?php checked( $ewa_ai_translator_provider, 'openrouter' ); ?>>
 							<span class="ewa-provider-icon">🌐</span>
 							<strong>OpenRouter</strong>
 							<small><?php esc_html_e( 'Cloud API aggregator', 'ewa-ai-translator-for-loco-translate' ); ?></small>
 						</label>
-						<label class="ewa-provider-tab <?php echo 'ollama' === $provider ? 'active' : ''; ?>">
+						<label class="ewa-provider-tab <?php echo 'ollama' === $ewa_ai_translator_provider ? 'active' : ''; ?>">
 							<input type="radio" name="ewa_settings[provider]" value="ollama"
-								<?php checked( $provider, 'ollama' ); ?>>
+								<?php checked( $ewa_ai_translator_provider, 'ollama' ); ?>>
 							<span class="ewa-provider-icon">🏠</span>
 							<strong>Ollama</strong>
 							<small><?php esc_html_e( 'Local / self-hosted LLM', 'ewa-ai-translator-for-loco-translate' ); ?></small>
 						</label>
-						<label class="ewa-provider-tab <?php echo 'custom' === $provider ? 'active' : ''; ?>">
+						<label class="ewa-provider-tab <?php echo 'custom' === $ewa_ai_translator_provider ? 'active' : ''; ?>">
 							<input type="radio" name="ewa_settings[provider]" value="custom"
-								<?php checked( $provider, 'custom' ); ?>>
+								<?php checked( $ewa_ai_translator_provider, 'custom' ); ?>>
 							<span class="ewa-provider-icon">🔧</span>
 							<strong><?php esc_html_e( 'Custom Endpoint', 'ewa-ai-translator-for-loco-translate' ); ?></strong>
 							<small><?php esc_html_e( 'OpenAI-compatible API', 'ewa-ai-translator-for-loco-translate' ); ?></small>
@@ -60,7 +60,7 @@ $provider = $settings['provider'];
 							<th><?php esc_html_e( 'API Endpoint', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
 								<input type="url" name="ewa_settings[api_endpoint]"
-									value="<?php echo esc_attr( $settings['api_endpoint'] ); ?>"
+									value="<?php echo esc_attr( $ewa_ai_translator_settings['api_endpoint'] ); ?>"
 									class="regular-text" id="ewa-api-endpoint"
 									placeholder="https://openrouter.ai/api/v1">
 								<div class="ewa-presets">
@@ -79,14 +79,14 @@ $provider = $settings['provider'];
 								</div>
 							</td>
 						</tr>
-						<tr class="ewa-row-apikey" <?php echo 'ollama' === $provider ? 'style="display:none"' : ''; ?>>
+						<tr class="ewa-row-apikey" <?php echo 'ollama' === $ewa_ai_translator_provider ? 'style="display:none"' : ''; ?>>
 							<th><?php esc_html_e( 'API Key', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
 								<input type="password" name="ewa_settings[api_key]"
 									value=""
-									placeholder="<?php echo ! empty( $settings['api_key'] ) ? esc_attr__( 'API key saved — leave empty to keep', 'ewa-ai-translator-for-loco-translate' ) : ''; ?>"
+									placeholder="<?php echo ! empty( $ewa_ai_translator_settings['api_key'] ) ? esc_attr__( 'API key saved — leave empty to keep', 'ewa-ai-translator-for-loco-translate' ) : ''; ?>"
 									class="regular-text" autocomplete="new-password">
-								<?php if ( ! empty( $settings['api_key'] ) ) : ?>
+								<?php if ( ! empty( $ewa_ai_translator_settings['api_key'] ) ) : ?>
 									<label style="margin-left:10px;">
 										<input type="checkbox" name="ewa_settings[clear_api_key]" value="1">
 										<?php esc_html_e( 'Clear saved API key', 'ewa-ai-translator-for-loco-translate' ); ?>
@@ -113,7 +113,7 @@ $provider = $settings['provider'];
 							<td>
 								<div class="ewa-model-row">
 									<input type="text" name="ewa_settings[model]" id="ewa-model-input"
-										value="<?php echo esc_attr( $settings['model'] ); ?>"
+										value="<?php echo esc_attr( $ewa_ai_translator_settings['model'] ); ?>"
 										class="regular-text"
 										placeholder="openai/gpt-4o-mini">
 									<button type="button" id="ewa-fetch-models" class="button">
@@ -132,7 +132,7 @@ $provider = $settings['provider'];
 							<th><?php esc_html_e( 'Temperature', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
 								<input type="number" name="ewa_settings[temperature]"
-									value="<?php echo esc_attr( $settings['temperature'] ); ?>"
+									value="<?php echo esc_attr( $ewa_ai_translator_settings['temperature'] ); ?>"
 									min="0" max="2" step="0.1" class="small-text">
 								<p class="description">
 									<?php esc_html_e( '0 = deterministic, 1 = creative. Recommended: 0.1–0.4 for translations.', 'ewa-ai-translator-for-loco-translate' ); ?>
@@ -143,7 +143,7 @@ $provider = $settings['provider'];
 							<th><?php esc_html_e( 'Batch Size', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
 								<input type="number" name="ewa_settings[batch_size]"
-									value="<?php echo esc_attr( $settings['batch_size'] ); ?>"
+									value="<?php echo esc_attr( $ewa_ai_translator_settings['batch_size'] ); ?>"
 									min="5" max="100" class="small-text">
 								<p class="description">
 									<?php esc_html_e( 'Strings per API call. Default: 40. Range: 5–100.', 'ewa-ai-translator-for-loco-translate' ); ?>
@@ -154,7 +154,7 @@ $provider = $settings['provider'];
 							<th><?php esc_html_e( 'Max Retries', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
 								<input type="number" name="ewa_settings[max_retries]"
-									value="<?php echo esc_attr( $settings['max_retries'] ?? 3 ); ?>"
+									value="<?php echo esc_attr( $ewa_ai_translator_settings['max_retries'] ?? 3 ); ?>"
 									min="0" max="10" class="small-text">
 								<p class="description">
 									<?php esc_html_e( 'Number of retries per batch on API failure before skipping. Default: 3.', 'ewa-ai-translator-for-loco-translate' ); ?>
@@ -174,7 +174,7 @@ $provider = $settings['provider'];
 							<td>
 								<label>
 									<input type="checkbox" name="ewa_settings[skip_translated]" value="1"
-										<?php checked( $settings['skip_translated'], 1 ); ?>>
+										<?php checked( $ewa_ai_translator_settings['skip_translated'], 1 ); ?>>
 									<?php esc_html_e( 'Skip strings that already have a translation', 'ewa-ai-translator-for-loco-translate' ); ?>
 								</label>
 							</td>
@@ -184,7 +184,7 @@ $provider = $settings['provider'];
 							<td>
 								<textarea name="ewa_settings[system_prompt]" rows="6"
 									class="large-text" placeholder="<?php esc_attr_e( 'Leave blank to use the default translation prompt.', 'ewa-ai-translator-for-loco-translate' ); ?>"
-								><?php echo esc_textarea( $settings['system_prompt'] ); ?></textarea>
+								><?php echo esc_textarea( $ewa_ai_translator_settings['system_prompt'] ); ?></textarea>
 								<p class="description">
 									<?php esc_html_e( 'Override the default prompt. Use {target_lang} for the language placeholder.', 'ewa-ai-translator-for-loco-translate' ); ?>
 								</p>
