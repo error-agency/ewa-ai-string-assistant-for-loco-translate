@@ -14,3 +14,4 @@ node_modules/
 assets-wp-repo/
 .wordpress-org/
 README.md
+build-zip.py

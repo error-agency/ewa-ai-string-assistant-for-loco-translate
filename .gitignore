@@ -3,3 +3,6 @@ scratch/
 .idea/
 .vscode/
 *.log
+assets-wp-repo/
+build-zip.py
+
