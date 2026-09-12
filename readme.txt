@@ -1,4 +1,4 @@
-=== Err.or AI Translator for Loco Translate ===
+=== EWA AI Translator for Loco Translate ===
 Contributors: errorwebagency
 Tags: translation, ai, localization, gettext, loco translate
 Requires at least: 6.0
@@ -12,7 +12,7 @@ AI-assisted translation for Loco Translate using OpenRouter, Ollama, or a custom
 
 == Description ==
 
-Err.or AI Translator for Loco Translate adds AI-assisted translation tools to the Loco Translate editor for WordPress plugin and theme translation files.
+EWA AI Translator for Loco Translate adds AI-assisted translation tools to the Loco Translate editor for WordPress plugin and theme translation files.
 
 The plugin works with untranslated strings in PO files, processes translations in batches, preserves existing translations, supports plural forms, and automatically updates translation files and compiles MO files.
 
@@ -72,8 +72,8 @@ Administrators are responsible for reviewing the terms and privacy policy of the
 == Installation ==
 
 1. Install and activate the Loco Translate plugin.
-2. Install and activate Err.or AI Translator for Loco Translate.
-3. Navigate to Settings → Err.or AI Translator.
+2. Install and activate EWA AI Translator for Loco Translate.
+3. Navigate to Settings → EWA AI Translator.
 4. Select your preferred AI provider (OpenRouter, Ollama, or Custom Endpoint) and enter your credentials.
 5. Open any plugin or theme translation file in Loco Translate.
 6. Click the "🤖 AI Translate" button in the editor toolbar.
@@ -103,29 +103,27 @@ AI-generated translations provide a baseline and should be reviewed for context 
 * Implemented deterministic ID-based AI request/response protocol (`entry_154`) and envelope validation.
 * Added Translation_Validator for strict tokenization of printf formats, variable templates, HTML tags/attributes, and entities.
 * Added plural form count validation against nplurals and Strategy B partial plural regeneration.
-* Structured translation job state in error_lait_job_{job_id} transients with idempotency request protection.
+* Structured translation job state in ewa_job_{job_id} transients with idempotency request protection.
 * Stopped fuzzy flag misuse on API/network batch failures.
 * Implemented machine-readable WP_Error classification with early abort on permanent API errors (401, 403, 404).
 * Implemented atomic PO file saving with permission preservation and MO compilation error reporting.
 * Hardened canonical path validation against allowed WordPress language directories.
 * Masked API key values in HTML DOM and added clear API key functionality.
-* Added CLI automated test suite covering 30 pipeline assertions.
+* Added CLI automated test suite covering 32 pipeline assertions.
 
 = 1.6.0 =
-
 * Prepared the plugin for WordPress.org distribution.
-* Rebranded the plugin to Err.or AI Translator for Loco Translate.
-* Standardized canonical slug (`err-or-ai-translator-for-loco-translate`) and text domain.
-* Removed external GitHub update checker library.
+* Rebranded the plugin to EWA AI Translator for Loco Translate by Error Web Agency (EWA).
+* Standardized canonical slug (`ewa-ai-translator-for-loco-translate`) and text domain.
 * Standardized PHP requirement (7.4+) and WordPress requirement (6.0+).
-* Refactored PHP codebase into the `ErrorAgency\LocoAITranslator` namespace with `error_lait_` global prefixing.
-* Added automatic backward-compatible settings migration from `lat_settings` to `error_lait_settings`.
+* Refactored PHP codebase into the `ErrorWebAgency\LocoAITranslator` namespace with `ewa_` global prefixing.
+* Added automatic backward-compatible settings migration to `ewa_settings`.
 * Updated third-party service disclosures and WordPress.org metadata.
 
 == Credits ==
 
-Developed by Err.or agency.
+Developed by Error Web Agency (EWA).
 
 Lead Developer: K2D.
 
-This plugin integrates with Loco Translate, which is an independent project and is not developed or maintained by Err.or agency.
+This plugin integrates with Loco Translate, which is an independent project and is not developed or maintained by Error Web Agency (EWA).

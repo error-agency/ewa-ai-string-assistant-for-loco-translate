@@ -1,4 +1,4 @@
-/* global errorLaitLoco, jQuery */
+/* global ewaLoco, jQuery */
 (function ($) {
     'use strict';
 
@@ -44,7 +44,7 @@
        PATH DETECTION
     ═══════════════════════════════════════════════════════════════════ */
     function detectPoPath() {
-        if (errorLaitLoco.poPath && errorLaitLoco.poPath.length > 4) return errorLaitLoco.poPath;
+        if (ewaLoco.poPath && ewaLoco.poPath.length > 4) return ewaLoco.poPath;
         var selectors = ['input[name="path"]','input[name="po-path"]',
                          'input[name="file"]','form[data-path]','[data-path]'];
         for (var i = 0; i < selectors.length; i++) {
@@ -58,7 +58,7 @@
     }
 
     function detectLocale(poPath) {
-        if (errorLaitLoco.detectedLocale) return errorLaitLoco.detectedLocale;
+        if (ewaLoco.detectedLocale) return ewaLoco.detectedLocale;
         var src = [poPath, window.location.search, document.title,
                    $('h1,h2,.loco-nav,.loco-title,.loco-lang').text()].join(' ');
         var m = src.match(/[-_]([a-z]{2,3}_[A-Z]{2,3})(?:\.po)?/);
@@ -89,19 +89,19 @@
        UNLOAD GUARD
     ═══════════════════════════════════════════════════════════════════ */
     function installUnloadGuard() {
-        $(window).on('beforeunload.lat', function () {
+        $(window).on('beforeunload.ewa', function () {
             if (!running) return;
             if (currentJobId && navigator.sendBeacon) {
                 var fd = new FormData();
-                fd.append('action',  'error_lait_cancel_job');
-                fd.append('nonce',   errorLaitLoco.nonce);
+                fd.append('action',  'ewa_cancel_job');
+                fd.append('nonce',   ewaLoco.nonce);
                 fd.append('job_id',  currentJobId);
-                navigator.sendBeacon(errorLaitLoco.ajaxUrl, fd);
+                navigator.sendBeacon(ewaLoco.ajaxUrl, fd);
             }
             return 'Translation is in progress. Are you sure you want to leave?';
         });
     }
-    function removeUnloadGuard() { $(window).off('beforeunload.lat'); }
+    function removeUnloadGuard() { $(window).off('beforeunload.ewa'); }
 
     /* ═══════════════════════════════════════════════════════════════════
        PANEL INJECTION
@@ -109,7 +109,7 @@
     var injected = false;
 
     function tryInject() {
-        if (injected || $('#lat-panel').length) { injected = true; return true; }
+        if (injected || $('#ewa-panel').length) { injected = true; return true; }
         var anchors = [
             '.loco-toolbar','#loco-toolbar','div.loco-toolbar','nav.loco-toolbar',
             '[class*="loco-toolbar"]','#loco-editor','.loco-editor',
@@ -156,7 +156,7 @@
         var locale   = detectLocale(poPath);
         var langName = localeToName(locale);
 
-        var $langSelect = $('<select>', { id: 'lat-lang-select', class: 'lat-lang-select' });
+        var $langSelect = $('<select>', { id: 'ewa-lang-select', class: 'ewa-lang-select' });
         var entries = [];
         for (var code in LOCALE_MAP) { entries.push([code, LOCALE_MAP[code]]); }
         entries.sort(function (a, b) { return a[1].localeCompare(b[1]); });
@@ -168,61 +168,61 @@
         if (!$langSelect.val()) $langSelect.val('Bulgarian');
 
         var $btn = $('<button>', {
-            id: 'lat-ai-btn', type: 'button',
-            class: 'button button-primary lat-ai-btn',
-            html: errorLaitLoco.i18n.btnTranslate,
+            id: 'ewa-ai-btn', type: 'button',
+            class: 'button button-primary ewa-ai-btn',
+            html: ewaLoco.i18n.btnTranslate,
         });
         var $stopBtn = $('<button>', {
-            id: 'lat-stop-btn', type: 'button',
-            class: 'button lat-stop-btn', html: '⏹ Stop',
+            id: 'ewa-stop-btn', type: 'button',
+            class: 'button ewa-stop-btn', html: '⏹ Stop',
         }).hide();
 
-        var $badge    = $('<span>', { class: 'lat-model-badge',
-            text: errorLaitLoco.provider + ' · ' + errorLaitLoco.model });
+        var $badge    = $('<span>', { class: 'ewa-model-badge',
+            text: ewaLoco.provider + ' · ' + ewaLoco.model });
         var $pathInfo = poPath ? $('<span>', {
-            class: 'lat-path-info', text: basename(poPath), title: poPath }) : null;
+            class: 'ewa-path-info', text: basename(poPath), title: poPath }) : null;
 
-        var $pathRow = $('<div>', { id: 'lat-path-row', class: 'lat-path-row' }).hide();
+        var $pathRow = $('<div>', { id: 'ewa-path-row', class: 'ewa-path-row' }).hide();
         if (!poPath) {
             $pathRow.append(
                 $('<span>', { text: '📂 Enter .po path: ' }),
-                $('<input>', { type:'text', id:'lat-manual-path',
-                    class:'regular-text lat-manual-path',
+                $('<input>', { type:'text', id:'ewa-manual-path',
+                    class:'regular-text ewa-manual-path',
                     placeholder:'Absolute path or relative to wp-content…' }),
                 ' ',
-                $('<button>', { type:'button', class:'button lat-path-verify-btn', text:'Verify' }),
-                $('<span>', { id:'lat-path-verify-result', style:'margin-left:8px;font-size:12px;' })
+                $('<button>', { type:'button', class:'button ewa-path-verify-btn', text:'Verify' }),
+                $('<span>', { id:'ewa-path-verify-result', style:'margin-left:8px;font-size:12px;' })
             ).show();
         }
 
-        var $fill    = $('<div>', { id:'lat-progress-fill', class:'lat-progress-bar-fill' });
-        var $pct     = $('<span>', { id:'lat-progress-pct', class:'lat-progress-pct', text:'0%' });
-        var $cnt     = $('<span>', { id:'lat-progress-cnt', class:'lat-progress-cnt' });
-        var $eta     = $('<span>', { id:'lat-progress-eta', class:'lat-progress-eta' });
-        var $prog    = $('<div>', { id:'lat-progress-wrap', class:'lat-editor-progress' })
-            .append($('<div>', { class:'lat-progress-bar-track' }).append($fill))
+        var $fill    = $('<div>', { id:'ewa-progress-fill', class:'ewa-progress-bar-fill' });
+        var $pct     = $('<span>', { id:'ewa-progress-pct', class:'ewa-progress-pct', text:'0%' });
+        var $cnt     = $('<span>', { id:'ewa-progress-cnt', class:'ewa-progress-cnt' });
+        var $eta     = $('<span>', { id:'ewa-progress-eta', class:'ewa-progress-eta' });
+        var $prog    = $('<div>', { id:'ewa-progress-wrap', class:'ewa-editor-progress' })
+            .append($('<div>', { class:'ewa-progress-bar-track' }).append($fill))
             .append($pct, $cnt, $eta)
             .hide();
 
-        var $ticker = $('<div>', { id:'lat-ticker', class:'lat-ticker' }).hide();
+        var $ticker = $('<div>', { id:'ewa-ticker', class:'ewa-ticker' }).hide();
 
-        var $log = $('<div>', { id:'lat-batch-log', class:'lat-batch-log' }).hide().append(
-            $('<div>', { class:'lat-log-header' }).append(
+        var $log = $('<div>', { id:'ewa-batch-log', class:'ewa-batch-log' }).hide().append(
+            $('<div>', { class:'ewa-log-header' }).append(
                 $('<span>', { text:'Batch' }),
                 $('<span>', { text:'Strings' }),
                 $('<span>', { text:'Time' }),
                 $('<span>', { text:'Tokens (in/out)' }),
                 $('<span>', { text:'Preview' })
             ),
-            $('<div>', { id:'lat-log-rows', class:'lat-log-rows' })
+            $('<div>', { id:'ewa-log-rows', class:'ewa-log-rows' })
         );
 
-        var $summary = $('<div>', { id:'lat-summary', class:'lat-summary' }).hide();
-        var $notices = $('<div>', { id:'lat-editor-notices' });
+        var $summary = $('<div>', { id:'ewa-summary', class:'ewa-summary' }).hide();
+        var $notices = $('<div>', { id:'ewa-editor-notices' });
 
-        return $('<div>', { id:'lat-panel', class:'lat-editor-panel' }).append(
-            $('<div>', { class:'lat-panel-controls' }).append(
-                $('<span>', { class:'lat-panel-label', text:'🌍 Translate to:' }),
+        return $('<div>', { id:'ewa-panel', class:'ewa-editor-panel' }).append(
+            $('<div>', { class:'ewa-panel-controls' }).append(
+                $('<span>', { class:'ewa-panel-label', text:'🌍 Translate to:' }),
                 $langSelect, $btn, $stopBtn, $badge, $pathInfo
             ),
             $pathRow, $prog, $ticker, $log, $summary, $notices
@@ -235,13 +235,13 @@
        WIRE EVENTS
     ═══════════════════════════════════════════════════════════════════ */
     function wirePanel() {
-        $(document).on('click', '.lat-path-verify-btn', function () {
-            var path = $('#lat-manual-path').val().trim();
-            var $res = $('#lat-path-verify-result');
+        $(document).on('click', '.ewa-path-verify-btn', function () {
+            var path = $('#ewa-manual-path').val().trim();
+            var $res = $('#ewa-path-verify-result');
             if (!path) return;
             $res.text('Checking…').css('color','#787878');
-            $.post(errorLaitLoco.ajaxUrl, {
-                action:'error_lait_get_po_info', nonce:errorLaitLoco.nonce, po_path:path,
+            $.post(ewaLoco.ajaxUrl, {
+                action:'ewa_get_po_info', nonce:ewaLoco.nonce, po_path:path,
             }, function (res) {
                 if (res.success) {
                     $res.text('✓ ' + res.data.untranslated + ' untranslated').css('color','#00a32a');
@@ -251,19 +251,19 @@
             }).fail(function () { $res.text('Network error').css('color','#d63638'); });
         });
 
-        $('#lat-ai-btn').on('click', function () {
+        $('#ewa-ai-btn').on('click', function () {
             if (running) return;
-            var poPath = detectPoPath() || $('#lat-manual-path').val().trim();
-            startTranslation(poPath, $('#lat-lang-select').val());
+            var poPath = detectPoPath() || $('#ewa-manual-path').val().trim();
+            startTranslation(poPath, $('#ewa-lang-select').val());
         });
 
-        $('#lat-stop-btn').on('click', function () {
+        $('#ewa-stop-btn').on('click', function () {
             if (!running || !currentJobId) return;
             cancelPending = true;
             $(this).prop('disabled', true).text('Stopping…');
             if (_xhrRef) { _xhrRef.abort(); _xhrRef = null; }
-            $.post(errorLaitLoco.ajaxUrl, {
-                action:'error_lait_cancel_job', nonce:errorLaitLoco.nonce, job_id:currentJobId,
+            $.post(ewaLoco.ajaxUrl, {
+                action:'ewa_cancel_job', nonce:ewaLoco.nonce, job_id:currentJobId,
             });
             showNotice('⏸ Stop signal sent — current batch will finish, then stop.', 'info');
         });
@@ -273,22 +273,22 @@
        TRANSLATION FLOW
     ═══════════════════════════════════════════════════════════════════ */
     function generateJobId() {
-        return 'error_lait_' + Date.now() + '_' + Math.floor(Math.random() * 9999);
+        return 'ewa_' + Date.now() + '_' + Math.floor(Math.random() * 9999);
     }
 
     function startTranslation(poPath, targetLang) {
         if (!poPath) {
             showNotice('⚠ Could not detect the .po file path. Enter it manually above.', 'error', true);
-            $('#lat-path-row').show();
+            $('#ewa-path-row').show();
             return;
         }
         showNotice('🔍 Checking file…', 'info');
-        $('#lat-ai-btn').prop('disabled', true);
+        $('#ewa-ai-btn').prop('disabled', true);
 
-        $.post(errorLaitLoco.ajaxUrl, {
-            action:'error_lait_get_po_info', nonce:errorLaitLoco.nonce, po_path:poPath,
+        $.post(ewaLoco.ajaxUrl, {
+            action:'ewa_get_po_info', nonce:ewaLoco.nonce, po_path:poPath,
         }, function (res) {
-            $('#lat-ai-btn').prop('disabled', false);
+            $('#ewa-ai-btn').prop('disabled', false);
             clearNotice();
 
             if (!res.success) {
@@ -307,7 +307,7 @@
                 (info.untranslated !== 1 ? 's' : '') +
                 ' out of ' + info.total_entries + ' total?\n\n' +
                 'Language : ' + targetLang + '\n' +
-                'Model    : ' + errorLaitLoco.model + '\n' +
+                'Model    : ' + ewaLoco.model + '\n' +
                 'File     : ' + basename(poPath) + '\n\n' +
                 'The file is saved automatically after each batch.'
             )) return;
@@ -330,14 +330,14 @@
 
             setUiRunning(true);
             updateProgress(0, 0, info.untranslated);
-            $('#lat-batch-log').show();
-            $('#lat-summary').hide().empty();
+            $('#ewa-batch-log').show();
+            $('#ewa-summary').hide().empty();
             installUnloadGuard();
 
             doBatch(poPath, targetLang, info.untranslated);
 
         }).fail(function () {
-            $('#lat-ai-btn').prop('disabled', false);
+            $('#ewa-ai-btn').prop('disabled', false);
             showNotice('✗ Network error while checking file.', 'error', true);
         });
     }
@@ -348,9 +348,9 @@
         var batchStartMs = Date.now();
         var requestId    = 'req_' + Date.now() + '_' + Math.floor(Math.random() * 99999);
 
-        _xhrRef = $.post(errorLaitLoco.ajaxUrl, {
-            action          : 'error_lait_translate_file',
-            nonce           : errorLaitLoco.nonce,
+        _xhrRef = $.post(ewaLoco.ajaxUrl, {
+            action          : 'ewa_translate_file',
+            nonce           : ewaLoco.nonce,
             po_path         : poPath,
             target_lang     : targetLang,
             batch_index     : stats.batchCount,
@@ -454,18 +454,18 @@
         showFinalSummary(completed, elStr);
 
         var $r = $('<button>', {
-            type:'button', class:'button button-small lat-reload-btn', text:'↻ Reload editor',
+            type:'button', class:'button button-small ewa-reload-btn', text:'↻ Reload editor',
         }).on('click', function () { removeUnloadGuard(); window.location.reload(); });
-        $('#lat-editor-notices .lat-editor-notice').append(' ', $r);
+        $('#ewa-editor-notices .ewa-editor-notice').append(' ', $r);
     }
 
     function updateProgress(pct, done, total) {
         if (pct !== null && pct !== undefined) {
-            $('#lat-progress-fill').css('width', pct + '%');
-            $('#lat-progress-pct').text(pct + '%');
+            $('#ewa-progress-fill').css('width', pct + '%');
+            $('#ewa-progress-pct').text(pct + '%');
         }
         if (done !== undefined && total !== undefined) {
-            $('#lat-progress-cnt').text(' — ' + done + ' / ' + total + ' strings');
+            $('#ewa-progress-cnt').text(' — ' + done + ' / ' + total + ' strings');
         }
         if (done > 0 && total > 0 && stats.jobStartMs) {
             var elapsed  = (Date.now() - stats.jobStartMs) / 1000;
@@ -475,24 +475,24 @@
             var etaStr   = etaSec > 60
                 ? 'ETA ~' + Math.floor(etaSec/60) + 'm ' + (etaSec%60) + 's'
                 : (etaSec > 0 ? 'ETA ~' + etaSec + 's' : '');
-            $('#lat-progress-eta').text(etaStr ? ' · ' + etaStr : '');
+            $('#ewa-progress-eta').text(etaStr ? ' · ' + etaStr : '');
         }
     }
 
     function updateTicker(strings) {
         if (!strings || !strings.length) return;
-        var $t = $('#lat-ticker');
+        var $t = $('#ewa-ticker');
         var parts = strings.map(function (s) {
             var short = s.length > 55 ? s.substring(0, 55) + '…' : s;
-            return '<span class="lat-ticker-item">' + escHtml(short) + '</span>';
+            return '<span class="ewa-ticker-item">' + escHtml(short) + '</span>';
         });
         $t.html(
-            '<span class="lat-ticker-label">Translating:</span> ' +
-            parts.join('<span class="lat-ticker-sep"> · </span>')
+            '<span class="ewa-ticker-label">Translating:</span> ' +
+            parts.join('<span class="ewa-ticker-sep"> · </span>')
         ).show();
     }
 
-    function hideTicker() { $('#lat-ticker').hide().empty(); }
+    function hideTicker() { $('#ewa-ticker').hide().empty(); }
 
     function addBatchLogRow(batchNum, count, ms, tIn, tOut, preview) {
         var timeStr   = ms >= 1000 ? (ms/1000).toFixed(1) + 's' : ms + 'ms';
@@ -501,22 +501,22 @@
             return s.length > 30 ? s.substring(0, 30) + '…' : s;
         }).join(', ') || '—';
 
-        var $row = $('<div>', { class: 'lat-log-row' }).append(
-            $('<span>', { class: 'lat-log-batch',   text: '#' + batchNum }),
-            $('<span>', { class: 'lat-log-count',   text: count + ' str' }),
-            $('<span>', { class: 'lat-log-time',    text: timeStr }),
-            $('<span>', { class: 'lat-log-tokens',  text: tokenStr }),
-            $('<span>', { class: 'lat-log-preview', text: previewStr })
+        var $row = $('<div>', { class: 'ewa-log-row' }).append(
+            $('<span>', { class: 'ewa-log-batch',   text: '#' + batchNum }),
+            $('<span>', { class: 'ewa-log-count',   text: count + ' str' }),
+            $('<span>', { class: 'ewa-log-time',    text: timeStr }),
+            $('<span>', { class: 'ewa-log-tokens',  text: tokenStr }),
+            $('<span>', { class: 'ewa-log-preview', text: previewStr })
         );
 
-        var $rows = $('#lat-log-rows');
+        var $rows = $('#ewa-log-rows');
         $rows.prepend($row);
-        $rows.find('.lat-log-row').slice(20).remove();
+        $rows.find('.ewa-log-row').slice(20).remove();
     }
 
     function updateSummaryLive() {
         var elapsed = Math.round((Date.now() - stats.jobStartMs) / 1000);
-        var $s = $('#lat-summary').show();
+        var $s = $('#ewa-summary').show();
         $s.html(
             '<span>⏱ ' + fmtTime(elapsed) + '</span>' +
             '<span>✅ ' + stats.translated + ' translated</span>' +
@@ -527,7 +527,7 @@
     }
 
     function showFinalSummary(completed, elStr) {
-        var $s = $('#lat-summary').show();
+        var $s = $('#ewa-summary').show();
         var statusLabel = completed
             ? (stats.skipped > 0 ? '⚠ Completed with errors' : '✅ Complete')
             : '⏹ Stopped';
@@ -544,26 +544,26 @@
     }
 
     function setUiRunning(on) {
-        var $btn  = $('#lat-ai-btn');
-        var $stop = $('#lat-stop-btn');
-        var $prog = $('#lat-progress-wrap');
+        var $btn  = $('#ewa-ai-btn');
+        var $stop = $('#ewa-stop-btn');
+        var $prog = $('#ewa-progress-wrap');
         if (on) {
-            $btn.prop('disabled', true).addClass('lat-btn-busy').text(errorLaitLoco.i18n.translating);
+            $btn.prop('disabled', true).addClass('ewa-btn-busy').text(ewaLoco.i18n.translating);
             $stop.show().prop('disabled', false).text('⏹ Stop');
             $prog.show();
         } else {
-            $btn.prop('disabled', false).removeClass('lat-btn-busy').text(errorLaitLoco.i18n.btnTranslate);
+            $btn.prop('disabled', false).removeClass('ewa-btn-busy').text(ewaLoco.i18n.btnTranslate);
             $stop.hide().prop('disabled', false).text('⏹ Stop');
         }
     }
 
     function showNotice(message, type, persistent) {
-        var $n = $('<div>', { class:'lat-editor-notice lat-notice-' + type, html:message });
-        $('#lat-editor-notices').empty().append($n);
+        var $n = $('<div>', { class:'ewa-editor-notice ewa-notice-' + type, html:message });
+        $('#ewa-editor-notices').empty().append($n);
         if (!persistent) setTimeout(function () { $n.fadeOut(400, function () { $n.remove(); }); }, 7000);
     }
 
-    function clearNotice() { $('#lat-editor-notices').empty(); }
+    function clearNotice() { $('#ewa-editor-notices').empty(); }
 
     function fmtTime(sec) {
         return sec >= 60 ? Math.floor(sec/60) + 'm ' + (sec%60) + 's' : sec + 's';

@@ -1,5 +1,5 @@
 <?php
-namespace ErrorAgency\LocoAITranslator;
+namespace ErrorWebAgency\LocoAITranslator;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -19,36 +19,36 @@ class Admin {
 	private function __construct() {
 		add_action( 'admin_menu', [ $this, 'register_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
-		add_filter( 'plugin_action_links_' . ERROR_LAIT_BASENAME, [ $this, 'plugin_action_links' ] );
+		add_filter( 'plugin_action_links_' . EWA_BASENAME, [ $this, 'plugin_action_links' ] );
 	}
 
 	public function register_menu() {
 		add_options_page(
-			__( 'Err.or AI Translator for Loco Translate', 'err-or-ai-translator-for-loco-translate' ),
-			__( 'Err.or AI Translator', 'err-or-ai-translator-for-loco-translate' ),
+			__( 'EWA AI Translator for Loco Translate', 'ewa-ai-translator-for-loco-translate' ),
+			__( 'EWA AI Translator', 'ewa-ai-translator-for-loco-translate' ),
 			'manage_options',
-			'err-or-ai-translator-for-loco-translate',
+			'ewa-ai-translator-for-loco-translate',
 			[ $this, 'render_settings_page' ]
 		);
 	}
 
 	public function enqueue_assets( $hook ) {
 		// Settings page
-		if ( 'settings_page_err-or-ai-translator-for-loco-translate' === $hook ) {
+		if ( 'settings_page_ewa-ai-translator-for-loco-translate' === $hook ) {
 			wp_enqueue_style(
-				'error-lait-admin',
-				ERROR_LAIT_URL . 'assets/css/lat-admin.css',
+				'ewa-admin',
+				EWA_URL . 'assets/css/ewa-admin.css',
 				[],
-				ERROR_LAIT_VERSION
+				EWA_VERSION
 			);
 			wp_enqueue_script(
-				'error-lait-admin',
-				ERROR_LAIT_URL . 'assets/js/lat-admin.js',
+				'ewa-admin',
+				EWA_URL . 'assets/js/ewa-admin.js',
 				[ 'jquery' ],
-				ERROR_LAIT_VERSION,
+				EWA_VERSION,
 				true
 			);
-			wp_localize_script( 'error-lait-admin', 'errorLaitAdmin', $this->get_js_data() );
+			wp_localize_script( 'ewa-admin', 'ewaAdmin', $this->get_js_data() );
 		}
 
 		// Inject into Loco Translate editor pages.
@@ -78,19 +78,19 @@ class Admin {
 
 		if ( $is_loco_editor ) {
 			wp_enqueue_style(
-				'error-lait-loco',
-				ERROR_LAIT_URL . 'assets/css/lat-admin.css',
+				'ewa-loco',
+				EWA_URL . 'assets/css/ewa-admin.css',
 				[],
-				ERROR_LAIT_VERSION
+				EWA_VERSION
 			);
 			wp_enqueue_script(
-				'error-lait-loco',
-				ERROR_LAIT_URL . 'assets/js/lat-loco-editor.js',
+				'ewa-loco',
+				EWA_URL . 'assets/js/ewa-loco-editor.js',
 				[ 'jquery' ],
-				ERROR_LAIT_VERSION,
+				EWA_VERSION,
 				true
 			);
-			wp_localize_script( 'error-lait-loco', 'errorLaitLoco', $this->get_loco_js_data() );
+			wp_localize_script( 'ewa-loco', 'ewaLoco', $this->get_loco_js_data() );
 		}
 	}
 
@@ -98,18 +98,18 @@ class Admin {
 		$settings = Settings::instance();
 		return [
 			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
-			'nonce'     => wp_create_nonce( 'error_lait_nonce' ),
+			'nonce'     => wp_create_nonce( 'ewa_nonce' ),
 			'model'     => $settings->get( 'model' ),
 			'provider'  => $settings->get( 'provider' ),
 			'batchSize' => $settings->get( 'batch_size' ),
 			'i18n'      => [
-				'translating'  => __( 'Translating…', 'err-or-ai-translator-for-loco-translate' ),
-				'done'         => __( 'Done!', 'err-or-ai-translator-for-loco-translate' ),
-				'error'        => __( 'Error', 'err-or-ai-translator-for-loco-translate' ),
-				'noStrings'    => __( 'No untranslated strings found.', 'err-or-ai-translator-for-loco-translate' ),
-				'confirm'      => __( 'This will fill in untranslated strings using AI. Continue?', 'err-or-ai-translator-for-loco-translate' ),
-				'btnTranslate' => __( '🤖 AI Translate', 'err-or-ai-translator-for-loco-translate' ),
-				'btnStop'      => __( '⏹ Stop', 'err-or-ai-translator-for-loco-translate' ),
+				'translating'  => __( 'Translating…', 'ewa-ai-translator-for-loco-translate' ),
+				'done'         => __( 'Done!', 'ewa-ai-translator-for-loco-translate' ),
+				'error'        => __( 'Error', 'ewa-ai-translator-for-loco-translate' ),
+				'noStrings'    => __( 'No untranslated strings found.', 'ewa-ai-translator-for-loco-translate' ),
+				'confirm'      => __( 'This will fill in untranslated strings using AI. Continue?', 'ewa-ai-translator-for-loco-translate' ),
+				'btnTranslate' => __( '🤖 AI Translate', 'ewa-ai-translator-for-loco-translate' ),
+				'btnStop'      => __( '⏹ Stop', 'ewa-ai-translator-for-loco-translate' ),
 			],
 		];
 	}
@@ -136,14 +136,14 @@ class Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		require_once ERROR_LAIT_PATH . 'admin/views/settings-page.php';
+		require_once EWA_PATH . 'admin/views/settings-page.php';
 	}
 
 	public function plugin_action_links( $links ) {
 		$settings_link = sprintf(
 			'<a href="%s">%s</a>',
-			admin_url( 'options-general.php?page=err-or-ai-translator-for-loco-translate' ),
-			__( 'Settings', 'err-or-ai-translator-for-loco-translate' )
+			admin_url( 'options-general.php?page=ewa-ai-translator-for-loco-translate' ),
+			__( 'Settings', 'ewa-ai-translator-for-loco-translate' )
 		);
 		array_unshift( $links, $settings_link );
 		return $links;

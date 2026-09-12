@@ -1,50 +1,50 @@
-/* global errorLaitAdmin, jQuery */
+/* global ewaAdmin, jQuery */
 (function ($) {
     'use strict';
 
     // ─── Provider Tabs ──────────────────────────────────────────────────────
-    $('.lat-provider-tab input[type=radio]').on('change', function () {
-        $('.lat-provider-tab').removeClass('active');
-        $(this).closest('.lat-provider-tab').addClass('active');
+    $('.ewa-provider-tab input[type=radio]').on('change', function () {
+        $('.ewa-provider-tab').removeClass('active');
+        $(this).closest('.ewa-provider-tab').addClass('active');
 
         const provider = $(this).val();
 
         if (provider === 'ollama') {
-            $('.lat-row-apikey').hide();
+            $('.ewa-row-apikey').hide();
         } else {
-            $('.lat-row-apikey').show();
+            $('.ewa-row-apikey').show();
         }
     });
 
     // ─── Endpoint Presets ───────────────────────────────────────────────────
-    $('.lat-preset').on('click', function () {
-        $('#lat-api-endpoint').val($(this).data('value'));
+    $('.ewa-preset').on('click', function () {
+        $('#ewa-api-endpoint').val($(this).data('value'));
     });
 
     // ─── Default Prompt Preview ─────────────────────────────────────────────
-    $('#lat-show-default-prompt').on('click', function () {
+    $('#ewa-show-default-prompt').on('click', function () {
         const $btn = $(this);
-        const $pre = $('#lat-default-prompt-preview');
+        const $pre = $('#ewa-default-prompt-preview');
         $pre.slideToggle(200, function () {
             $btn.text($pre.is(':visible') ? 'Hide default prompt' : 'View default prompt');
         });
     });
 
     // ─── Load Models ────────────────────────────────────────────────────────
-    $('#lat-fetch-models').on('click', function () {
+    $('#ewa-fetch-models').on('click', function () {
         const $btn = $(this);
-        const $select = $('#lat-model-select');
-        const $input = $('#lat-model-input');
+        const $select = $('#ewa-model-select');
+        const $input = $('#ewa-model-input');
 
-        const provider    = $('.lat-provider-tab input[type=radio]:checked').val() || 'openrouter';
-        const apiEndpoint = String($('#lat-api-endpoint').val() || '').trim();
-        const apiKey      = String($('input[name="error_lait_settings[api_key]"]').val() || '').trim();
+        const provider    = $('.ewa-provider-tab input[type=radio]:checked').val() || 'openrouter';
+        const apiEndpoint = String($('#ewa-api-endpoint').val() || '').trim();
+        const apiKey      = String($('input[name="ewa_settings[api_key]"]').val() || '').trim();
 
         $btn.text('Loading…').prop('disabled', true);
 
-        $.post(errorLaitAdmin.ajaxUrl, {
-            action: 'error_lait_fetch_models',
-            nonce: errorLaitAdmin.nonce,
+        $.post(ewaAdmin.ajaxUrl, {
+            action: 'ewa_fetch_models',
+            nonce: ewaAdmin.nonce,
             provider: provider,
             api_endpoint: apiEndpoint,
             api_key: apiKey,
@@ -79,21 +79,21 @@
     });
 
     // ─── Test Connection ────────────────────────────────────────────────────
-    $('#lat-test-connection').on('click', function () {
+    $('#ewa-test-connection').on('click', function () {
         const $btn = $(this);
-        const $result = $('#lat-test-result');
+        const $result = $('#ewa-test-result');
 
-        const provider    = $('.lat-provider-tab input[type=radio]:checked').val() || 'openrouter';
-        const apiEndpoint = String($('#lat-api-endpoint').val() || '').trim();
-        const apiKey      = String($('input[name="error_lait_settings[api_key]"]').val() || '').trim();
-        const model       = String($('#lat-model-input').val() || '').trim();
+        const provider    = $('.ewa-provider-tab input[type=radio]:checked').val() || 'openrouter';
+        const apiEndpoint = String($('#ewa-api-endpoint').val() || '').trim();
+        const apiKey      = String($('input[name="ewa_settings[api_key]"]').val() || '').trim();
+        const model       = String($('#ewa-model-input').val() || '').trim();
 
         $btn.text('Testing…').prop('disabled', true);
-        $result.removeClass('lat-test-ok lat-test-err').text('');
+        $result.removeClass('ewa-test-ok ewa-test-err').text('');
 
-        $.post(errorLaitAdmin.ajaxUrl, {
-            action: 'error_lait_test_connection',
-            nonce: errorLaitAdmin.nonce,
+        $.post(ewaAdmin.ajaxUrl, {
+            action: 'ewa_test_connection',
+            nonce: ewaAdmin.nonce,
             provider: provider,
             api_endpoint: apiEndpoint,
             api_key: apiKey,
@@ -102,15 +102,15 @@
             $btn.text('🔌 Test Connection').prop('disabled', false);
 
             if (res.success) {
-                $result.addClass('lat-test-ok')
+                $result.addClass('ewa-test-ok')
                     .text('✓ ' + res.data.message + '  "Hello" → "' + res.data.test_output + '"');
             } else {
-                $result.addClass('lat-test-err')
+                $result.addClass('ewa-test-err')
                     .text('✗ ' + (res.data?.message || 'Unknown error'));
             }
         }).fail(function () {
             $btn.text('🔌 Test Connection').prop('disabled', false);
-            $result.addClass('lat-test-err').text('✗ Network error');
+            $result.addClass('ewa-test-err').text('✗ Network error');
         });
     });
 

@@ -1,4 +1,4 @@
-# Changelog — Err.or AI Translator for Loco Translate
+# Changelog — EWA AI Translator for Loco Translate
 
 All notable changes to this plugin are documented here.  
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).  
@@ -11,29 +11,28 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - **Deterministic ID-Based AI Protocol** — Sent items include stable IDs based on original PO indices (`entry_154`). AI responses are parsed via JSON envelope (`{"translations": [...]}`) and mapped deterministically by ID.
 - **Strict Validation Layer** — Added `Translation_Validator` class for full tokenization of printf specifiers (`%s`, `%d`, `%02d`, `%1$s`, `%2$03d`, `%%`), variable templates (`{var}`, `{{var}}`), HTML tags/attributes (`href`, `src`, `title`, `alt`), and HTML entities (`&nbsp;`, `&amp;`, `&hellip;`).
 - **Plural Form Integrity & Strategy B** — Plural forms are validated against `nplurals`. Partial plural entries are treated as incomplete translation units and fully regenerated.
-- **Job Transient State & Idempotency** — Job state is maintained in `error_lait_job_{job_id}` transients. Includes `request_id` idempotency protection for AJAX retries.
+- **Job Transient State & Idempotency** — Job state is maintained in `ewa_job_{job_id}` transients. Includes `request_id` idempotency protection for AJAX retries.
 - **Non-Fuzzy Failure Tracking** — API/network failures no longer pollute PO entries with gettext fuzzy flags (`#, fuzzy`).
 - **Machine-Readable Error Classification** — `Api_Client` surfaces WP_Error data payloads (`http_status`, `retryable`, `retry_after`). Permanent errors (401, 403, 404) abort immediately. Validation failures trigger automatic prompt corrections.
 - **Atomic PO Saving & Permissions** — PO writes use temporary files (`.tmp.*`), `LOCK_EX`, permission preservation (`chmod`), and atomic `rename()`. MO compilation warnings are surfaced to UI.
 - **Canonical Roots Path Security** — Hardened `validate_po_path()` using `realpath()` boundary checks against allowed WordPress language and plugin/theme locations.
 - **API Key DOM Masking** — API key input fields no longer expose secrets in raw HTML DOM attributes and support explicit key clearing.
-- **Automated Test Suite** — Created CLI automated test runner (`tests/test-pipeline.php` and `tests/bootstrap.php`) covering 30 pipeline assertions.
+- **Automated Test Suite** — Created CLI automated test runner (`tests/test-pipeline.php` and `tests/bootstrap.php`) covering 32 pipeline assertions.
 
 ---
 
 ## [1.6.0] — 2026-08-14
 
 ### Rebrand & WordPress.org Compliance
-- **Plugin Rebrand** — Rebranded plugin to **Err.or AI Translator for Loco Translate**.
-- **Canonical Slug & Text Domain** — Standardized canonical slug (`err-or-ai-translator-for-loco-translate`) and text domain (`err-or-ai-translator-for-loco-translate`).
-- **Main Plugin File Rename** — Renamed main plugin file to `err-or-ai-translator-for-loco-translate.php`.
-- **PHP Namespacing & Global Prefixing** — Refactored PHP codebase into the `ErrorAgency\LocoAITranslator` namespace and prefixed WordPress global identifiers with `error_lait_`.
-- **Removed GitHub Update Checker** — Removed `includes/plugin-update-checker/` library completely to rely exclusively on WordPress.org update distribution.
-- **Removed Build Helpers** — Deleted local PowerShell release helper scripts (`backfill_releases.ps1`, `create_releases.ps1`).
-- **Settings Migration** — Implemented backward-compatible settings migration from `lat_settings` to `error_lait_settings` with schema version tracking (`error_lait_schema_version`).
+- **Plugin Rebrand** — Rebranded plugin to **EWA AI Translator for Loco Translate** by **Error Web Agency (EWA)**.
+- **Canonical Slug & Text Domain** — Standardized canonical slug (`ewa-ai-translator-for-loco-translate`) and text domain (`ewa-ai-translator-for-loco-translate`).
+- **Main Plugin File Rename** — Renamed main plugin file to `ewa-ai-translator-for-loco-translate.php`.
+- **PHP Namespacing & Global Prefixing** — Refactored PHP codebase into the `ErrorWebAgency\LocoAITranslator` namespace and prefixed WordPress global identifiers with `ewa_`.
+- **Removed GitHub Update Checker** — Removed legacy update checker libraries completely to rely exclusively on WordPress.org update distribution.
+- **Settings Migration** — Implemented backward-compatible settings migration to `ewa_settings` with schema version tracking (`ewa_schema_version`).
 - **Standardized Requirements** — Standardized minimum PHP requirement to 7.4 and WordPress requirement to 6.0 across all plugin headers and documentation.
 - **WordPress.org Readme** — Created official `readme.txt` with Third-Party Services disclosures for OpenRouter, Ollama, and custom OpenAI-compatible endpoints with verified official links.
-- **Licensing & Attribution** — Standardized `LICENSE` file (GPL-2.0-or-later) and source code attributions (Developer: Err.or agency, Lead Developer: K2D).
+- **Licensing & Attribution** — Standardized `LICENSE` file (GPL-2.0-or-later) and source code attributions (Developer: Error Web Agency (EWA), Lead Developer: K2D).
 
 ---
 

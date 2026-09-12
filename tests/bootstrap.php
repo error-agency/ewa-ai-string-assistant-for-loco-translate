@@ -1,6 +1,6 @@
 <?php
 /**
- * Bootstrap for local PHP CLI testing of Err.or AI Translator for Loco Translate.
+ * Bootstrap for local PHP CLI testing of EWA AI Translator for Loco Translate (Error Web Agency).
  * Stubs required WordPress functions when running outside of WordPress core test suite.
  */
 

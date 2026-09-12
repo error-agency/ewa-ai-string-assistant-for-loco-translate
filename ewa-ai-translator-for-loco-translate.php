@@ -1,22 +1,22 @@
 <?php
 /**
- * Plugin Name:       Err.or AI Translator for Loco Translate
- * Plugin URI:        https://github.com/error-agency/err-or-ai-translator-for-loco-translate
+ * Plugin Name:       EWA AI Translator for Loco Translate
+ * Plugin URI:        https://github.com/error-agency/ewa-ai-translator-for-loco-translate
  * Description:       Adds AI-assisted translation to Loco Translate using OpenRouter, Ollama, or a custom OpenAI-compatible endpoint.
  * Version:           1.6.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Author:            Err.or agency
+ * Author:            Error Web Agency (EWA)
  * Author URI:        https://error.bg/
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       err-or-ai-translator-for-loco-translate
+ * Text Domain:       ewa-ai-translator-for-loco-translate
  * Domain Path:       /languages
  * Requires Plugins:  loco-translate
  */
 
 /**
- * Copyright (C) 2026 Err.or agency
+ * Copyright (C) 2026 Error Web Agency (EWA)
  *
  * Lead Developer: K2D
  *
@@ -32,16 +32,16 @@
  * See the GNU General Public License for more details.
  */
 
-namespace ErrorAgency\LocoAITranslator;
+namespace ErrorWebAgency\LocoAITranslator;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ERROR_LAIT_VERSION', '1.6.1' );
-define( 'ERROR_LAIT_PATH', plugin_dir_path( __FILE__ ) );
-define( 'ERROR_LAIT_URL', plugin_dir_url( __FILE__ ) );
-define( 'ERROR_LAIT_BASENAME', plugin_basename( __FILE__ ) );
+define( 'EWA_VERSION', '1.6.1' );
+define( 'EWA_PATH', plugin_dir_path( __FILE__ ) );
+define( 'EWA_URL', plugin_dir_url( __FILE__ ) );
+define( 'EWA_BASENAME', plugin_basename( __FILE__ ) );
 
 final class Plugin {
 
@@ -60,12 +60,12 @@ final class Plugin {
 	}
 
 	private function includes() {
-		require_once ERROR_LAIT_PATH . 'includes/class-settings.php';
-		require_once ERROR_LAIT_PATH . 'includes/class-translation-validator.php';
-		require_once ERROR_LAIT_PATH . 'includes/class-api-client.php';
-		require_once ERROR_LAIT_PATH . 'includes/class-po-handler.php';
-		require_once ERROR_LAIT_PATH . 'includes/class-ajax.php';
-		require_once ERROR_LAIT_PATH . 'admin/class-admin.php';
+		require_once EWA_PATH . 'includes/class-settings.php';
+		require_once EWA_PATH . 'includes/class-translation-validator.php';
+		require_once EWA_PATH . 'includes/class-api-client.php';
+		require_once EWA_PATH . 'includes/class-po-handler.php';
+		require_once EWA_PATH . 'includes/class-ajax.php';
+		require_once EWA_PATH . 'admin/class-admin.php';
 	}
 
 	private function init_hooks() {
@@ -79,9 +79,9 @@ final class Plugin {
 
 	public function load_textdomain() {
 		load_plugin_textdomain(
-			'err-or-ai-translator-for-loco-translate',
+			'ewa-ai-translator-for-loco-translate',
 			false,
-			dirname( ERROR_LAIT_BASENAME ) . '/languages'
+			dirname( EWA_BASENAME ) . '/languages'
 		);
 	}
 
@@ -90,9 +90,9 @@ final class Plugin {
 		if ( version_compare( PHP_VERSION, '7.4', '<' ) ) {
 			add_action( 'admin_notices', function () {
 				echo '<div class="notice notice-error"><p>';
-				echo '<strong>' . esc_html__( 'Err.or AI Translator for Loco Translate', 'err-or-ai-translator-for-loco-translate' ) . ':</strong> ';
+				echo '<strong>' . esc_html__( 'EWA AI Translator for Loco Translate', 'ewa-ai-translator-for-loco-translate' ) . ':</strong> ';
 				/* translators: %s: Current PHP version. */
-				printf( esc_html__( 'This plugin requires PHP version 7.4 or higher. Your server is running version %s.', 'err-or-ai-translator-for-loco-translate' ), esc_html( PHP_VERSION ) );
+				printf( esc_html__( 'This plugin requires PHP version 7.4 or higher. Your server is running version %s.', 'ewa-ai-translator-for-loco-translate' ), esc_html( PHP_VERSION ) );
 				echo '</p></div>';
 			} );
 		}
@@ -102,9 +102,9 @@ final class Plugin {
 		if ( version_compare( $wp_version, '6.0', '<' ) ) {
 			add_action( 'admin_notices', function () {
 				echo '<div class="notice notice-error"><p>';
-				echo '<strong>' . esc_html__( 'Err.or AI Translator for Loco Translate', 'err-or-ai-translator-for-loco-translate' ) . ':</strong> ';
+				echo '<strong>' . esc_html__( 'EWA AI Translator for Loco Translate', 'ewa-ai-translator-for-loco-translate' ) . ':</strong> ';
 				/* translators: %s: Current WordPress version. */
-				printf( esc_html__( 'This plugin requires WordPress version 6.0 or higher. You are running version %s.', 'err-or-ai-translator-for-loco-translate' ), esc_html( $GLOBALS['wp_version'] ) );
+				printf( esc_html__( 'This plugin requires WordPress version 6.0 or higher. You are running version %s.', 'ewa-ai-translator-for-loco-translate' ), esc_html( $GLOBALS['wp_version'] ) );
 				echo '</p></div>';
 			} );
 		}
@@ -113,15 +113,15 @@ final class Plugin {
 		if ( ! class_exists( '\Loco_data_Settings' ) && ! class_exists( 'Loco_data_Settings' ) ) {
 			add_action( 'admin_notices', function () {
 				echo '<div class="notice notice-warning"><p>';
-				echo '<strong>' . esc_html__( 'Err.or AI Translator for Loco Translate', 'err-or-ai-translator-for-loco-translate' ) . ':</strong> ';
-				esc_html_e( 'Loco Translate plugin is required for this plugin to work.', 'err-or-ai-translator-for-loco-translate' );
+				echo '<strong>' . esc_html__( 'EWA AI Translator for Loco Translate', 'ewa-ai-translator-for-loco-translate' ) . ':</strong> ';
+				esc_html_e( 'Loco Translate plugin is required for this plugin to work.', 'ewa-ai-translator-for-loco-translate' );
 				echo '</p></div>';
 			} );
 		}
 	}
 }
 
-function error_lait_plugin() {
+function ewa_ai_translator_plugin() {
 	return Plugin::instance();
 }
-error_lait_plugin();
+ewa_ai_translator_plugin();

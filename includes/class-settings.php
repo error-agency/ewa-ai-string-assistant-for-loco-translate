@@ -1,5 +1,5 @@
 <?php
-namespace ErrorAgency\LocoAITranslator;
+namespace ErrorWebAgency\LocoAITranslator;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -8,9 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Settings {
 
 	private static $instance = null;
-	const OPTION_KEY         = 'error_lait_settings';
-	const LEGACY_OPTION_KEY  = 'lat_settings';
-	const SCHEMA_VERSION_KEY = 'error_lait_schema_version';
+	const OPTION_KEY         = 'ewa_settings';
+	const SCHEMA_VERSION_KEY = 'ewa_schema_version';
 	const SCHEMA_VERSION     = '1.6.1';
 
 	public static function instance() {
@@ -27,7 +26,7 @@ class Settings {
 
 	public function register_settings() {
 		register_setting(
-			'error_lait_settings_group',
+			'ewa_settings_group',
 			self::OPTION_KEY,
 			[ 'sanitize_callback' => [ $this, 'sanitize_settings' ] ]
 		);
@@ -39,7 +38,10 @@ class Settings {
 			$new_settings = get_option( self::OPTION_KEY, null );
 
 			if ( null === $new_settings ) {
-				$legacy = get_option( self::LEGACY_OPTION_KEY, null );
+				$legacy = get_option( 'error_lait_settings', null );
+				if ( null === $legacy ) {
+					$legacy = get_option( 'lat_settings', null );
+				}
 				if ( is_array( $legacy ) && ! empty( $legacy ) ) {
 					$clean = $this->sanitize_settings( $legacy );
 					add_option( self::OPTION_KEY, $clean );
@@ -148,55 +150,42 @@ The response format must be:
 Every input item has a unique "id".
 
 You MUST:
-- return every requested ID exactly once
-- preserve every ID exactly as provided
-- never invent new IDs
-- never omit IDs
-- never duplicate IDs
+- return the exact same "id" for each item
+- never skip an item's "id"
+- never invent new "id"s
+- return items with the same "id"s even if you choose not to translate them
 
-The order of returned items does not matter because items are matched by ID.
+3. SINGULAR VS PLURAL
 
-3. SINGULAR STRINGS
+- For items with "text":
+  Return a single string in "translation".
 
-For normal strings return:
+- For items with "singular" and "plural":
+  Return an ARRAY of strings in "translation", containing exactly {nplurals} elements.
+  Example for 2 plural forms:
+  {
+    "id": "entry_X",
+    "translation": [
+      "singular translated form",
+      "plural translated form"
+    ]
+  }
 
-{
-  "id": "entry_X",
-  "translation": "translated text"
-}
+4. CONTEXT (msgctxt)
 
-Never return a "translations" array for a singular item.
+Some items include a "context" field explaining how the text is used.
+Always use the context to select the most accurate translation.
+Do not output the context in the translation.
 
-4. PLURAL STRINGS
+5. NON-TRANSLATABLE CONTENT
 
-Items containing "singular" and "plural" are plural translation units.
+Do not translate:
+- empty strings
+- whitespace-only strings
+- purely numeric strings
+- untranslatable punctuation or symbols
 
-For plural items return:
-
-{
-  "id": "entry_X",
-  "translations": [
-    "plural form 0",
-    "plural form 1"
-  ]
-}
-
-Return EXACTLY {nplurals} plural forms.
-
-Never return "translation" for a plural item.
-
-Generate the plural forms according to the grammatical rules of {target_lang}.
-
-5. CONTEXT
-
-If an item contains a non-empty "context" property, use it to determine the intended meaning of the source string.
-
-Context is metadata only.
-
-DO NOT translate the context itself.
-DO NOT include the context in the translated text.
-
-The same source string may require different translations when its context differs.
+Return these exactly as they are in the source.
 
 6. PLACEHOLDERS
 

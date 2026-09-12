@@ -1,5 +1,5 @@
 <?php
-use ErrorAgency\LocoAITranslator\Settings;
+use ErrorWebAgency\LocoAITranslator\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -11,91 +11,91 @@ if ( ! current_user_can( 'manage_options' ) ) {
 $settings = Settings::instance()->get();
 $provider = $settings['provider'];
 ?>
-<div class="wrap lat-settings-wrap">
-	<h1 class="lat-page-title">
-		<span class="lat-logo">🤖</span>
-		<?php esc_html_e( 'Err.or AI Translator for Loco Translate', 'err-or-ai-translator-for-loco-translate' ); ?>
-		<span class="lat-version">v<?php echo esc_html( ERROR_LAIT_VERSION ); ?></span>
+<div class="wrap ewa-settings-wrap">
+	<h1 class="ewa-page-title">
+		<span class="ewa-logo">🤖</span>
+		<?php esc_html_e( 'EWA AI Translator for Loco Translate', 'ewa-ai-translator-for-loco-translate' ); ?>
+		<span class="ewa-version">v<?php echo esc_html( EWA_VERSION ); ?></span>
 	</h1>
 
-	<?php settings_errors( 'error_lait_settings_group' ); ?>
+	<?php settings_errors( 'ewa_settings_group' ); ?>
 
-	<div class="lat-layout">
+	<div class="ewa-layout">
 
 		<!-- ── MAIN SETTINGS ── -->
-		<div class="lat-main-col">
-			<form method="post" action="options.php" id="lat-settings-form">
-				<?php settings_fields( 'error_lait_settings_group' ); ?>
+		<div class="ewa-main-col">
+			<form method="post" action="options.php" id="ewa-settings-form">
+				<?php settings_fields( 'ewa_settings_group' ); ?>
 
 				<!-- Provider Card -->
-				<div class="lat-card">
-					<h2 class="lat-card-title">⚡ <?php esc_html_e( 'Provider', 'err-or-ai-translator-for-loco-translate' ); ?></h2>
+				<div class="ewa-card">
+					<h2 class="ewa-card-title">⚡ <?php esc_html_e( 'Provider', 'ewa-ai-translator-for-loco-translate' ); ?></h2>
 
-					<div class="lat-provider-tabs">
-						<label class="lat-provider-tab <?php echo 'openrouter' === $provider ? 'active' : ''; ?>">
-							<input type="radio" name="error_lait_settings[provider]" value="openrouter"
+					<div class="ewa-provider-tabs">
+						<label class="ewa-provider-tab <?php echo 'openrouter' === $provider ? 'active' : ''; ?>">
+							<input type="radio" name="ewa_settings[provider]" value="openrouter"
 								<?php checked( $provider, 'openrouter' ); ?>>
-							<span class="lat-provider-icon">🌐</span>
+							<span class="ewa-provider-icon">🌐</span>
 							<strong>OpenRouter</strong>
-							<small><?php esc_html_e( 'Cloud API aggregator', 'err-or-ai-translator-for-loco-translate' ); ?></small>
+							<small><?php esc_html_e( 'Cloud API aggregator', 'ewa-ai-translator-for-loco-translate' ); ?></small>
 						</label>
-						<label class="lat-provider-tab <?php echo 'ollama' === $provider ? 'active' : ''; ?>">
-							<input type="radio" name="error_lait_settings[provider]" value="ollama"
+						<label class="ewa-provider-tab <?php echo 'ollama' === $provider ? 'active' : ''; ?>">
+							<input type="radio" name="ewa_settings[provider]" value="ollama"
 								<?php checked( $provider, 'ollama' ); ?>>
-							<span class="lat-provider-icon">🏠</span>
+							<span class="ewa-provider-icon">🏠</span>
 							<strong>Ollama</strong>
-							<small><?php esc_html_e( 'Local / self-hosted LLM', 'err-or-ai-translator-for-loco-translate' ); ?></small>
+							<small><?php esc_html_e( 'Local / self-hosted LLM', 'ewa-ai-translator-for-loco-translate' ); ?></small>
 						</label>
-						<label class="lat-provider-tab <?php echo 'custom' === $provider ? 'active' : ''; ?>">
-							<input type="radio" name="error_lait_settings[provider]" value="custom"
+						<label class="ewa-provider-tab <?php echo 'custom' === $provider ? 'active' : ''; ?>">
+							<input type="radio" name="ewa_settings[provider]" value="custom"
 								<?php checked( $provider, 'custom' ); ?>>
-							<span class="lat-provider-icon">🔧</span>
-							<strong><?php esc_html_e( 'Custom Endpoint', 'err-or-ai-translator-for-loco-translate' ); ?></strong>
-							<small><?php esc_html_e( 'OpenAI-compatible API', 'err-or-ai-translator-for-loco-translate' ); ?></small>
+							<span class="ewa-provider-icon">🔧</span>
+							<strong><?php esc_html_e( 'Custom Endpoint', 'ewa-ai-translator-for-loco-translate' ); ?></strong>
+							<small><?php esc_html_e( 'OpenAI-compatible API', 'ewa-ai-translator-for-loco-translate' ); ?></small>
 						</label>
 					</div>
 
-					<table class="form-table lat-form-table">
+					<table class="form-table ewa-form-table">
 						<tr>
-							<th><?php esc_html_e( 'API Endpoint', 'err-or-ai-translator-for-loco-translate' ); ?></th>
+							<th><?php esc_html_e( 'API Endpoint', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
-								<input type="url" name="error_lait_settings[api_endpoint]"
+								<input type="url" name="ewa_settings[api_endpoint]"
 									value="<?php echo esc_attr( $settings['api_endpoint'] ); ?>"
-									class="regular-text" id="lat-api-endpoint"
+									class="regular-text" id="ewa-api-endpoint"
 									placeholder="https://openrouter.ai/api/v1">
-								<div class="lat-presets">
-									<button type="button" class="button button-small lat-preset"
+								<div class="ewa-presets">
+									<button type="button" class="button button-small ewa-preset"
 										data-value="https://openrouter.ai/api/v1">
 										OpenRouter
 									</button>
-									<button type="button" class="button button-small lat-preset"
+									<button type="button" class="button button-small ewa-preset"
 										data-value="http://localhost:11434">
 										Ollama local
 									</button>
-									<button type="button" class="button button-small lat-preset"
+									<button type="button" class="button button-small ewa-preset"
 										data-value="https://api.openai.com/v1">
 										OpenAI
 									</button>
 								</div>
 							</td>
 						</tr>
-						<tr class="lat-row-apikey" <?php echo 'ollama' === $provider ? 'style="display:none"' : ''; ?>>
-							<th><?php esc_html_e( 'API Key', 'err-or-ai-translator-for-loco-translate' ); ?></th>
+						<tr class="ewa-row-apikey" <?php echo 'ollama' === $provider ? 'style="display:none"' : ''; ?>>
+							<th><?php esc_html_e( 'API Key', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
-								<input type="password" name="error_lait_settings[api_key]"
+								<input type="password" name="ewa_settings[api_key]"
 									value=""
-									placeholder="<?php echo ! empty( $settings['api_key'] ) ? esc_attr__( 'API key saved — leave empty to keep', 'err-or-ai-translator-for-loco-translate' ) : ''; ?>"
+									placeholder="<?php echo ! empty( $settings['api_key'] ) ? esc_attr__( 'API key saved — leave empty to keep', 'ewa-ai-translator-for-loco-translate' ) : ''; ?>"
 									class="regular-text" autocomplete="new-password">
 								<?php if ( ! empty( $settings['api_key'] ) ) : ?>
 									<label style="margin-left:10px;">
-										<input type="checkbox" name="error_lait_settings[clear_api_key]" value="1">
-										<?php esc_html_e( 'Clear saved API key', 'err-or-ai-translator-for-loco-translate' ); ?>
+										<input type="checkbox" name="ewa_settings[clear_api_key]" value="1">
+										<?php esc_html_e( 'Clear saved API key', 'ewa-ai-translator-for-loco-translate' ); ?>
 									</label>
 								<?php endif; ?>
 								<p class="description">
-									<?php esc_html_e( 'Leave empty if using a local Ollama endpoint without authentication.', 'err-or-ai-translator-for-loco-translate' ); ?>
+									<?php esc_html_e( 'Leave empty if using a local Ollama endpoint without authentication.', 'ewa-ai-translator-for-loco-translate' ); ?>
 									<a href="https://openrouter.ai/keys" target="_blank" rel="noopener">
-										<?php esc_html_e( 'Get OpenRouter key ↗', 'err-or-ai-translator-for-loco-translate' ); ?>
+										<?php esc_html_e( 'Get OpenRouter key ↗', 'ewa-ai-translator-for-loco-translate' ); ?>
 									</a>
 								</p>
 							</td>
@@ -104,60 +104,60 @@ $provider = $settings['provider'];
 				</div>
 
 				<!-- Model Card -->
-				<div class="lat-card">
-					<h2 class="lat-card-title">🧠 <?php esc_html_e( 'Model', 'err-or-ai-translator-for-loco-translate' ); ?></h2>
+				<div class="ewa-card">
+					<h2 class="ewa-card-title">🧠 <?php esc_html_e( 'Model', 'ewa-ai-translator-for-loco-translate' ); ?></h2>
 
-					<table class="form-table lat-form-table">
+					<table class="form-table ewa-form-table">
 						<tr>
-							<th><?php esc_html_e( 'Model ID', 'err-or-ai-translator-for-loco-translate' ); ?></th>
+							<th><?php esc_html_e( 'Model ID', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
-								<div class="lat-model-row">
-									<input type="text" name="error_lait_settings[model]" id="lat-model-input"
+								<div class="ewa-model-row">
+									<input type="text" name="ewa_settings[model]" id="ewa-model-input"
 										value="<?php echo esc_attr( $settings['model'] ); ?>"
 										class="regular-text"
 										placeholder="openai/gpt-4o-mini">
-									<button type="button" id="lat-fetch-models" class="button">
-										<?php esc_html_e( '↻ Load Models', 'err-or-ai-translator-for-loco-translate' ); ?>
+									<button type="button" id="ewa-fetch-models" class="button">
+										<?php esc_html_e( '↻ Load Models', 'ewa-ai-translator-for-loco-translate' ); ?>
 									</button>
 								</div>
-								<select id="lat-model-select" style="display:none; margin-top:8px; width:100%; max-width:500px;">
-									<option value=""><?php esc_html_e( '— choose a model —', 'err-or-ai-translator-for-loco-translate' ); ?></option>
+								<select id="ewa-model-select" style="display:none; margin-top:8px; width:100%; max-width:500px;">
+									<option value=""><?php esc_html_e( '— choose a model —', 'ewa-ai-translator-for-loco-translate' ); ?></option>
 								</select>
 								<p class="description">
-									<?php esc_html_e( 'Type model ID directly or click Load Models to fetch from provider.', 'err-or-ai-translator-for-loco-translate' ); ?>
+									<?php esc_html_e( 'Type model ID directly or click Load Models to fetch from provider.', 'ewa-ai-translator-for-loco-translate' ); ?>
 								</p>
 							</td>
 						</tr>
 						<tr>
-							<th><?php esc_html_e( 'Temperature', 'err-or-ai-translator-for-loco-translate' ); ?></th>
+							<th><?php esc_html_e( 'Temperature', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
-								<input type="number" name="error_lait_settings[temperature]"
+								<input type="number" name="ewa_settings[temperature]"
 									value="<?php echo esc_attr( $settings['temperature'] ); ?>"
 									min="0" max="2" step="0.1" class="small-text">
 								<p class="description">
-									<?php esc_html_e( '0 = deterministic, 1 = creative. Recommended: 0.1–0.4 for translations.', 'err-or-ai-translator-for-loco-translate' ); ?>
+									<?php esc_html_e( '0 = deterministic, 1 = creative. Recommended: 0.1–0.4 for translations.', 'ewa-ai-translator-for-loco-translate' ); ?>
 								</p>
 							</td>
 						</tr>
 						<tr>
-							<th><?php esc_html_e( 'Batch Size', 'err-or-ai-translator-for-loco-translate' ); ?></th>
+							<th><?php esc_html_e( 'Batch Size', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
-								<input type="number" name="error_lait_settings[batch_size]"
+								<input type="number" name="ewa_settings[batch_size]"
 									value="<?php echo esc_attr( $settings['batch_size'] ); ?>"
 									min="5" max="100" class="small-text">
 								<p class="description">
-									<?php esc_html_e( 'Strings per API call. Default: 40. Range: 5–100.', 'err-or-ai-translator-for-loco-translate' ); ?>
+									<?php esc_html_e( 'Strings per API call. Default: 40. Range: 5–100.', 'ewa-ai-translator-for-loco-translate' ); ?>
 								</p>
 							</td>
 						</tr>
 						<tr>
-							<th><?php esc_html_e( 'Max Retries', 'err-or-ai-translator-for-loco-translate' ); ?></th>
+							<th><?php esc_html_e( 'Max Retries', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
-								<input type="number" name="error_lait_settings[max_retries]"
+								<input type="number" name="ewa_settings[max_retries]"
 									value="<?php echo esc_attr( $settings['max_retries'] ?? 3 ); ?>"
 									min="0" max="10" class="small-text">
 								<p class="description">
-									<?php esc_html_e( 'Number of retries per batch on API failure before skipping. Default: 3.', 'err-or-ai-translator-for-loco-translate' ); ?>
+									<?php esc_html_e( 'Number of retries per batch on API failure before skipping. Default: 3.', 'ewa-ai-translator-for-loco-translate' ); ?>
 								</p>
 							</td>
 						</tr>
@@ -165,64 +165,64 @@ $provider = $settings['provider'];
 				</div>
 
 				<!-- Translation Behaviour -->
-				<div class="lat-card">
-					<h2 class="lat-card-title">⚙️ <?php esc_html_e( 'Translation Behaviour', 'err-or-ai-translator-for-loco-translate' ); ?></h2>
+				<div class="ewa-card">
+					<h2 class="ewa-card-title">⚙️ <?php esc_html_e( 'Translation Behaviour', 'ewa-ai-translator-for-loco-translate' ); ?></h2>
 
-					<table class="form-table lat-form-table">
+					<table class="form-table ewa-form-table">
 						<tr>
-							<th><?php esc_html_e( 'Skip Translated', 'err-or-ai-translator-for-loco-translate' ); ?></th>
+							<th><?php esc_html_e( 'Skip Translated', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
 								<label>
-									<input type="checkbox" name="error_lait_settings[skip_translated]" value="1"
+									<input type="checkbox" name="ewa_settings[skip_translated]" value="1"
 										<?php checked( $settings['skip_translated'], 1 ); ?>>
-									<?php esc_html_e( 'Skip strings that already have a translation', 'err-or-ai-translator-for-loco-translate' ); ?>
+									<?php esc_html_e( 'Skip strings that already have a translation', 'ewa-ai-translator-for-loco-translate' ); ?>
 								</label>
 							</td>
 						</tr>
 						<tr>
-							<th><?php esc_html_e( 'System Prompt', 'err-or-ai-translator-for-loco-translate' ); ?></th>
+							<th><?php esc_html_e( 'System Prompt', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
-								<textarea name="error_lait_settings[system_prompt]" rows="6"
-									class="large-text" placeholder="<?php esc_attr_e( 'Leave blank to use the default translation prompt.', 'err-or-ai-translator-for-loco-translate' ); ?>"
+								<textarea name="ewa_settings[system_prompt]" rows="6"
+									class="large-text" placeholder="<?php esc_attr_e( 'Leave blank to use the default translation prompt.', 'ewa-ai-translator-for-loco-translate' ); ?>"
 								><?php echo esc_textarea( $settings['system_prompt'] ); ?></textarea>
 								<p class="description">
-									<?php esc_html_e( 'Override the default prompt. Use {target_lang} for the language placeholder.', 'err-or-ai-translator-for-loco-translate' ); ?>
+									<?php esc_html_e( 'Override the default prompt. Use {target_lang} for the language placeholder.', 'ewa-ai-translator-for-loco-translate' ); ?>
 								</p>
-								<button type="button" id="lat-show-default-prompt" class="button button-small">
-									<?php esc_html_e( 'View default prompt', 'err-or-ai-translator-for-loco-translate' ); ?>
+								<button type="button" id="ewa-show-default-prompt" class="button button-small">
+									<?php esc_html_e( 'View default prompt', 'ewa-ai-translator-for-loco-translate' ); ?>
 								</button>
-								<pre id="lat-default-prompt-preview" style="display:none; background:#f6f7f7; padding:12px; border-radius:4px; white-space:pre-wrap; font-size:12px;"><?php echo esc_html( Settings::default_system_prompt( '{target_lang}' ) ); ?></pre>
+								<pre id="ewa-default-prompt-preview" style="display:none; background:#f6f7f7; padding:12px; border-radius:4px; white-space:pre-wrap; font-size:12px;"><?php echo esc_html( Settings::default_system_prompt( '{target_lang}' ) ); ?></pre>
 							</td>
 						</tr>
 					</table>
 				</div>
 
-				<div class="lat-actions">
-					<?php submit_button( __( 'Save Settings', 'err-or-ai-translator-for-loco-translate' ), 'primary large', 'submit', false ); ?>
-					<button type="button" id="lat-test-connection" class="button button-large">
-						🔌 <?php esc_html_e( 'Test Connection', 'err-or-ai-translator-for-loco-translate' ); ?>
+				<div class="ewa-actions">
+					<?php submit_button( __( 'Save Settings', 'ewa-ai-translator-for-loco-translate' ), 'primary large', 'submit', false ); ?>
+					<button type="button" id="ewa-test-connection" class="button button-large">
+						🔌 <?php esc_html_e( 'Test Connection', 'ewa-ai-translator-for-loco-translate' ); ?>
 					</button>
-					<span id="lat-test-result" class="lat-test-result"></span>
+					<span id="ewa-test-result" class="ewa-test-result"></span>
 				</div>
 
 			</form>
 		</div>
 
 		<!-- ── SIDEBAR ── -->
-		<div class="lat-sidebar">
+		<div class="ewa-sidebar">
 
 			<!-- How to Use Card -->
-			<div class="lat-card lat-sidebar-card lat-card-info">
-				<h2 class="lat-card-title">💡 <?php esc_html_e( 'How to Use in Loco Translate', 'err-or-ai-translator-for-loco-translate' ); ?></h2>
-				<ol class="lat-how-to">
-					<li><?php esc_html_e( 'Go to Loco Translate → Plugins or Themes', 'err-or-ai-translator-for-loco-translate' ); ?></li>
-					<li><?php esc_html_e( 'Click Edit on a translation file', 'err-or-ai-translator-for-loco-translate' ); ?></li>
-					<li><?php esc_html_e( 'Click the "🤖 AI Translate" button in the toolbar', 'err-or-ai-translator-for-loco-translate' ); ?></li>
-					<li><?php esc_html_e( 'Translations are automatically saved to PO and MO files', 'err-or-ai-translator-for-loco-translate' ); ?></li>
+			<div class="ewa-card ewa-sidebar-card ewa-card-info">
+				<h2 class="ewa-card-title">💡 <?php esc_html_e( 'How to Use in Loco Translate', 'ewa-ai-translator-for-loco-translate' ); ?></h2>
+				<ol class="ewa-how-to">
+					<li><?php esc_html_e( 'Go to Loco Translate → Plugins or Themes', 'ewa-ai-translator-for-loco-translate' ); ?></li>
+					<li><?php esc_html_e( 'Click Edit on a translation file', 'ewa-ai-translator-for-loco-translate' ); ?></li>
+					<li><?php esc_html_e( 'Click the "🤖 AI Translate" button in the toolbar', 'ewa-ai-translator-for-loco-translate' ); ?></li>
+					<li><?php esc_html_e( 'Translations are automatically saved to PO and MO files', 'ewa-ai-translator-for-loco-translate' ); ?></li>
 				</ol>
 			</div>
 
-		</div><!-- /.lat-sidebar -->
+		</div><!-- /.ewa-sidebar -->
 
-	</div><!-- /.lat-layout -->
+	</div><!-- /.ewa-layout -->
 </div>

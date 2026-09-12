@@ -1,6 +1,6 @@
-# Err.or AI Translator for Loco Translate
+# EWA AI Translator for Loco Translate
 
-**Err.or AI Translator for Loco Translate** is an add-on for the [Loco Translate](https://wordpress.org/plugins/loco-translate/) WordPress plugin. It adds AI-assisted translation capabilities directly into the Loco Translate editor using OpenRouter, Ollama, or custom OpenAI-compatible endpoints.
+**EWA AI Translator for Loco Translate** is an add-on for the [Loco Translate](https://wordpress.org/plugins/loco-translate/) WordPress plugin. It adds AI-assisted translation capabilities directly into the Loco Translate editor using OpenRouter, Ollama, or custom OpenAI-compatible endpoints.
 
 ## Features
 
@@ -24,9 +24,9 @@
 
 ## Installation
 
-1. Upload the `err-or-ai-translator-for-loco-translate` folder to your `/wp-content/plugins/` directory.
+1. Upload the `ewa-ai-translator-for-loco-translate` folder to your `/wp-content/plugins/` directory.
 2. Activate the plugin through **Plugins** in WordPress.
-3. Navigate to **Settings → Err.or AI Translator** to configure your provider and credentials.
+3. Navigate to **Settings → EWA AI Translator** to configure your provider and credentials.
 4. Open a translation file in **Loco Translate** (Plugins or Themes).
 5. Click **🤖 AI Translate** in the editor panel to initiate translation.
 
@@ -40,7 +40,7 @@ This plugin connects to external AI services only when an administrator configur
 
 ## Development Repository
 
-- GitHub Repository: [error-agency/err-or-ai-translator-for-loco-translate](https://github.com/error-agency/err-or-ai-translator-for-loco-translate)
+- GitHub Repository: [error-agency/ewa-ai-translator-for-loco-translate](https://github.com/error-agency/ewa-ai-translator-for-loco-translate)
 
 ## License
 
@@ -48,6 +48,6 @@ Released under the terms of the [GNU General Public License v2 or later](LICENSE
 
 ## Credits
 
-- **Developer / Publisher**: [Err.or agency](https://error.bg/)
+- **Developer / Publisher**: [Error Web Agency (EWA)](https://error.bg/)
 - **Lead Developer**: K2D
-- **Integration Target**: [Loco Translate](https://wordpress.org/plugins/loco-translate/) (separate project, not affiliated with Err.or agency)
+- **Integration Target**: [Loco Translate](https://wordpress.org/plugins/loco-translate/) (separate project, not affiliated with Error Web Agency (EWA))

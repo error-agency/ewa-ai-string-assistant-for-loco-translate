@@ -1,9 +1,9 @@
-# Copyright (C) 2026 Err.or agency
+# Copyright (C) 2026 Error Web Agency (EWA)
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Err.or AI Translator for Loco Translate 1.6.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/err-or-ai-translator-for-loco-translate\n"
+"Project-Id-Version: EWA AI Translator for Loco Translate 1.6.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ewa-ai-translator-for-loco-translate\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -12,14 +12,14 @@ msgstr ""
 "POT-Creation-Date: 2026-08-14T15:35:00+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
-"X-Domain: err-or-ai-translator-for-loco-translate\n"
+"X-Domain: ewa-ai-translator-for-loco-translate\n"
 
 #. Plugin Name of the plugin
-msgid "Err.or AI Translator for Loco Translate"
+msgid "EWA AI Translator for Loco Translate"
 msgstr ""
 
 #. Plugin URI of the plugin
-msgid "https://github.com/error-agency/err-or-ai-translator-for-loco-translate"
+msgid "https://github.com/error-agency/ewa-ai-translator-for-loco-translate"
 msgstr ""
 
 #. Description of the plugin
@@ -27,28 +27,28 @@ msgid "Adds AI-assisted translation to Loco Translate using OpenRouter, Ollama, 
 msgstr ""
 
 #. Author of the plugin
-msgid "Err.or agency"
+msgid "Error Web Agency (EWA)"
 msgstr ""
 
 #. Author URI of the plugin
 msgid "https://error.bg/"
 msgstr ""
 
-#: err-or-ai-translator-for-loco-translate.php:97
+#: ewa-ai-translator-for-loco-translate.php:97
 msgid "This plugin requires PHP version 7.4 or higher. Your server is running version %s."
 msgstr ""
 
-#: err-or-ai-translator-for-loco-translate.php:108
+#: ewa-ai-translator-for-loco-translate.php:108
 msgid "This plugin requires WordPress version 6.0 or higher. You are running version %s."
 msgstr ""
 
-#: err-or-ai-translator-for-loco-translate.php:118
+#: ewa-ai-translator-for-loco-translate.php:118
 msgid "Loco Translate plugin is required for this plugin to work."
 msgstr ""
 
 #: admin/class-admin.php:23
 #: admin/class-admin.php:24
-msgid "Err.or AI Translator"
+msgid "EWA AI Translator"
 msgstr ""
 
 #: admin/class-admin.php:107

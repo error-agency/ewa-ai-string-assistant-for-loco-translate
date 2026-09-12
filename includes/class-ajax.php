@@ -1,5 +1,5 @@
 <?php
-namespace ErrorAgency\LocoAITranslator;
+namespace ErrorWebAgency\LocoAITranslator;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -17,15 +17,15 @@ class Ajax {
 	}
 
 	private function __construct() {
-		add_action( 'wp_ajax_error_lait_get_po_info', [ $this, 'get_po_info' ] );
-		add_action( 'wp_ajax_error_lait_translate_file', [ $this, 'translate_file' ] );
-		add_action( 'wp_ajax_error_lait_cancel_job', [ $this, 'cancel_job' ] );
-		add_action( 'wp_ajax_error_lait_fetch_models', [ $this, 'fetch_models' ] );
-		add_action( 'wp_ajax_error_lait_test_connection', [ $this, 'test_connection' ] );
+		add_action( 'wp_ajax_ewa_get_po_info', [ $this, 'get_po_info' ] );
+		add_action( 'wp_ajax_ewa_translate_file', [ $this, 'translate_file' ] );
+		add_action( 'wp_ajax_ewa_cancel_job', [ $this, 'cancel_job' ] );
+		add_action( 'wp_ajax_ewa_fetch_models', [ $this, 'fetch_models' ] );
+		add_action( 'wp_ajax_ewa_test_connection', [ $this, 'test_connection' ] );
 	}
 
 	public function get_po_info() {
-		check_ajax_referer( 'error_lait_nonce', 'nonce' );
+		check_ajax_referer( 'ewa_nonce', 'nonce' );
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
 		}
@@ -56,7 +56,7 @@ class Ajax {
 	}
 
 	public function translate_file() {
-		check_ajax_referer( 'error_lait_nonce', 'nonce' );
+		check_ajax_referer( 'ewa_nonce', 'nonce' );
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
 		}
@@ -76,11 +76,11 @@ class Ajax {
 		}
 
 		if ( empty( $job_id ) ) {
-			$job_id = 'error_lait_' . uniqid();
+			$job_id = 'ewa_' . uniqid();
 		}
 
 		// ── Специфично състояние на работата (Job Transient State) ───────────
-		$transient_key = 'error_lait_job_' . $job_id;
+		$transient_key = 'ewa_job_' . $job_id;
 		$job_state     = get_transient( $transient_key );
 
 		if ( ! is_array( $job_state ) ) {
@@ -116,9 +116,9 @@ class Ajax {
 		}
 
 		// Проверка за отмяна
-		if ( ! empty( $job_state['cancelled'] ) || get_transient( 'error_lait_cancel_' . $job_id ) ) {
+		if ( ! empty( $job_state['cancelled'] ) || get_transient( 'ewa_cancel_' . $job_id ) ) {
 			delete_transient( $transient_key );
-			delete_transient( 'error_lait_cancel_' . $job_id );
+			delete_transient( 'ewa_cancel_' . $job_id );
 			wp_send_json_success( [
 				'done'      => true,
 				'cancelled' => true,
@@ -426,7 +426,7 @@ class Ajax {
 	}
 
 	public function cancel_job() {
-		check_ajax_referer( 'error_lait_nonce', 'nonce' );
+		check_ajax_referer( 'ewa_nonce', 'nonce' );
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
 		}
@@ -436,14 +436,14 @@ class Ajax {
 			wp_send_json_error( [ 'message' => 'Не е предоставен job_id.' ] );
 		}
 
-		set_transient( 'error_lait_cancel_' . $job_id, 1, 10 * MINUTE_IN_SECONDS );
-		delete_transient( 'error_lait_job_' . $job_id );
+		set_transient( 'ewa_cancel_' . $job_id, 1, 10 * MINUTE_IN_SECONDS );
+		delete_transient( 'ewa_job_' . $job_id );
 
 		wp_send_json_success( [ 'message' => 'Сигналът за отмяна е изпратен.' ] );
 	}
 
 	public function fetch_models() {
-		check_ajax_referer( 'error_lait_nonce', 'nonce' );
+		check_ajax_referer( 'ewa_nonce', 'nonce' );
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
 		}
@@ -470,7 +470,7 @@ class Ajax {
 	}
 
 	public function test_connection() {
-		check_ajax_referer( 'error_lait_nonce', 'nonce' );
+		check_ajax_referer( 'ewa_nonce', 'nonce' );
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
 		}
