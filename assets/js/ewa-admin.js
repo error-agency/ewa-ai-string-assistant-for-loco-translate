@@ -49,7 +49,7 @@
             api_endpoint: apiEndpoint,
             api_key: apiKey,
         }, function (res) {
-            $btn.text('↻ Load Models').prop('disabled', false);
+            $btn.html('<span class="dashicons dashicons-update"></span> Load Models').prop('disabled', false);
 
             if (!res.success) {
                 alert('Error: ' + (res.data?.message || 'Unknown error'));
@@ -73,7 +73,7 @@
                 $input.val($(this).val());
             });
         }).fail(function () {
-            $btn.text('↻ Load Models').prop('disabled', false);
+            $btn.html('<span class="dashicons dashicons-update"></span> Load Models').prop('disabled', false);
             alert('Network error while loading models.');
         });
     });
@@ -88,8 +88,8 @@
         const apiKey      = String($('input[name="ewa_settings[api_key]"]').val() || '').trim();
         const model       = String($('#ewa-model-input').val() || '').trim();
 
-        $btn.text('Testing…').prop('disabled', true);
-        $result.removeClass('ewa-test-ok ewa-test-err').text('');
+        $btn.html('<span class="dashicons dashicons-update ewa-spin"></span> Testing…').prop('disabled', true);
+        $result.removeClass('ewa-test-ok ewa-test-err').empty();
 
         $.post(ewaAdmin.ajaxUrl, {
             action: 'ewa_test_connection',
@@ -99,18 +99,21 @@
             api_key: apiKey,
             model: model,
         }, function (res) {
-            $btn.text('🔌 Test Connection').prop('disabled', false);
+            $btn.html('<span class="dashicons dashicons-rest-api"></span> Test Connection').prop('disabled', false);
 
             if (res.success) {
                 $result.addClass('ewa-test-ok')
-                    .text('✓ ' + res.data.message + '  "Hello" → "' + res.data.test_output + '"');
+                    .html('<span class="dashicons dashicons-yes-alt" style="vertical-align:text-bottom;font-size:16px;color:#00a32a;"></span> ' +
+                        $('<div>').text(res.data.message + ' ("Hello" → "' + res.data.test_output + '")').html());
             } else {
                 $result.addClass('ewa-test-err')
-                    .text('✗ ' + (res.data?.message || 'Unknown error'));
+                    .html('<span class="dashicons dashicons-dismiss" style="vertical-align:text-bottom;font-size:16px;color:#d63638;"></span> ' +
+                        $('<div>').text(res.data?.message || 'Unknown error').html());
             }
         }).fail(function () {
-            $btn.text('🔌 Test Connection').prop('disabled', false);
-            $result.addClass('ewa-test-err').text('✗ Network error');
+            $btn.html('<span class="dashicons dashicons-rest-api"></span> Test Connection').prop('disabled', false);
+            $result.addClass('ewa-test-err')
+                .html('<span class="dashicons dashicons-dismiss" style="vertical-align:text-bottom;font-size:16px;color:#d63638;"></span> Network error');
         });
     });
 

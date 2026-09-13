@@ -30,6 +30,15 @@
     line-height: 1;
 }
 
+.ewa-logo.dashicons {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    line-height: 1;
+    color: var(--ewa-blue);
+    vertical-align: middle;
+}
+
 .ewa-version {
     font-size: 13px;
     font-weight: normal;
@@ -77,6 +86,17 @@
     padding-bottom: 12px !important;
     border-bottom: 1px solid var(--ewa-border) !important;
     color: #1d2327 !important;
+    display: flex;
+    align-items: center;
+}
+
+.ewa-card-title .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    vertical-align: text-bottom;
+    margin-right: 8px;
+    color: var(--ewa-blue);
 }
 
 /* ── Provider Tabs ───────────────────────────────────────────────── */
@@ -118,6 +138,21 @@
 
 .ewa-provider-icon { font-size: 24px; }
 
+.ewa-provider-icon.dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    line-height: 1;
+    color: #50575e;
+    margin-bottom: 4px;
+    transition: color .15s ease;
+}
+
+.ewa-provider-tab:hover .ewa-provider-icon.dashicons,
+.ewa-provider-tab.active .ewa-provider-icon.dashicons {
+    color: var(--ewa-blue);
+}
+
 .ewa-provider-tab strong {
     font-size: 14px;
     color: #1d2327;
@@ -156,6 +191,98 @@
     display: flex;
     gap: 8px;
     align-items: center;
+}
+
+/* ── Progressive Disclosure: Advanced Tuning ─────────────────────── */
+.ewa-advanced-card {
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.ewa-advanced-details {
+    width: 100%;
+}
+
+.ewa-advanced-summary {
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fafafa;
+    border-radius: var(--ewa-radius);
+    transition: background 0.15s ease;
+    list-style: none;
+}
+
+.ewa-advanced-summary::-webkit-details-marker {
+    display: none;
+}
+
+.ewa-advanced-summary:hover {
+    background: #f0f6fc;
+}
+
+.ewa-advanced-summary .dashicons-admin-generic {
+    color: var(--ewa-blue);
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 1;
+}
+
+.ewa-advanced-summary small {
+    color: #646970;
+    font-weight: normal;
+    font-size: 12px;
+}
+
+.ewa-advanced-summary .ewa-chevron {
+    margin-left: auto;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #8c8f94;
+    transition: transform 0.2s ease;
+}
+
+.ewa-advanced-details[open] .ewa-advanced-summary .ewa-chevron {
+    transform: rotate(180deg);
+}
+
+.ewa-advanced-details[open] .ewa-advanced-summary {
+    border-bottom: 1px solid var(--ewa-border);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.ewa-advanced-content {
+    padding: 20px;
+}
+
+/* ── Button Dashicons ────────────────────────────────────────────── */
+.ewa-card .button .dashicons,
+.ewa-actions .button .dashicons,
+.ewa-panel-controls .button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    vertical-align: text-bottom;
+    margin-right: 4px;
+    line-height: 1;
+}
+
+.ewa-panel-icon.dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    vertical-align: text-bottom;
+    color: var(--ewa-blue);
+    margin-right: 4px;
 }
 
 /* ── Actions ─────────────────────────────────────────────────────── */

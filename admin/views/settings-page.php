@@ -13,7 +13,7 @@ $ewa_ai_translator_provider = $ewa_ai_translator_settings['provider'];
 ?>
 <div class="wrap ewa-settings-wrap">
 	<h1 class="ewa-page-title">
-		<span class="ewa-logo">🤖</span>
+		<span class="dashicons dashicons-translation ewa-logo"></span>
 		<?php esc_html_e( 'EWA AI Translator for Loco Translate', 'ewa-ai-translator-for-loco-translate' ); ?>
 		<span class="ewa-version">v<?php echo esc_html( EWA_VERSION ); ?></span>
 	</h1>
@@ -27,29 +27,32 @@ $ewa_ai_translator_provider = $ewa_ai_translator_settings['provider'];
 			<form method="post" action="options.php" id="ewa-settings-form">
 				<?php settings_fields( 'ewa_settings_group' ); ?>
 
-				<!-- Provider Card -->
+				<!-- 1. AI Provider & Connection Card -->
 				<div class="ewa-card">
-					<h2 class="ewa-card-title">⚡ <?php esc_html_e( 'Provider', 'ewa-ai-translator-for-loco-translate' ); ?></h2>
+					<h2 class="ewa-card-title">
+						<span class="dashicons dashicons-cloud"></span>
+						<?php esc_html_e( 'AI Provider & Connection', 'ewa-ai-translator-for-loco-translate' ); ?>
+					</h2>
 
 					<div class="ewa-provider-tabs">
 						<label class="ewa-provider-tab <?php echo 'openrouter' === $ewa_ai_translator_provider ? 'active' : ''; ?>">
 							<input type="radio" name="ewa_settings[provider]" value="openrouter"
 								<?php checked( $ewa_ai_translator_provider, 'openrouter' ); ?>>
-							<span class="ewa-provider-icon">🌐</span>
+							<span class="dashicons dashicons-cloud ewa-provider-icon"></span>
 							<strong>OpenRouter</strong>
 							<small><?php esc_html_e( 'Cloud API aggregator', 'ewa-ai-translator-for-loco-translate' ); ?></small>
 						</label>
 						<label class="ewa-provider-tab <?php echo 'ollama' === $ewa_ai_translator_provider ? 'active' : ''; ?>">
 							<input type="radio" name="ewa_settings[provider]" value="ollama"
 								<?php checked( $ewa_ai_translator_provider, 'ollama' ); ?>>
-							<span class="ewa-provider-icon">🏠</span>
+							<span class="dashicons dashicons-admin-home ewa-provider-icon"></span>
 							<strong>Ollama</strong>
 							<small><?php esc_html_e( 'Local / self-hosted LLM', 'ewa-ai-translator-for-loco-translate' ); ?></small>
 						</label>
 						<label class="ewa-provider-tab <?php echo 'custom' === $ewa_ai_translator_provider ? 'active' : ''; ?>">
 							<input type="radio" name="ewa_settings[provider]" value="custom"
 								<?php checked( $ewa_ai_translator_provider, 'custom' ); ?>>
-							<span class="ewa-provider-icon">🔧</span>
+							<span class="dashicons dashicons-admin-tools ewa-provider-icon"></span>
 							<strong><?php esc_html_e( 'Custom Endpoint', 'ewa-ai-translator-for-loco-translate' ); ?></strong>
 							<small><?php esc_html_e( 'OpenAI-compatible API', 'ewa-ai-translator-for-loco-translate' ); ?></small>
 						</label>
@@ -100,16 +103,29 @@ $ewa_ai_translator_provider = $ewa_ai_translator_settings['provider'];
 								</p>
 							</td>
 						</tr>
+						<tr>
+							<th><?php esc_html_e( 'Connection Test', 'ewa-ai-translator-for-loco-translate' ); ?></th>
+							<td>
+								<button type="button" id="ewa-test-connection" class="button button-secondary">
+									<span class="dashicons dashicons-rest-api"></span>
+									<?php esc_html_e( 'Test Connection', 'ewa-ai-translator-for-loco-translate' ); ?>
+								</button>
+								<span id="ewa-test-result" class="ewa-test-result"></span>
+							</td>
+						</tr>
 					</table>
 				</div>
 
-				<!-- Model Card -->
+				<!-- 2. Model Selection Card -->
 				<div class="ewa-card">
-					<h2 class="ewa-card-title">🧠 <?php esc_html_e( 'Model', 'ewa-ai-translator-for-loco-translate' ); ?></h2>
+					<h2 class="ewa-card-title">
+						<span class="dashicons dashicons-lightbulb"></span>
+						<?php esc_html_e( 'Model Selection', 'ewa-ai-translator-for-loco-translate' ); ?>
+					</h2>
 
 					<table class="form-table ewa-form-table">
 						<tr>
-							<th><?php esc_html_e( 'Model ID', 'ewa-ai-translator-for-loco-translate' ); ?></th>
+							<th><?php esc_html_e( 'Active Model', 'ewa-ai-translator-for-loco-translate' ); ?></th>
 							<td>
 								<div class="ewa-model-row">
 									<input type="text" name="ewa_settings[model]" id="ewa-model-input"
@@ -117,7 +133,8 @@ $ewa_ai_translator_provider = $ewa_ai_translator_settings['provider'];
 										class="regular-text"
 										placeholder="openai/gpt-4o-mini">
 									<button type="button" id="ewa-fetch-models" class="button">
-										<?php esc_html_e( '↻ Load Models', 'ewa-ai-translator-for-loco-translate' ); ?>
+										<span class="dashicons dashicons-update"></span>
+										<?php esc_html_e( 'Load Models', 'ewa-ai-translator-for-loco-translate' ); ?>
 									</button>
 								</div>
 								<select id="ewa-model-select" style="display:none; margin-top:8px; width:100%; max-width:500px;">
@@ -128,81 +145,85 @@ $ewa_ai_translator_provider = $ewa_ai_translator_settings['provider'];
 								</p>
 							</td>
 						</tr>
-						<tr>
-							<th><?php esc_html_e( 'Temperature', 'ewa-ai-translator-for-loco-translate' ); ?></th>
-							<td>
-								<input type="number" name="ewa_settings[temperature]"
-									value="<?php echo esc_attr( $ewa_ai_translator_settings['temperature'] ); ?>"
-									min="0" max="2" step="0.1" class="small-text">
-								<p class="description">
-									<?php esc_html_e( '0 = deterministic, 1 = creative. Recommended: 0.1–0.4 for translations.', 'ewa-ai-translator-for-loco-translate' ); ?>
-								</p>
-							</td>
-						</tr>
-						<tr>
-							<th><?php esc_html_e( 'Batch Size', 'ewa-ai-translator-for-loco-translate' ); ?></th>
-							<td>
-								<input type="number" name="ewa_settings[batch_size]"
-									value="<?php echo esc_attr( $ewa_ai_translator_settings['batch_size'] ); ?>"
-									min="5" max="100" class="small-text">
-								<p class="description">
-									<?php esc_html_e( 'Strings per API call. Default: 40. Range: 5–100.', 'ewa-ai-translator-for-loco-translate' ); ?>
-								</p>
-							</td>
-						</tr>
-						<tr>
-							<th><?php esc_html_e( 'Max Retries', 'ewa-ai-translator-for-loco-translate' ); ?></th>
-							<td>
-								<input type="number" name="ewa_settings[max_retries]"
-									value="<?php echo esc_attr( $ewa_ai_translator_settings['max_retries'] ?? 3 ); ?>"
-									min="0" max="10" class="small-text">
-								<p class="description">
-									<?php esc_html_e( 'Number of retries per batch on API failure before skipping. Default: 3.', 'ewa-ai-translator-for-loco-translate' ); ?>
-								</p>
-							</td>
-						</tr>
 					</table>
 				</div>
 
-				<!-- Translation Behaviour -->
-				<div class="ewa-card">
-					<h2 class="ewa-card-title">⚙️ <?php esc_html_e( 'Translation Behaviour', 'ewa-ai-translator-for-loco-translate' ); ?></h2>
-
-					<table class="form-table ewa-form-table">
-						<tr>
-							<th><?php esc_html_e( 'Skip Translated', 'ewa-ai-translator-for-loco-translate' ); ?></th>
-							<td>
-								<label>
-									<input type="checkbox" name="ewa_settings[skip_translated]" value="1"
-										<?php checked( $ewa_ai_translator_settings['skip_translated'], 1 ); ?>>
-									<?php esc_html_e( 'Skip strings that already have a translation', 'ewa-ai-translator-for-loco-translate' ); ?>
-								</label>
-							</td>
-						</tr>
-						<tr>
-							<th><?php esc_html_e( 'System Prompt', 'ewa-ai-translator-for-loco-translate' ); ?></th>
-							<td>
-								<textarea name="ewa_settings[system_prompt]" rows="6"
-									class="large-text" placeholder="<?php esc_attr_e( 'Leave blank to use the default translation prompt.', 'ewa-ai-translator-for-loco-translate' ); ?>"
-								><?php echo esc_textarea( $ewa_ai_translator_settings['system_prompt'] ); ?></textarea>
-								<p class="description">
-									<?php esc_html_e( 'Override the default prompt. Use {target_lang} for the language placeholder.', 'ewa-ai-translator-for-loco-translate' ); ?>
-								</p>
-								<button type="button" id="ewa-show-default-prompt" class="button button-small">
-									<?php esc_html_e( 'View default prompt', 'ewa-ai-translator-for-loco-translate' ); ?>
-								</button>
-								<pre id="ewa-default-prompt-preview" style="display:none; background:#f6f7f7; padding:12px; border-radius:4px; white-space:pre-wrap; font-size:12px;"><?php echo esc_html( Settings::default_system_prompt( '{target_lang}' ) ); ?></pre>
-							</td>
-						</tr>
-					</table>
+				<!-- 3. Progressive Disclosure: Advanced Settings Card -->
+				<div class="ewa-card ewa-advanced-card">
+					<details class="ewa-advanced-details">
+						<summary class="ewa-advanced-summary">
+							<span class="dashicons dashicons-admin-generic"></span>
+							<strong><?php esc_html_e( 'Advanced Translation Settings', 'ewa-ai-translator-for-loco-translate' ); ?></strong>
+							<small>(<?php esc_html_e( 'Temperature, Batch size, System prompt', 'ewa-ai-translator-for-loco-translate' ); ?>)</small>
+							<span class="dashicons dashicons-arrow-down-alt2 ewa-chevron"></span>
+						</summary>
+						<div class="ewa-advanced-content">
+							<table class="form-table ewa-form-table">
+								<tr>
+									<th><?php esc_html_e( 'Temperature', 'ewa-ai-translator-for-loco-translate' ); ?></th>
+									<td>
+										<input type="number" name="ewa_settings[temperature]"
+											value="<?php echo esc_attr( $ewa_ai_translator_settings['temperature'] ); ?>"
+											min="0" max="2" step="0.1" class="small-text">
+										<p class="description">
+											<?php esc_html_e( '0 = deterministic, 1 = creative. Recommended: 0.1–0.4 for translations.', 'ewa-ai-translator-for-loco-translate' ); ?>
+										</p>
+									</td>
+								</tr>
+								<tr>
+									<th><?php esc_html_e( 'Batch Size', 'ewa-ai-translator-for-loco-translate' ); ?></th>
+									<td>
+										<input type="number" name="ewa_settings[batch_size]"
+											value="<?php echo esc_attr( $ewa_ai_translator_settings['batch_size'] ); ?>"
+											min="5" max="100" class="small-text">
+										<p class="description">
+											<?php esc_html_e( 'Strings per API call. Default: 40. Range: 5–100.', 'ewa-ai-translator-for-loco-translate' ); ?>
+										</p>
+									</td>
+								</tr>
+								<tr>
+									<th><?php esc_html_e( 'Max Retries', 'ewa-ai-translator-for-loco-translate' ); ?></th>
+									<td>
+										<input type="number" name="ewa_settings[max_retries]"
+											value="<?php echo esc_attr( $ewa_ai_translator_settings['max_retries'] ?? 3 ); ?>"
+											min="0" max="10" class="small-text">
+										<p class="description">
+											<?php esc_html_e( 'Number of retries per batch on API failure before skipping. Default: 3.', 'ewa-ai-translator-for-loco-translate' ); ?>
+										</p>
+									</td>
+								</tr>
+								<tr>
+									<th><?php esc_html_e( 'Skip Translated', 'ewa-ai-translator-for-loco-translate' ); ?></th>
+									<td>
+										<label>
+											<input type="checkbox" name="ewa_settings[skip_translated]" value="1"
+												<?php checked( $ewa_ai_translator_settings['skip_translated'], 1 ); ?>>
+											<?php esc_html_e( 'Skip strings that already have a translation', 'ewa-ai-translator-for-loco-translate' ); ?>
+										</label>
+									</td>
+								</tr>
+								<tr>
+									<th><?php esc_html_e( 'System Prompt', 'ewa-ai-translator-for-loco-translate' ); ?></th>
+									<td>
+										<textarea name="ewa_settings[system_prompt]" rows="6"
+											class="large-text" placeholder="<?php esc_attr_e( 'Leave blank to use the default translation prompt.', 'ewa-ai-translator-for-loco-translate' ); ?>"
+										><?php echo esc_textarea( $ewa_ai_translator_settings['system_prompt'] ); ?></textarea>
+										<p class="description">
+											<?php esc_html_e( 'Override the default prompt. Use {target_lang} for the language placeholder.', 'ewa-ai-translator-for-loco-translate' ); ?>
+										</p>
+										<button type="button" id="ewa-show-default-prompt" class="button button-small">
+											<?php esc_html_e( 'View default prompt', 'ewa-ai-translator-for-loco-translate' ); ?>
+										</button>
+										<pre id="ewa-default-prompt-preview" style="display:none; background:#f6f7f7; padding:12px; border-radius:4px; white-space:pre-wrap; font-size:12px;"><?php echo esc_html( Settings::default_system_prompt( '{target_lang}' ) ); ?></pre>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</details>
 				</div>
 
 				<div class="ewa-actions">
 					<?php submit_button( __( 'Save Settings', 'ewa-ai-translator-for-loco-translate' ), 'primary large', 'submit', false ); ?>
-					<button type="button" id="ewa-test-connection" class="button button-large">
-						🔌 <?php esc_html_e( 'Test Connection', 'ewa-ai-translator-for-loco-translate' ); ?>
-					</button>
-					<span id="ewa-test-result" class="ewa-test-result"></span>
 				</div>
 
 			</form>
@@ -213,18 +234,24 @@ $ewa_ai_translator_provider = $ewa_ai_translator_settings['provider'];
 
 			<!-- How to Use Card -->
 			<div class="ewa-card ewa-sidebar-card ewa-card-info">
-				<h2 class="ewa-card-title">💡 <?php esc_html_e( 'How to Use in Loco Translate', 'ewa-ai-translator-for-loco-translate' ); ?></h2>
+				<h2 class="ewa-card-title">
+					<span class="dashicons dashicons-info-outline"></span>
+					<?php esc_html_e( 'How to Use in Loco Translate', 'ewa-ai-translator-for-loco-translate' ); ?>
+				</h2>
 				<ol class="ewa-how-to">
 					<li><?php esc_html_e( 'Go to Loco Translate → Plugins or Themes', 'ewa-ai-translator-for-loco-translate' ); ?></li>
 					<li><?php esc_html_e( 'Click Edit on a translation file', 'ewa-ai-translator-for-loco-translate' ); ?></li>
-					<li><?php esc_html_e( 'Click the "🤖 AI Translate" button in the toolbar', 'ewa-ai-translator-for-loco-translate' ); ?></li>
+					<li><?php esc_html_e( 'Click the AI Translate button in the toolbar', 'ewa-ai-translator-for-loco-translate' ); ?></li>
 					<li><?php esc_html_e( 'Translations are automatically saved to PO and MO files', 'ewa-ai-translator-for-loco-translate' ); ?></li>
 				</ol>
 			</div>
 
 			<!-- Backup & Disclaimer Card -->
-			<div class="ewa-card ewa-sidebar-card ewa-card-warning" style="border-left: 4px solid #dba617;">
-				<h2 class="ewa-card-title">⚠️ <?php esc_html_e( 'Backup & Disclaimer', 'ewa-ai-translator-for-loco-translate' ); ?></h2>
+			<div class="ewa-card ewa-sidebar-card">
+				<h2 class="ewa-card-title">
+					<span class="dashicons dashicons-shield"></span>
+					<?php esc_html_e( 'Backup & Disclaimer', 'ewa-ai-translator-for-loco-translate' ); ?>
+				</h2>
 				<p style="font-size:12px; color:#50575e; line-height:1.5; margin:0 0 10px;">
 					<strong><?php esc_html_e( 'Always make a backup:', 'ewa-ai-translator-for-loco-translate' ); ?></strong>
 					<?php esc_html_e( 'Create a backup copy of your .po and .mo files before initiating automated translations.', 'ewa-ai-translator-for-loco-translate' ); ?>

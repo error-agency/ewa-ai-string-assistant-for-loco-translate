@@ -170,12 +170,17 @@
         var $btn = $('<button>', {
             id: 'ewa-ai-btn', type: 'button',
             class: 'button button-primary ewa-ai-btn',
-            html: ewaLoco.i18n.btnTranslate,
-        });
+        }).append(
+            $('<span>', { class: 'dashicons dashicons-translation' }),
+            $('<span>', { text: ' ' + ewaLoco.i18n.btnTranslate })
+        );
         var $stopBtn = $('<button>', {
             id: 'ewa-stop-btn', type: 'button',
-            class: 'button ewa-stop-btn', html: '⏹ Stop',
-        }).hide();
+            class: 'button ewa-stop-btn',
+        }).append(
+            $('<span>', { class: 'dashicons dashicons-controls-pause' }),
+            $('<span>', { text: ' ' + ewaLoco.i18n.btnStop })
+        ).hide();
 
         var $badge    = $('<span>', { class: 'ewa-model-badge',
             text: ewaLoco.provider + ' · ' + ewaLoco.model });
@@ -185,7 +190,8 @@
         var $pathRow = $('<div>', { id: 'ewa-path-row', class: 'ewa-path-row' }).hide();
         if (!poPath) {
             $pathRow.append(
-                $('<span>', { text: '📂 Enter .po path: ' }),
+                $('<span>', { class: 'dashicons dashicons-category', style: 'vertical-align:middle;margin-right:4px;' }),
+                $('<span>', { text: 'Enter .po path: ' }),
                 $('<input>', { type:'text', id:'ewa-manual-path',
                     class:'regular-text ewa-manual-path',
                     placeholder:'Absolute path or relative to wp-content…' }),
@@ -222,7 +228,8 @@
 
         return $('<div>', { id:'ewa-panel', class:'ewa-editor-panel' }).append(
             $('<div>', { class:'ewa-panel-controls' }).append(
-                $('<span>', { class:'ewa-panel-label', text:'🌍 Translate to:' }),
+                $('<span>', { class:'dashicons dashicons-translation ewa-panel-icon' }),
+                $('<span>', { class:'ewa-panel-label', text:'Translate to:' }),
                 $langSelect, $btn, $stopBtn, $badge, $pathInfo
             ),
             $pathRow, $prog, $ticker, $log, $summary, $notices
@@ -244,11 +251,11 @@
                 action:'ewa_get_po_info', nonce:ewaLoco.nonce, po_path:path,
             }, function (res) {
                 if (res.success) {
-                    $res.text('✓ ' + res.data.untranslated + ' untranslated').css('color','#00a32a');
+                    $res.html('<span class="dashicons dashicons-yes-alt" style="color:#00a32a;font-size:16px;vertical-align:text-bottom;"></span> ' + res.data.untranslated + ' untranslated').css('color','#00a32a');
                 } else {
-                    $res.text('✗ ' + (res.data ? res.data.message : 'Error')).css('color','#d63638');
+                    $res.html('<span class="dashicons dashicons-dismiss" style="color:#d63638;font-size:16px;vertical-align:text-bottom;"></span> ' + escHtml(res.data ? res.data.message : 'Error')).css('color','#d63638');
                 }
-            }).fail(function () { $res.text('Network error').css('color','#d63638'); });
+            }).fail(function () { $res.html('<span class="dashicons dashicons-dismiss" style="color:#d63638;font-size:16px;vertical-align:text-bottom;"></span> Network error').css('color','#d63638'); });
         });
 
         $('#ewa-ai-btn').on('click', function () {
@@ -265,7 +272,7 @@
             $.post(ewaLoco.ajaxUrl, {
                 action:'ewa_cancel_job', nonce:ewaLoco.nonce, job_id:currentJobId,
             });
-            showNotice('⏸ Stop signal sent — current batch will finish, then stop.', 'info');
+            showNotice('Stop signal sent — current batch will finish, then stop.', 'info');
         });
     }
 
@@ -278,11 +285,11 @@
 
     function startTranslation(poPath, targetLang) {
         if (!poPath) {
-            showNotice('⚠ Could not detect the .po file path. Enter it manually above.', 'error', true);
+            showNotice('Could not detect the .po file path. Enter it manually above.', 'error', true);
             $('#ewa-path-row').show();
             return;
         }
-        showNotice('🔍 Checking file…', 'info');
+        showNotice('Checking file…', 'info');
         $('#ewa-ai-btn').prop('disabled', true);
 
         $.post(ewaLoco.ajaxUrl, {
@@ -292,13 +299,13 @@
             clearNotice();
 
             if (!res.success) {
-                showNotice('✗ ' + (res.data ? res.data.message : 'Unknown'), 'error', true);
+                showNotice(res.data ? res.data.message : 'Unknown error', 'error', true);
                 return;
             }
 
             var info = res.data;
             if (info.untranslated === 0) {
-                showNotice('✓ All strings are already translated.', 'success');
+                showNotice('All strings are already translated.', 'success');
                 return;
             }
 
@@ -519,28 +526,30 @@
         var elapsed = Math.round((Date.now() - stats.jobStartMs) / 1000);
         var $s = $('#ewa-summary').show();
         $s.html(
-            '<span>⏱ ' + fmtTime(elapsed) + '</span>' +
-            '<span>✅ ' + stats.translated + ' translated</span>' +
-            (stats.skipped > 0 ? '<span>⚠ ' + stats.skipped + ' skipped</span>' : '') +
-            '<span>🔢 ' + stats.tokensTotal + ' tokens</span>' +
-            '<span>📦 ' + stats.batchCount + ' batches</span>'
+            '<span><span class="dashicons dashicons-clock" style="vertical-align:text-bottom;font-size:16px;"></span> ' + fmtTime(elapsed) + '</span>' +
+            '<span><span class="dashicons dashicons-yes-alt" style="vertical-align:text-bottom;font-size:16px;color:#00a32a;"></span> ' + stats.translated + ' translated</span>' +
+            (stats.skipped > 0 ? '<span><span class="dashicons dashicons-warning" style="vertical-align:text-bottom;font-size:16px;color:#dba617;"></span> ' + stats.skipped + ' skipped</span>' : '') +
+            '<span><span class="dashicons dashicons-chart-bar" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.tokensTotal + ' tokens</span>' +
+            '<span><span class="dashicons dashicons-database" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.batchCount + ' batches</span>'
         );
     }
 
     function showFinalSummary(completed, elStr) {
         var $s = $('#ewa-summary').show();
         var statusLabel = completed
-            ? (stats.skipped > 0 ? '⚠ Completed with errors' : '✅ Complete')
-            : '⏹ Stopped';
+            ? (stats.skipped > 0
+                ? '<span class="dashicons dashicons-warning" style="vertical-align:text-bottom;font-size:16px;color:#dba617;"></span> Completed with warnings'
+                : '<span class="dashicons dashicons-yes-alt" style="vertical-align:text-bottom;font-size:16px;color:#00a32a;"></span> Complete')
+            : '<span class="dashicons dashicons-controls-pause" style="vertical-align:text-bottom;font-size:16px;color:#d63638;"></span> Stopped';
 
         $s.html(
             '<strong>' + statusLabel + '</strong>' +
-            '<span>⏱ ' + elStr + '</span>' +
-            '<span>✅ ' + stats.translated + ' translated</span>' +
-            (stats.skipped > 0 ? '<span>⚠ ' + stats.skipped + ' skipped</span>' : '') +
-            '<span>🔢 ' + stats.tokensTotal + ' tokens</span>' +
-            '<span>↑ ' + stats.tokensPrompt + ' / ↓ ' + stats.tokensCompletion + '</span>' +
-            '<span>📦 ' + stats.batchCount + ' batches</span>'
+            '<span><span class="dashicons dashicons-clock" style="vertical-align:text-bottom;font-size:16px;"></span> ' + elStr + '</span>' +
+            '<span><span class="dashicons dashicons-yes-alt" style="vertical-align:text-bottom;font-size:16px;color:#00a32a;"></span> ' + stats.translated + ' translated</span>' +
+            (stats.skipped > 0 ? '<span><span class="dashicons dashicons-warning" style="vertical-align:text-bottom;font-size:16px;color:#dba617;"></span> ' + stats.skipped + ' skipped</span>' : '') +
+            '<span><span class="dashicons dashicons-chart-bar" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.tokensTotal + ' tokens</span>' +
+            '<span><span class="dashicons dashicons-arrow-up-alt" style="vertical-align:text-bottom;font-size:14px;"></span> ' + stats.tokensPrompt + ' / <span class="dashicons dashicons-arrow-down-alt" style="vertical-align:text-bottom;font-size:14px;"></span> ' + stats.tokensCompletion + '</span>' +
+            '<span><span class="dashicons dashicons-database" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.batchCount + ' batches</span>'
         );
     }
 
@@ -549,17 +558,24 @@
         var $stop = $('#ewa-stop-btn');
         var $prog = $('#ewa-progress-wrap');
         if (on) {
-            $btn.prop('disabled', true).addClass('ewa-btn-busy').text(ewaLoco.i18n.translating);
-            $stop.show().prop('disabled', false).text('⏹ Stop');
+            $btn.prop('disabled', true).addClass('ewa-btn-busy').html('<span class="dashicons dashicons-update ewa-spin" style="vertical-align:text-bottom;font-size:16px;"></span> ' + escHtml(ewaLoco.i18n.translating));
+            $stop.show().prop('disabled', false).html('<span class="dashicons dashicons-controls-pause" style="vertical-align:text-bottom;font-size:16px;"></span> ' + escHtml(ewaLoco.i18n.btnStop));
             $prog.show();
         } else {
-            $btn.prop('disabled', false).removeClass('ewa-btn-busy').text(ewaLoco.i18n.btnTranslate);
-            $stop.hide().prop('disabled', false).text('⏹ Stop');
+            $btn.prop('disabled', false).removeClass('ewa-btn-busy').html('<span class="dashicons dashicons-translation" style="vertical-align:text-bottom;font-size:16px;"></span> ' + escHtml(ewaLoco.i18n.btnTranslate));
+            $stop.hide().prop('disabled', false).html('<span class="dashicons dashicons-controls-pause" style="vertical-align:text-bottom;font-size:16px;"></span> ' + escHtml(ewaLoco.i18n.btnStop));
         }
     }
 
     function showNotice(message, type, persistent) {
-        var $n = $('<div>', { class:'ewa-editor-notice ewa-notice-' + type, html:message });
+        var iconClass = 'dashicons-info';
+        if (type === 'success') iconClass = 'dashicons-yes-alt';
+        else if (type === 'error') iconClass = 'dashicons-dismiss';
+        else if (type === 'warning') iconClass = 'dashicons-warning';
+
+        var $n = $('<div>', { class:'ewa-editor-notice ewa-notice-' + type })
+            .append($('<span>', { class:'dashicons ' + iconClass, style:'vertical-align:text-bottom;margin-right:6px;font-size:16px;' }))
+            .append($('<span>').html(message));
         $('#ewa-editor-notices').empty().append($n);
         if (!persistent) setTimeout(function () { $n.fadeOut(400, function () { $n.remove(); }); }, 7000);
     }
