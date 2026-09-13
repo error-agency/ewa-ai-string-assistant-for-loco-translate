@@ -33,6 +33,12 @@ Translate untranslated Gettext PO strings in seconds using top AI models via Ope
 * **Privacy First**: Direct connection from your WordPress server to your chosen AI provider. No intermediary proxy servers or data harvesting.
 * **100% Free & Open Source**: No paywalls, no trial limits, no feature restrictions.
 
+= Important Disclaimer & Recommendations =
+
+* **Backup First**: Always create a complete backup of your `.po` and `.mo` files before performing automated AI translations.
+* **Review Translations**: AI-generated translations are automated suggestions. Site owners are advised to review translated strings for context, grammar, and tone before deploying them on public or production sites.
+* **API Usage & Costs**: If using paid third-party APIs (such as OpenRouter), monitor your usage and set spending limits on your provider dashboard. Developers are not responsible for third-party billing charges.
+
 == Third-Party Services ==
 
 This plugin can connect to external AI services when an administrator configures a provider and initiates an operation that requires the provider, including loading models, testing a connection, or translating strings.
@@ -121,6 +127,10 @@ Translations are written atomically to the `.po` file on your server using `WP_F
 
 Yes. The plugin is licensed under GPL v2 or later and can be used on any number of personal or commercial websites without restrictions.
 
+= Who is responsible for backups and translation accuracy? =
+
+The site administrator is solely responsible for creating and maintaining backups of translation files prior to using the plugin, and for reviewing generated translations for contextual correctness. The developers and Error Web Agency (EWA) assume no liability for machine translation errors, unintended file overwrites, data loss, or third-party API costs.
+
 == Screenshots ==
 
 1. Settings page to configure AI provider (OpenRouter, Ollama, Custom Endpoint), API credentials, model selection, temperature, and batch limits.
@@ -180,6 +190,21 @@ Yes. The plugin is licensed under GPL v2 or later and can be used on any number 
 
 = 1.6.1 =
 Upgrade to version 1.6.1 for enhanced translation validation, deterministic AI protocol, full msgctxt context support, and atomic WP_Filesystem operations.
+
+== Terms of Use & Disclaimer ==
+
+This plugin is provided on an "AS IS" and "AS AVAILABLE" basis, without warranties of any kind, whether express, implied, or statutory, including without limitation warranties of merchantability, fitness for a particular purpose, and non-infringement.
+
+Under no circumstances shall Error Web Agency (EWA), its developers, or contributors be held liable for any direct, indirect, incidental, special, consequential, or punitive damages, including but not limited to:
+* Loss of data, corrupted translation files, or overwritten .po/.mo files.
+* Inaccuracies, errors, offensive content, or hallucinations produced by third-party artificial intelligence models.
+* Billing charges, subscription fees, or rate-limit overages incurred with third-party API providers (e.g. OpenRouter, OpenAI, or other providers).
+* Business interruption, lost profits, or reputational harm arising out of the use or inability to use this plugin.
+
+By installing and using this plugin, you explicitly acknowledge and agree that:
+1. You are solely responsible for creating and maintaining independent backup copies of all translation files prior to running translations.
+2. You will independently review and verify all machine-generated translations before using them in a live or production environment.
+3. You control your own third-party API credentials, parameters, and spending limits.
 
 == Credits ==
 

@@ -309,7 +309,8 @@
                 'Language : ' + targetLang + '\n' +
                 'Model    : ' + ewaLoco.model + '\n' +
                 'File     : ' + basename(poPath) + '\n\n' +
-                'The file is saved automatically after each batch.'
+                'Important: Please ensure you have a backup of this file before continuing.\n' +
+                'The file will be saved automatically after each batch.'
             )) return;
 
             stats = {

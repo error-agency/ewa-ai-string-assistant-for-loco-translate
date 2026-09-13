@@ -110,7 +110,7 @@ class Admin {
 				'done'         => __( 'Done!', 'ewa-ai-translator-for-loco-translate' ),
 				'error'        => __( 'Error', 'ewa-ai-translator-for-loco-translate' ),
 				'noStrings'    => __( 'No untranslated strings found.', 'ewa-ai-translator-for-loco-translate' ),
-				'confirm'      => __( 'This will fill in untranslated strings using AI. Continue?', 'ewa-ai-translator-for-loco-translate' ),
+				'confirm'      => __( 'This will translate untranslated strings using AI. Please ensure you have a backup of your translation files before proceeding. Continue?', 'ewa-ai-translator-for-loco-translate' ),
 				'btnTranslate' => __( '🤖 AI Translate', 'ewa-ai-translator-for-loco-translate' ),
 				'btnStop'      => __( '⏹ Stop', 'ewa-ai-translator-for-loco-translate' ),
 			],

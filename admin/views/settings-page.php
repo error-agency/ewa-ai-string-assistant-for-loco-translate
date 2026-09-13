@@ -222,6 +222,18 @@ $ewa_ai_translator_provider = $ewa_ai_translator_settings['provider'];
 				</ol>
 			</div>
 
+			<!-- Backup & Disclaimer Card -->
+			<div class="ewa-card ewa-sidebar-card ewa-card-warning" style="border-left: 4px solid #dba617;">
+				<h2 class="ewa-card-title">⚠️ <?php esc_html_e( 'Backup & Disclaimer', 'ewa-ai-translator-for-loco-translate' ); ?></h2>
+				<p style="font-size:12px; color:#50575e; line-height:1.5; margin:0 0 10px;">
+					<strong><?php esc_html_e( 'Always make a backup:', 'ewa-ai-translator-for-loco-translate' ); ?></strong>
+					<?php esc_html_e( 'Create a backup copy of your .po and .mo files before initiating automated translations.', 'ewa-ai-translator-for-loco-translate' ); ?>
+				</p>
+				<p style="font-size:11px; color:#646970; line-height:1.4; margin:0;">
+					<?php esc_html_e( 'This plugin is provided "as is" without warranty. Developers and Error Web Agency (EWA) assume no liability for translation inaccuracies, file overwrites, data loss, or API costs.', 'ewa-ai-translator-for-loco-translate' ); ?>
+				</p>
+			</div>
+
 		</div><!-- /.ewa-sidebar -->
 
 	</div><!-- /.ewa-layout -->
