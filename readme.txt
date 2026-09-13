@@ -131,4 +131,7 @@ Developed by Error Web Agency (EWA).
 
 Lead Developer: K2D.
 
+Development Repository: https://github.com/error-agency/ewa-ai-translator-for-loco-translate
+
 This plugin integrates with Loco Translate, which is an independent project and is not developed or maintained by Error Web Agency (EWA).
+
