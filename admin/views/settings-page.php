@@ -16,7 +16,7 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	<h1 class="ewa-page-title">
 		<span class="dashicons dashicons-translation ewa-logo"></span>
 		<?php esc_html_e( 'EWA AI Translator for Loco Translate', 'ewa-ai-translator-for-loco-translate' ); ?>
-		<span class="ewa-version">v<?php echo esc_html( EWA_VERSION ); ?></span>
+		<span class="ewa-version">v<?php echo esc_html( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION ); ?></span>
 	</h1>
 
 	<?php settings_errors( 'ewa_settings_group' ); ?>

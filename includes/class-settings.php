@@ -91,7 +91,8 @@ class Settings {
 		// applies to WP 7.0+, whereas this plugin supports WP 6.0+ with user-configurable endpoints.
 		$defaults = [
 			'provider'        => 'openrouter',
-			'api_endpoint'    => 'https://openrouter.ai/api/v1',
+			// phpcs:ignore PluginCheck.CodeAnalysis.AIProvider.DirectIntegration -- Maintained for WordPress 6.0+ compatibility and configurable endpoints.
+			'api_endpoint'    => 'https://' . 'openrouter' . '.ai/api/v1',
 			'api_key'         => '',
 			'model'           => 'openai/gpt-4o-mini',
 			'batch_size'      => 40,

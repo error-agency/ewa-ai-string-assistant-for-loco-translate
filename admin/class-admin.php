@@ -19,7 +19,7 @@ class Admin {
 	private function __construct() {
 		add_action( 'admin_menu', [ $this, 'register_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
-		add_filter( 'plugin_action_links_' . EWA_BASENAME, [ $this, 'plugin_action_links' ] );
+		add_filter( 'plugin_action_links_' . EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_BASENAME, [ $this, 'plugin_action_links' ] );
 	}
 
 	public function register_menu() {
@@ -33,21 +33,21 @@ class Admin {
 	}
 
 	public function enqueue_assets( $hook ) {
-		$css_ver   = file_exists( EWA_PATH . 'assets/css/ewa-admin.css' ) ? EWA_VERSION . '.' . filemtime( EWA_PATH . 'assets/css/ewa-admin.css' ) : EWA_VERSION;
-		$js_editor = file_exists( EWA_PATH . 'assets/js/ewa-loco-editor.js' ) ? EWA_VERSION . '.' . filemtime( EWA_PATH . 'assets/js/ewa-loco-editor.js' ) : EWA_VERSION;
-		$js_admin  = file_exists( EWA_PATH . 'assets/js/ewa-admin.js' ) ? EWA_VERSION . '.' . filemtime( EWA_PATH . 'assets/js/ewa-admin.js' ) : EWA_VERSION;
+		$css_ver   = file_exists( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/css/ewa-admin.css' ) ? EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION . '.' . filemtime( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/css/ewa-admin.css' ) : EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION;
+		$js_editor = file_exists( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/js/ewa-loco-editor.js' ) ? EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION . '.' . filemtime( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/js/ewa-loco-editor.js' ) : EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION;
+		$js_admin  = file_exists( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/js/ewa-admin.js' ) ? EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION . '.' . filemtime( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/js/ewa-admin.js' ) : EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION;
 
 		// Settings page
 		if ( 'settings_page_ewa-ai-translator-for-loco-translate' === $hook ) {
 			wp_enqueue_style(
 				'ewa-admin',
-				EWA_URL . 'assets/css/ewa-admin.css',
+				EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_URL . 'assets/css/ewa-admin.css',
 				[ 'dashicons' ],
 				$css_ver
 			);
 			wp_enqueue_script(
 				'ewa-admin',
-				EWA_URL . 'assets/js/ewa-admin.js',
+				EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_URL . 'assets/js/ewa-admin.js',
 				[ 'jquery' ],
 				$js_admin,
 				true
@@ -86,13 +86,13 @@ class Admin {
 		if ( $is_loco_editor ) {
 			wp_enqueue_style(
 				'ewa-loco',
-				EWA_URL . 'assets/css/ewa-admin.css',
+				EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_URL . 'assets/css/ewa-admin.css',
 				[ 'dashicons' ],
 				$css_ver
 			);
 			wp_enqueue_script(
 				'ewa-loco',
-				EWA_URL . 'assets/js/ewa-loco-editor.js',
+				EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_URL . 'assets/js/ewa-loco-editor.js',
 				[ 'jquery' ],
 				$js_editor,
 				true
@@ -144,7 +144,7 @@ class Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		require_once EWA_PATH . 'admin/views/settings-page.php';
+		require_once EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'admin/views/settings-page.php';
 	}
 
 	public function plugin_action_links( $links ) {

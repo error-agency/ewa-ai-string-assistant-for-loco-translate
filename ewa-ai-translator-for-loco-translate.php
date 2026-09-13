@@ -38,10 +38,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'EWA_VERSION', '1.6.1' );
-define( 'EWA_PATH', plugin_dir_path( __FILE__ ) );
-define( 'EWA_URL', plugin_dir_url( __FILE__ ) );
-define( 'EWA_BASENAME', plugin_basename( __FILE__ ) );
+define( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION', '1.6.1' );
+define( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH', plugin_dir_path( __FILE__ ) );
+define( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_URL', plugin_dir_url( __FILE__ ) );
+define( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_BASENAME', plugin_basename( __FILE__ ) );
 
 final class Plugin {
 
@@ -60,12 +60,12 @@ final class Plugin {
 	}
 
 	private function includes() {
-		require_once EWA_PATH . 'includes/class-settings.php';
-		require_once EWA_PATH . 'includes/class-translation-validator.php';
-		require_once EWA_PATH . 'includes/class-api-client.php';
-		require_once EWA_PATH . 'includes/class-po-handler.php';
-		require_once EWA_PATH . 'includes/class-ajax.php';
-		require_once EWA_PATH . 'admin/class-admin.php';
+		require_once EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'includes/class-settings.php';
+		require_once EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'includes/class-translation-validator.php';
+		require_once EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'includes/class-api-client.php';
+		require_once EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'includes/class-po-handler.php';
+		require_once EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'includes/class-ajax.php';
+		require_once EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'admin/class-admin.php';
 	}
 
 	private function init_hooks() {
