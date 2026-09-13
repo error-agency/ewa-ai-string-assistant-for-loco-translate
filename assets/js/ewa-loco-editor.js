@@ -171,15 +171,15 @@
             id: 'ewa-ai-btn', type: 'button',
             class: 'button button-primary ewa-ai-btn',
         }).append(
-            $('<span>', { class: 'dashicons dashicons-translation' }),
-            $('<span>', { text: ' ' + ewaLoco.i18n.btnTranslate })
+            $('<span>', { class: 'dashicons dashicons-translation', style: 'color:#ffffff !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;' }),
+            $('<span>', { text: ewaLoco.i18n.btnTranslate })
         );
         var $stopBtn = $('<button>', {
             id: 'ewa-stop-btn', type: 'button',
             class: 'button ewa-stop-btn',
         }).append(
-            $('<span>', { class: 'dashicons dashicons-controls-pause' }),
-            $('<span>', { text: ' ' + ewaLoco.i18n.btnStop })
+            $('<span>', { class: 'dashicons dashicons-controls-pause', style: 'color:#d63638 !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;' }),
+            $('<span>', { text: ewaLoco.i18n.btnStop })
         ).hide();
 
         var $badge    = $('<span>', { class: 'ewa-model-badge',
@@ -190,7 +190,7 @@
         var $pathRow = $('<div>', { id: 'ewa-path-row', class: 'ewa-path-row' }).hide();
         if (!poPath) {
             $pathRow.append(
-                $('<span>', { class: 'dashicons dashicons-category', style: 'vertical-align:middle;margin-right:4px;' }),
+                $('<span>', { class: 'dashicons dashicons-category', style: 'color:#2271b1 !important;vertical-align:middle;margin-right:4px;font-size:16px;width:16px;height:16px;display:inline-block;' }),
                 $('<span>', { text: 'Enter .po path: ' }),
                 $('<input>', { type:'text', id:'ewa-manual-path',
                     class:'regular-text ewa-manual-path',
@@ -228,7 +228,7 @@
 
         return $('<div>', { id:'ewa-panel', class:'ewa-editor-panel' }).append(
             $('<div>', { class:'ewa-panel-controls' }).append(
-                $('<span>', { class:'dashicons dashicons-translation ewa-panel-icon' }),
+                $('<span>', { class:'dashicons dashicons-translation ewa-panel-icon', style:'color:#2271b1 !important;font-size:20px;width:20px;height:20px;line-height:20px;vertical-align:middle;margin-right:6px;display:inline-block;' }),
                 $('<span>', { class:'ewa-panel-label', text:'Translate to:' }),
                 $langSelect, $btn, $stopBtn, $badge, $pathInfo
             ),
@@ -558,12 +558,12 @@
         var $stop = $('#ewa-stop-btn');
         var $prog = $('#ewa-progress-wrap');
         if (on) {
-            $btn.prop('disabled', true).addClass('ewa-btn-busy').html('<span class="dashicons dashicons-update ewa-spin" style="vertical-align:text-bottom;font-size:16px;"></span> ' + escHtml(ewaLoco.i18n.translating));
-            $stop.show().prop('disabled', false).html('<span class="dashicons dashicons-controls-pause" style="vertical-align:text-bottom;font-size:16px;"></span> ' + escHtml(ewaLoco.i18n.btnStop));
+            $btn.prop('disabled', true).addClass('ewa-btn-busy').html('<span class="dashicons dashicons-update ewa-spin" style="color:#ffffff !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(ewaLoco.i18n.translating));
+            $stop.show().prop('disabled', false).html('<span class="dashicons dashicons-controls-pause" style="color:#ffffff !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(ewaLoco.i18n.btnStop));
             $prog.show();
         } else {
-            $btn.prop('disabled', false).removeClass('ewa-btn-busy').html('<span class="dashicons dashicons-translation" style="vertical-align:text-bottom;font-size:16px;"></span> ' + escHtml(ewaLoco.i18n.btnTranslate));
-            $stop.hide().prop('disabled', false).html('<span class="dashicons dashicons-controls-pause" style="vertical-align:text-bottom;font-size:16px;"></span> ' + escHtml(ewaLoco.i18n.btnStop));
+            $btn.prop('disabled', false).removeClass('ewa-btn-busy').html('<span class="dashicons dashicons-translation" style="color:#ffffff !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(ewaLoco.i18n.btnTranslate));
+            $stop.hide().prop('disabled', false).html('<span class="dashicons dashicons-controls-pause" style="color:#d63638 !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(ewaLoco.i18n.btnStop));
         }
     }
 

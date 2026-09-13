@@ -268,21 +268,48 @@
 .ewa-card .button .dashicons,
 .ewa-actions .button .dashicons,
 .ewa-panel-controls .button .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    vertical-align: text-bottom;
-    margin-right: 4px;
-    line-height: 1;
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    vertical-align: middle !important;
+    margin-right: 4px !important;
+    line-height: 1 !important;
+    display: inline-block !important;
 }
 
+/* Primary Button White Icon */
+.ewa-panel-controls .button.button-primary .dashicons,
+.button.button-primary .dashicons,
+#ewa-panel #ewa-ai-btn .dashicons,
+.ewa-ai-btn .dashicons {
+    color: #ffffff !important;
+}
+
+/* Stop Button Red Icon */
+.ewa-panel-controls .ewa-stop-btn .dashicons,
+#ewa-panel #ewa-stop-btn .dashicons,
+.ewa-stop-btn .dashicons {
+    color: var(--ewa-red) !important;
+}
+
+.ewa-panel-controls .ewa-stop-btn:hover .dashicons,
+#ewa-panel #ewa-stop-btn:hover .dashicons,
+.ewa-stop-btn:hover .dashicons {
+    color: #ffffff !important;
+}
+
+/* Loco Panel Header Icon - Vibrant WP Blue */
+#ewa-panel .ewa-panel-icon.dashicons,
+.ewa-panel-controls .ewa-panel-icon.dashicons,
 .ewa-panel-icon.dashicons {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-    vertical-align: text-bottom;
-    color: var(--ewa-blue);
-    margin-right: 4px;
+    font-size: 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+    line-height: 20px !important;
+    vertical-align: middle !important;
+    color: #2271b1 !important;
+    margin-right: 6px !important;
+    display: inline-block !important;
 }
 
 /* ── Actions ─────────────────────────────────────────────────────── */
@@ -526,8 +553,8 @@
     color: #787878;
     padding: 6px 10px;
     background: #f6f7f7;
-    border-left: 3px solid var(--ewa-blue);
-    border-radius: 0 4px 4px 0;
+    border: 1px solid var(--ewa-border);
+    border-radius: 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

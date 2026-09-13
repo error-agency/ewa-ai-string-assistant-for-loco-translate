@@ -33,19 +33,23 @@ class Admin {
 	}
 
 	public function enqueue_assets( $hook ) {
+		$css_ver   = file_exists( EWA_PATH . 'assets/css/ewa-admin.css' ) ? EWA_VERSION . '.' . filemtime( EWA_PATH . 'assets/css/ewa-admin.css' ) : EWA_VERSION;
+		$js_editor = file_exists( EWA_PATH . 'assets/js/ewa-loco-editor.js' ) ? EWA_VERSION . '.' . filemtime( EWA_PATH . 'assets/js/ewa-loco-editor.js' ) : EWA_VERSION;
+		$js_admin  = file_exists( EWA_PATH . 'assets/js/ewa-admin.js' ) ? EWA_VERSION . '.' . filemtime( EWA_PATH . 'assets/js/ewa-admin.js' ) : EWA_VERSION;
+
 		// Settings page
 		if ( 'settings_page_ewa-ai-translator-for-loco-translate' === $hook ) {
 			wp_enqueue_style(
 				'ewa-admin',
 				EWA_URL . 'assets/css/ewa-admin.css',
 				[ 'dashicons' ],
-				EWA_VERSION
+				$css_ver
 			);
 			wp_enqueue_script(
 				'ewa-admin',
 				EWA_URL . 'assets/js/ewa-admin.js',
 				[ 'jquery' ],
-				EWA_VERSION,
+				$js_admin,
 				true
 			);
 			wp_localize_script( 'ewa-admin', 'ewaAdmin', $this->get_js_data() );
@@ -84,13 +88,13 @@ class Admin {
 				'ewa-loco',
 				EWA_URL . 'assets/css/ewa-admin.css',
 				[ 'dashicons' ],
-				EWA_VERSION
+				$css_ver
 			);
 			wp_enqueue_script(
 				'ewa-loco',
 				EWA_URL . 'assets/js/ewa-loco-editor.js',
 				[ 'jquery' ],
-				EWA_VERSION,
+				$js_editor,
 				true
 			);
 			wp_localize_script( 'ewa-loco', 'ewaLoco', $this->get_loco_js_data() );
