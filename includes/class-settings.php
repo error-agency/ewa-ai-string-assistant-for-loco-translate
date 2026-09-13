@@ -87,6 +87,8 @@ class Settings {
 	public function get( $key = null, $default = null ) {
 		$options = get_option( self::OPTION_KEY, [] );
 
+		// Default AI configuration. Note: Plugin Check advisory warning regarding wp_ai_client_prompt()
+		// applies to WP 7.0+, whereas this plugin supports WP 6.0+ with user-configurable endpoints.
 		$defaults = [
 			'provider'        => 'openrouter',
 			'api_endpoint'    => 'https://openrouter.ai/api/v1',

@@ -8,8 +8,9 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	return;
 }
 
-$ewa_ai_translator_settings = Settings::instance()->get();
-$ewa_ai_translator_provider = $ewa_ai_translator_settings['provider'];
+( function () {
+	$ewa_ai_translator_settings = Settings::instance()->get();
+	$ewa_ai_translator_provider = $ewa_ai_translator_settings['provider'];
 ?>
 <div class="wrap ewa-settings-wrap">
 	<h1 class="ewa-page-title">
@@ -265,3 +266,5 @@ $ewa_ai_translator_provider = $ewa_ai_translator_settings['provider'];
 
 	</div><!-- /.ewa-layout -->
 </div>
+<?php
+} )();
