@@ -1,5 +1,5 @@
 <?php
-namespace ErrorWebAgency\LocoAITranslator;
+namespace ErrorWebAgency\EwaAIStringAssistant;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -17,6 +17,14 @@ class Ajax {
 	}
 
 	private function __construct() {
+		// New prefixed AJAX hooks.
+		add_action( 'wp_ajax_ewaas_get_po_info', [ $this, 'get_po_info' ] );
+		add_action( 'wp_ajax_ewaas_translate_file', [ $this, 'translate_file' ] );
+		add_action( 'wp_ajax_ewaas_cancel_job', [ $this, 'cancel_job' ] );
+		add_action( 'wp_ajax_ewaas_fetch_models', [ $this, 'fetch_models' ] );
+		add_action( 'wp_ajax_ewaas_test_connection', [ $this, 'test_connection' ] );
+
+		// Backward-compatible AJAX hooks for smooth transition.
 		add_action( 'wp_ajax_ewa_get_po_info', [ $this, 'get_po_info' ] );
 		add_action( 'wp_ajax_ewa_translate_file', [ $this, 'translate_file' ] );
 		add_action( 'wp_ajax_ewa_cancel_job', [ $this, 'cancel_job' ] );
@@ -24,11 +32,17 @@ class Ajax {
 		add_action( 'wp_ajax_ewa_test_connection', [ $this, 'test_connection' ] );
 	}
 
-	public function get_po_info() {
-		check_ajax_referer( 'ewa_nonce', 'nonce' );
+	private function verify_security() {
+		if ( ! check_ajax_referer( 'ewaas_nonce', 'nonce', false ) && ! check_ajax_referer( 'ewa_nonce', 'nonce', false ) ) {
+			wp_send_json_error( [ 'message' => 'Невалидна сесия (nonce).' ], 403 );
+		}
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
 		}
+	}
+
+	public function get_po_info() {
+		$this->verify_security();
 
 		$raw_path = isset( $_POST['po_path'] ) ? sanitize_text_field( wp_unslash( $_POST['po_path'] ) ) : '';
 		$po_path  = $this->validate_po_path( $raw_path );
@@ -57,10 +71,7 @@ class Ajax {
 	}
 
 	public function translate_file() {
-		check_ajax_referer( 'ewa_nonce', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
-		}
+		$this->verify_security();
 
 		if ( ! ini_get( 'safe_mode' ) && function_exists( 'set_time_limit' ) ) {
 			// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- Extended execution time for long-running batch AI translation.
@@ -78,12 +89,17 @@ class Ajax {
 		}
 
 		if ( empty( $job_id ) ) {
-			$job_id = 'ewa_' . uniqid();
+			$job_id = 'ewaas_' . uniqid();
 		}
 
 		// ── Специфично състояние на работата (Job Transient State) ───────────
-		$transient_key = 'ewa_job_' . $job_id;
+		$transient_key = 'ewaas_job_' . $job_id;
 		$job_state     = get_transient( $transient_key );
+
+		if ( ! is_array( $job_state ) ) {
+			// Check legacy transient key as fallback
+			$job_state = get_transient( 'ewa_job_' . $job_id );
+		}
 
 		if ( ! is_array( $job_state ) ) {
 			$entries         = Po_Handler::parse( $po_path );
@@ -118,8 +134,10 @@ class Ajax {
 		}
 
 		// Проверка за отмяна
-		if ( ! empty( $job_state['cancelled'] ) || get_transient( 'ewa_cancel_' . $job_id ) ) {
+		if ( ! empty( $job_state['cancelled'] ) || get_transient( 'ewaas_cancel_' . $job_id ) || get_transient( 'ewa_cancel_' . $job_id ) ) {
 			delete_transient( $transient_key );
+			delete_transient( 'ewa_job_' . $job_id );
+			delete_transient( 'ewaas_cancel_' . $job_id );
 			delete_transient( 'ewa_cancel_' . $job_id );
 			wp_send_json_success( [
 				'done'      => true,
@@ -215,6 +233,7 @@ class Ajax {
 
 		if ( 0 === $remaining_now ) {
 			delete_transient( $transient_key );
+			delete_transient( 'ewa_job_' . $job_id );
 			$response = [
 				'done'       => true,
 				'message'    => 'Всички низове са преведени успешно.',
@@ -278,9 +297,9 @@ class Ajax {
 				break;
 			}
 
-			$err_data      = $try->get_error_data();
+			$err_data       = $try->get_error_data();
 			$last_error_msg = $try->get_error_message();
-			$is_retryable  = $err_data['retryable'] ?? true;
+			$is_retryable   = $err_data['retryable'] ?? true;
 
 			// Неповтаряеми грешки (напр. 401 Unauthorized, 403 Forbidden, 404) спират веднага
 			if ( ! $is_retryable ) {
@@ -356,7 +375,7 @@ class Ajax {
 			}
 
 			if ( ! empty( $translation_map ) ) {
-				$entries  = Po_Handler::apply_translations( $entries, $translation_map );
+				$entries   = Po_Handler::apply_translations( $entries, $translation_map );
 				$saved_res = Po_Handler::save( $po_path, $entries );
 
 				if ( is_wp_error( $saved_res ) ) {
@@ -371,7 +390,7 @@ class Ajax {
 		}
 
 		// Обновяване на Job State
-		$job_state['processed_indices'] = array_values( array_unique( array_merge( $job_state['processed_indices'], $batch_processed_indices ) ) );
+		$job_state['processed_indices']  = array_values( array_unique( array_merge( $job_state['processed_indices'], $batch_processed_indices ) ) );
 		$job_state['translated_indices'] = array_values( array_unique( $job_state['translated_indices'] ) );
 		$job_state['failed_indices']     = array_values( array_unique( $job_state['failed_indices'] ) );
 		$job_state['batch_sequence']++;
@@ -420,6 +439,7 @@ class Ajax {
 
 		if ( $is_done ) {
 			delete_transient( $transient_key );
+			delete_transient( 'ewa_job_' . $job_id );
 		} else {
 			set_transient( $transient_key, $job_state, 2 * HOUR_IN_SECONDS );
 		}
@@ -428,27 +448,23 @@ class Ajax {
 	}
 
 	public function cancel_job() {
-		check_ajax_referer( 'ewa_nonce', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
-		}
+		$this->verify_security();
 
 		$job_id = sanitize_key( $_POST['job_id'] ?? '' );
 		if ( empty( $job_id ) ) {
 			wp_send_json_error( [ 'message' => 'Не е предоставен job_id.' ] );
 		}
 
+		set_transient( 'ewaas_cancel_' . $job_id, 1, 10 * MINUTE_IN_SECONDS );
 		set_transient( 'ewa_cancel_' . $job_id, 1, 10 * MINUTE_IN_SECONDS );
+		delete_transient( 'ewaas_job_' . $job_id );
 		delete_transient( 'ewa_job_' . $job_id );
 
 		wp_send_json_success( [ 'message' => 'Сигналът за отмяна е изпратен.' ] );
 	}
 
 	public function fetch_models() {
-		check_ajax_referer( 'ewa_nonce', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
-		}
+		$this->verify_security();
 
 		$overrides = [];
 		if ( ! empty( $_POST['provider'] ) ) {
@@ -475,10 +491,7 @@ class Ajax {
 	}
 
 	public function test_connection() {
-		check_ajax_referer( 'ewa_nonce', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
-		}
+		$this->verify_security();
 
 		$overrides = [];
 		if ( ! empty( $_POST['provider'] ) ) {

@@ -1,24 +1,24 @@
-=== EWA AI Translator for Loco Translate ===
+=== EWA AI String Assistant for Loco Translate ===
 Contributors: errorwebagency
 Tags: translation, ai, localization, gettext, loco translate
 Requires at least: 6.0
-Tested up to: 7.1
-Stable tag: 1.6.1
+Tested up to: 6.8
+Stable tag: 1.7.0
 Requires PHP: 7.4
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-AI-assisted translation for Loco Translate using OpenRouter, Ollama, or a custom OpenAI-compatible endpoint.
+AI-assisted string translation for Loco Translate using OpenRouter, Ollama, or a custom OpenAI-compatible endpoint.
 
 == Description ==
 
-EWA AI Translator for Loco Translate integrates state-of-the-art AI translation directly into the Loco Translate editor for WordPress plugins and themes.
+EWA AI String Assistant for Loco Translate integrates state-of-the-art AI translation directly into the Loco Translate editor for WordPress plugins and themes.
 
 Translate untranslated Gettext PO strings in seconds using top AI models via OpenRouter (Anthropic Claude, OpenAI GPT, Google Gemini, DeepSeek, Meta Llama), a locally hosted or remote Ollama instance, or any custom OpenAI-compatible API endpoint.
 
 = Key Features =
 
-* **Direct Loco Translate Integration**: Seamlessly adds an "🤖 AI Translate" action panel to the Loco Translate PO file editor toolbar.
+* **Direct Loco Translate Integration**: Adds an "🤖 AI Translate" action panel to the Loco Translate PO file editor toolbar.
 * **Deterministic ID-Based AI Protocol**: Uses stable entry IDs (`entry_X`) and strict JSON envelope validation to guarantee 1:1 translation mapping without drift or alignment offset.
 * **Strict Token & Placeholder Validation**: Validates printf specifiers (`%s`, `%d`, `%1$s`, `%%`), variable templates (`{var}`, `{{var}}`), HTML tags, attributes (`href`, `src`), and HTML entities to prevent code corruption in translations.
 * **Full Context Support (`msgctxt`)**: Preserves gettext context disambiguation across the entire parsing and translation pipeline.
@@ -35,59 +35,64 @@ Translate untranslated Gettext PO strings in seconds using top AI models via Ope
 
 = Important Disclaimer & Recommendations =
 
+* **Loco Translate Disclaimer**: Loco Translate is an independent project by Tim Whitlock. This plugin is an independent third-party add-on and is not affiliated with, sponsored, or endorsed by Loco Translate or its authors.
 * **Backup First**: Always create a complete backup of your `.po` and `.mo` files before performing automated AI translations.
 * **Review Translations**: AI-generated translations are automated suggestions. Site owners are advised to review translated strings for context, grammar, and tone before deploying them on public or production sites.
 * **API Usage & Costs**: If using paid third-party APIs (such as OpenRouter), monitor your usage and set spending limits on your provider dashboard. Developers are not responsible for third-party billing charges.
 
-== Third-Party Services ==
+== External Services ==
 
-This plugin can connect to external AI services when an administrator configures a provider and initiates an operation that requires the provider, including loading models, testing a connection, or translating strings.
+This plugin can connect to external AI services when an administrator configures a provider and explicitly initiates an operation that requires the provider, including translating strings, testing a connection, or loading available models.
 
-Translation content is sent only to the provider selected and configured by the administrator.
+Translation content is sent only to the provider selected and configured by the administrator. No data is ever transmitted automatically or in the background.
 
-= OpenRouter =
+= 1. OpenRouter =
 
-When OpenRouter is configured, HTTP requests required for AI translation are sent to OpenRouter.
+When OpenRouter is configured, HTTP requests required for AI translation are sent to the OpenRouter API.
 
-Data sent may include:
-* Source strings and plural forms to be translated
-* Target language name and locale information
-* System prompt and translation instructions
-* Selected model identifier and temperature settings
-* API key (transmitted via standard HTTP Authorization Bearer header)
-* Site URL (`HTTP-Referer` header) and Site Title (`X-Title` header) as requested by OpenRouter API conventions
+* **Purpose**: Translating Gettext PO strings using cloud-hosted LLM models (e.g. Anthropic Claude, OpenAI GPT, Google Gemini, DeepSeek, Meta Llama) and querying the list of available models.
+* **Data Transmitted**:
+  * Source strings and plural variations to be translated
+  * Translation context (`msgctxt`) and target language name
+  * System translation prompt and instructions
+  * Selected model identifier and temperature settings
+  * Administrator-configured API key (transmitted via standard HTTP Authorization Bearer header)
+  * Site URL (`HTTP-Referer` header) and Site Title (`X-Title` header) as requested by OpenRouter API conventions for usage attribution
+* **When Data is Transmitted**: Exclusively when an authenticated administrator clicks "AI Translate" in the Loco Translate editor, "Test Connection", or "Load Models" on the settings screen.
+* **Provider**: OpenRouter, Inc.
+* **Service Website**: https://openrouter.ai/
+* **Terms of Service**: https://openrouter.ai/terms
+* **Privacy Policy**: https://openrouter.ai/privacy
 
-Service documentation and policies:
-* Website: https://openrouter.ai/
-* Terms of Service: https://openrouter.ai/terms
-* Privacy Policy: https://openrouter.ai/privacy
+= 2. Ollama =
 
-= Ollama =
+When Ollama is selected, HTTP requests are sent to the endpoint specified by the administrator (defaulting to `http://localhost:11434`).
 
-When Ollama is configured, HTTP requests are sent to the endpoint specified by the administrator (defaulting to `http://localhost:11434`).
+* **Purpose**: Translating strings using self-hosted open-source language models.
+* **Data Transmitted**: Source strings, plural forms, Gettext context, target language, system prompt, and model options.
+* **Local vs Remote Hosting**:
+  * When using a locally hosted Ollama instance (`http://localhost:11434`), all data processing occurs entirely within the local server environment. No data is transmitted to any third-party cloud service.
+  * If the administrator enters a remote Ollama server URL (e.g. on a private LAN or VPS), data is transmitted to that specific host.
+* **When Data is Transmitted**: Only upon explicit administrator action (running a translation batch, testing connection, or loading models).
+* **Provider**: Self-hosted application by Ollama.
+* **Service Website**: https://ollama.com/
+* **Privacy Policy**: https://ollama.com/privacy
 
-Data sent may include source strings, plural forms, target language information, system prompt, selected model name, and model options.
+= 3. Custom OpenAI-Compatible Endpoints =
 
-A locally hosted Ollama instance processes data on the local server environment. A remote Ollama endpoint transmits data to that remote server.
+When a custom endpoint is configured, requests are sent directly to the URL specified by the administrator.
 
-Service documentation and policies:
-* Website: https://ollama.com/
-* Privacy Policy: https://ollama.com/privacy
-
-= Custom OpenAI-compatible endpoints =
-
-When a custom endpoint is configured, requests are sent to the endpoint specified by the administrator.
-
-Data sent includes source strings, target language, prompt parameters, model identifier, and configured API credentials.
-
-Administrators are responsible for reviewing the terms and privacy policy of their chosen custom endpoint provider.
+* **Purpose**: Allowing site administrators to connect to arbitrary OpenAI-compatible APIs (such as OpenAI, Azure OpenAI, Groq, Mistral AI, or internal company proxies).
+* **Data Transmitted**: Source strings, Gettext context, target language, prompt parameters, model identifier, and configured API credentials.
+* **When Data is Transmitted**: Only when an administrator explicitly initiates a translation batch, tests the connection, or queries the model list.
+* **Provider & Privacy Policy**: Because the endpoint is configured by the site administrator, no uniform third-party policy applies. Administrators are responsible for reviewing the terms of service, privacy policy, and data handling practices of their selected endpoint provider.
 
 == Installation ==
 
 1. Ensure the **Loco Translate** plugin is installed and activated.
-2. Upload the `ewa-ai-translator-for-loco-translate` folder to your `/wp-content/plugins/` directory, or install the ZIP file via **Plugins → Add New → Upload Plugin**.
+2. Upload the `ewa-ai-string-assistant-for-loco-translate` folder to your `/wp-content/plugins/` directory, or install the ZIP file via **Plugins → Add New → Upload Plugin**.
 3. Activate the plugin through the **Plugins** menu in WordPress.
-4. Navigate to **Settings → EWA AI Translator** in the WordPress admin menu.
+4. Navigate to **Settings → EWA AI String Assistant** in the WordPress admin menu.
 5. Select your AI provider (**OpenRouter**, **Ollama**, or **Custom Endpoint**) and enter your API credentials or endpoint URL.
 6. Select your preferred model and adjust translation parameters (temperature, batch size).
 7. Go to **Loco Translate → Plugins** or **Loco Translate → Themes**, and open any PO translation file in the editor.
@@ -97,11 +102,11 @@ Administrators are responsible for reviewing the terms and privacy policy of the
 
 = Does this plugin require Loco Translate? =
 
-Yes. EWA AI Translator for Loco Translate is an add-on that specifically extends Loco Translate. Loco Translate must be installed and active.
+Yes. EWA AI String Assistant for Loco Translate is an add-on that specifically extends Loco Translate. Loco Translate must be installed and active.
 
 = Is an API key required to use the plugin? =
 
-An API key is required when using OpenRouter or most commercial OpenAI-compatible providers. However, if you use a locally hosted Ollama instance, no API key is required and all translations run locally and free of charge.
+An API key is required when using OpenRouter or commercial OpenAI-compatible providers. However, if you use a locally hosted Ollama instance, no API key is required and all translations run locally and free of charge.
 
 = Does this plugin send data to third parties automatically? =
 
@@ -138,12 +143,22 @@ The site administrator is solely responsible for creating and maintaining backup
 
 == Changelog ==
 
+= 1.7.0 =
+* WordPress.org compliance and remediation release.
+* Updated plugin name to EWA AI String Assistant for Loco Translate and canonical slug to `ewa-ai-string-assistant-for-loco-translate`.
+* Confined administrative dependency notices to relevant screens (`plugins.php` and settings screen) with dismissal capability in strict compliance with Guideline 11.
+* Namespaced and prefixed all WordPress registrations (`ewaas_*` AJAX actions, `ewaas-admin` / `ewaas-loco` script and style handles, nonces, and helper functions).
+* Preserved persistent database storage (`ewa_settings`) for complete backward compatibility.
+* Added comprehensive External Services documentation covering OpenRouter, Ollama, and Custom OpenAI-compatible endpoints with provider terms and privacy policies.
+* Added WordPress Core Privacy Policy guide integration via `wp_add_privacy_policy_content()`.
+* Evaluated WordPress 7.0 AI Client (`wp_ai_client_prompt`) and retained direct provider adapter for WordPress 6.0+ compatibility and custom endpoint flexibility.
+
 = 1.6.1 =
 * Implemented full `msgctxt` context support and JSON-encoded deduplication keys across the entire pipeline.
 * Implemented deterministic ID-based AI request/response protocol (`entry_X`) and strict JSON envelope validation.
 * Added `Translation_Validator` class for strict tokenization and validation of printf formats, variable templates, HTML tags/attributes, and HTML entities.
 * Added plural form count validation against `nplurals` and Strategy B partial plural regeneration.
-* Structured translation job state in `ewa_job_{job_id}` transients with idempotency request protection.
+* Structured translation job state in `ewaas_job_{job_id}` transients with idempotency request protection.
 * Stopped fuzzy flag misuse on API/network batch failures.
 * Implemented machine-readable `WP_Error` classification with early abort on permanent API errors (401, 403, 404).
 * Implemented atomic PO file saving with permission preservation and MO compilation error reporting via `WP_Filesystem`.
@@ -153,43 +168,17 @@ The site administrator is solely responsible for creating and maintaining backup
 
 = 1.6.0 =
 * Prepared the plugin for WordPress.org distribution.
-* Rebranded the plugin to EWA AI Translator for Loco Translate by Error Web Agency (EWA).
-* Standardized canonical slug (`ewa-ai-translator-for-loco-translate`) and text domain.
 * Standardized PHP requirement (7.4+) and WordPress requirement (6.0+).
-* Refactored PHP codebase into the `ErrorWebAgency\LocoAITranslator` namespace with `ewa_` global prefixing.
+* Refactored PHP codebase into namespaced architecture with global prefixing.
 * Added automatic backward-compatible settings migration to `ewa_settings`.
-* Updated third-party service disclosures and WordPress.org metadata.
-
-= 1.5.3 =
-* Verified compliance of all newly added methods and variables with WordPress Coding Standards.
-* Improved security escaping and sanitization routines across all admin inputs.
-
-= 1.5.2 =
-* Deduplicated identical untranslated strings in memory to minimize AI token usage.
-* Added automatic memory-bypass for non-translatable strings (numbers, URLs, pure placeholders).
-* Implemented dynamic character-based batching (up to 3,000 characters) for optimal payload sizes.
-* Shortened system prompt for provider-level prompt caching compatibility.
-
-= 1.5.1 =
-* Added full support for translating plural forms (`msgid_plural`).
-* Added transient-based caching of parsed PO entries during active translation jobs.
-
-= 1.5.0 =
-* Fixed translation loop offset calculation to always slice untranslated entries from index 0.
-* Added token usage tracking surfacing prompt and completion token counts.
-* Added per-batch logging and live summary strip (time, strings, tokens).
-
-= 1.1.0 =
-* Improved Loco Translate editor toolbar panel injection.
-* Ensured full PHP 7.4 compatibility across all string manipulation functions.
 
 = 1.0.0 =
 * Initial release of the AI translation add-on for Loco Translate.
 
 == Upgrade Notice ==
 
-= 1.6.1 =
-Upgrade to version 1.6.1 for enhanced translation validation, deterministic AI protocol, full msgctxt context support, and atomic WP_Filesystem operations.
+= 1.7.0 =
+Upgrade to version 1.7.0 for WordPress.org compliance enhancements, improved namespacing, full external service disclosures, and enhanced admin notice handling.
 
 == Terms of Use & Disclaimer ==
 
@@ -208,10 +197,10 @@ By installing and using this plugin, you explicitly acknowledge and agree that:
 
 == Credits ==
 
-Developed by Error Web Agency (EWA).
+Developed by Error Web Agency.
 
 Lead Developer: K2D.
 
-Development Repository: https://github.com/error-agency/ewa-ai-translator-for-loco-translate
+Development Repository: https://github.com/error-agency/ewa-ai-string-assistant-for-loco-translate
 
-This plugin integrates with Loco Translate, which is an independent project and is not developed or maintained by Error Web Agency (EWA).
+This plugin integrates with Loco Translate, which is an independent project by Tim Whitlock and is not developed, affiliated with, or endorsed by Error Web Agency.

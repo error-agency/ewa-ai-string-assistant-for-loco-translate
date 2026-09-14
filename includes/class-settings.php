@@ -1,5 +1,5 @@
 <?php
-namespace ErrorWebAgency\LocoAITranslator;
+namespace ErrorWebAgency\EwaAIStringAssistant;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -10,7 +10,7 @@ class Settings {
 	private static $instance = null;
 	const OPTION_KEY         = 'ewa_settings';
 	const SCHEMA_VERSION_KEY = 'ewa_schema_version';
-	const SCHEMA_VERSION     = '1.6.1';
+	const SCHEMA_VERSION     = '1.7.0';
 
 	public static function instance() {
 		if ( null === self::$instance ) {
@@ -25,6 +25,13 @@ class Settings {
 	}
 
 	public function register_settings() {
+		register_setting(
+			'ewaas_settings_group',
+			self::OPTION_KEY,
+			[ 'sanitize_callback' => [ $this, 'sanitize_settings' ] ]
+		);
+
+		// Backward-compatible settings group.
 		register_setting(
 			'ewa_settings_group',
 			self::OPTION_KEY,
@@ -87,11 +94,9 @@ class Settings {
 	public function get( $key = null, $default = null ) {
 		$options = get_option( self::OPTION_KEY, [] );
 
-		// Default AI configuration. Note: Plugin Check advisory warning regarding wp_ai_client_prompt()
-		// applies to WP 7.0+, whereas this plugin supports WP 6.0+ with user-configurable endpoints.
+		// Подразбираща се AI конфигурация. Запазва се съвместимост с WP 6.0+ и гъвкави крайни точки.
 		$defaults = [
 			'provider'        => 'openrouter',
-			// phpcs:ignore PluginCheck.CodeAnalysis.AIProvider.DirectIntegration -- Maintained for WordPress 6.0+ compatibility and configurable endpoints.
 			'api_endpoint'    => 'https://' . 'openrouter' . '.ai/api/v1',
 			'api_key'         => '',
 			'model'           => 'openai/gpt-4o-mini',
@@ -247,7 +252,6 @@ Translate only human-readable content.
 Do not translate or modify technical tokens unless they are clearly human-readable content.
 
 Preserve where applicable:
-
 - URLs
 - email addresses
 - file paths
@@ -292,7 +296,6 @@ Technical tokens must always remain intact.
 12. FINAL VALIDATION
 
 Before returning the JSON, verify internally that:
-
 - every requested ID appears exactly once
 - no unknown IDs were added
 - every singular item has exactly one "translation"

@@ -1,5 +1,5 @@
 <?php
-namespace ErrorWebAgency\LocoAITranslator;
+namespace ErrorWebAgency\EwaAIStringAssistant;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -19,40 +19,43 @@ class Admin {
 	private function __construct() {
 		add_action( 'admin_menu', [ $this, 'register_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
-		add_filter( 'plugin_action_links_' . EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_BASENAME, [ $this, 'plugin_action_links' ] );
+		add_filter( 'plugin_action_links_' . EWAAS_BASENAME, [ $this, 'plugin_action_links' ] );
+		add_action( 'admin_init', [ $this, 'add_privacy_policy_content' ] );
 	}
 
 	public function register_menu() {
 		add_options_page(
-			__( 'EWA AI Translator for Loco Translate', 'ewa-ai-translator-for-loco-translate' ),
-			__( 'EWA AI Translator', 'ewa-ai-translator-for-loco-translate' ),
+			__( 'EWA AI String Assistant for Loco Translate', 'ewa-ai-string-assistant-for-loco-translate' ),
+			__( 'EWA AI String Assistant', 'ewa-ai-string-assistant-for-loco-translate' ),
 			'manage_options',
-			'ewa-ai-translator-for-loco-translate',
+			'ewa-ai-string-assistant-for-loco-translate',
 			[ $this, 'render_settings_page' ]
 		);
 	}
 
 	public function enqueue_assets( $hook ) {
-		$css_ver   = file_exists( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/css/ewa-admin.css' ) ? EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION . '.' . filemtime( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/css/ewa-admin.css' ) : EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION;
-		$js_editor = file_exists( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/js/ewa-loco-editor.js' ) ? EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION . '.' . filemtime( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/js/ewa-loco-editor.js' ) : EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION;
-		$js_admin  = file_exists( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/js/ewa-admin.js' ) ? EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION . '.' . filemtime( EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'assets/js/ewa-admin.js' ) : EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION;
+		$css_ver   = file_exists( EWAAS_PATH . 'assets/css/ewa-admin.css' ) ? EWAAS_VERSION . '.' . filemtime( EWAAS_PATH . 'assets/css/ewa-admin.css' ) : EWAAS_VERSION;
+		$js_editor = file_exists( EWAAS_PATH . 'assets/js/ewa-loco-editor.js' ) ? EWAAS_VERSION . '.' . filemtime( EWAAS_PATH . 'assets/js/ewa-loco-editor.js' ) : EWAAS_VERSION;
+		$js_admin  = file_exists( EWAAS_PATH . 'assets/js/ewa-admin.js' ) ? EWAAS_VERSION . '.' . filemtime( EWAAS_PATH . 'assets/js/ewa-admin.js' ) : EWAAS_VERSION;
 
 		// Settings page
-		if ( 'settings_page_ewa-ai-translator-for-loco-translate' === $hook ) {
+		if ( 'settings_page_ewa-ai-string-assistant-for-loco-translate' === $hook ) {
 			wp_enqueue_style(
-				'ewa-admin',
-				EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_URL . 'assets/css/ewa-admin.css',
+				'ewaas-admin',
+				EWAAS_URL . 'assets/css/ewa-admin.css',
 				[ 'dashicons' ],
 				$css_ver
 			);
 			wp_enqueue_script(
-				'ewa-admin',
-				EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_URL . 'assets/js/ewa-admin.js',
+				'ewaas-admin',
+				EWAAS_URL . 'assets/js/ewa-admin.js',
 				[ 'jquery' ],
 				$js_admin,
 				true
 			);
-			wp_localize_script( 'ewa-admin', 'ewaAdmin', $this->get_js_data() );
+			$js_data = $this->get_js_data();
+			wp_localize_script( 'ewaas-admin', 'ewaasAdmin', $js_data );
+			wp_localize_script( 'ewaas-admin', 'ewaAdmin', $js_data );
 		}
 
 		// Inject into Loco Translate editor pages.
@@ -85,19 +88,21 @@ class Admin {
 
 		if ( $is_loco_editor ) {
 			wp_enqueue_style(
-				'ewa-loco',
-				EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_URL . 'assets/css/ewa-admin.css',
+				'ewaas-loco',
+				EWAAS_URL . 'assets/css/ewa-admin.css',
 				[ 'dashicons' ],
 				$css_ver
 			);
 			wp_enqueue_script(
-				'ewa-loco',
-				EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_URL . 'assets/js/ewa-loco-editor.js',
+				'ewaas-loco',
+				EWAAS_URL . 'assets/js/ewa-loco-editor.js',
 				[ 'jquery' ],
 				$js_editor,
 				true
 			);
-			wp_localize_script( 'ewa-loco', 'ewaLoco', $this->get_loco_js_data() );
+			$loco_data = $this->get_loco_js_data();
+			wp_localize_script( 'ewaas-loco', 'ewaasLoco', $loco_data );
+			wp_localize_script( 'ewaas-loco', 'ewaLoco', $loco_data );
 		}
 	}
 
@@ -105,18 +110,18 @@ class Admin {
 		$settings = Settings::instance();
 		return [
 			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
-			'nonce'     => wp_create_nonce( 'ewa_nonce' ),
+			'nonce'     => wp_create_nonce( 'ewaas_nonce' ),
 			'model'     => $settings->get( 'model' ),
 			'provider'  => $settings->get( 'provider' ),
 			'batchSize' => $settings->get( 'batch_size' ),
 			'i18n'      => [
-				'translating'  => __( 'Translating…', 'ewa-ai-translator-for-loco-translate' ),
-				'done'         => __( 'Done!', 'ewa-ai-translator-for-loco-translate' ),
-				'error'        => __( 'Error', 'ewa-ai-translator-for-loco-translate' ),
-				'noStrings'    => __( 'No untranslated strings found.', 'ewa-ai-translator-for-loco-translate' ),
-				'confirm'      => __( 'This will translate untranslated strings using AI. Please ensure you have a backup of your translation files before proceeding. Continue?', 'ewa-ai-translator-for-loco-translate' ),
-				'btnTranslate' => __( 'AI Translate', 'ewa-ai-translator-for-loco-translate' ),
-				'btnStop'      => __( 'Stop', 'ewa-ai-translator-for-loco-translate' ),
+				'translating'  => __( 'Translating…', 'ewa-ai-string-assistant-for-loco-translate' ),
+				'done'         => __( 'Done!', 'ewa-ai-string-assistant-for-loco-translate' ),
+				'error'        => __( 'Error', 'ewa-ai-string-assistant-for-loco-translate' ),
+				'noStrings'    => __( 'No untranslated strings found.', 'ewa-ai-string-assistant-for-loco-translate' ),
+				'confirm'      => __( 'This will translate untranslated strings using AI. Please ensure you have a backup of your translation files before proceeding. Continue?', 'ewa-ai-string-assistant-for-loco-translate' ),
+				'btnTranslate' => __( 'AI Translate', 'ewa-ai-string-assistant-for-loco-translate' ),
+				'btnStop'      => __( 'Stop', 'ewa-ai-string-assistant-for-loco-translate' ),
 			],
 		];
 	}
@@ -144,16 +149,36 @@ class Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		require_once EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH . 'admin/views/settings-page.php';
+		require_once EWAAS_PATH . 'admin/views/settings-page.php';
 	}
 
 	public function plugin_action_links( $links ) {
 		$settings_link = sprintf(
 			'<a href="%s">%s</a>',
-			admin_url( 'options-general.php?page=ewa-ai-translator-for-loco-translate' ),
-			__( 'Settings', 'ewa-ai-translator-for-loco-translate' )
+			admin_url( 'options-general.php?page=ewa-ai-string-assistant-for-loco-translate' ),
+			__( 'Settings', 'ewa-ai-string-assistant-for-loco-translate' )
 		);
 		array_unshift( $links, $settings_link );
 		return $links;
+	}
+
+	public function add_privacy_policy_content() {
+		if ( ! function_exists( 'wp_add_privacy_policy_content' ) ) {
+			return;
+		}
+
+		$content = sprintf(
+			'<p class="privacy-policy-tutorial">%s</p>' .
+			'<strong class="privacy-policy-tutorial">%s</strong>' .
+			'<p>%s</p>',
+			esc_html__( 'Suggested text for your website privacy policy regarding translation features:', 'ewa-ai-string-assistant-for-loco-translate' ),
+			esc_html__( 'EWA AI String Assistant for Loco Translate', 'ewa-ai-string-assistant-for-loco-translate' ),
+			esc_html__( 'When administrators use the AI translation features in Loco Translate, source strings and translation parameters are sent directly to the AI service provider chosen by the administrator (OpenRouter, a self-hosted or remote Ollama instance, or a custom OpenAI-compatible endpoint). No visitor personal data or frontend tracking information is collected or transmitted.', 'ewa-ai-string-assistant-for-loco-translate' )
+		);
+
+		wp_add_privacy_policy_content(
+			__( 'EWA AI String Assistant for Loco Translate', 'ewa-ai-string-assistant-for-loco-translate' ),
+			wp_kses_post( $content )
+		);
 	}
 }

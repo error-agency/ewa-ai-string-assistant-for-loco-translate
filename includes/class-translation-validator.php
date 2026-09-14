@@ -1,5 +1,5 @@
 <?php
-namespace ErrorWebAgency\LocoAITranslator;
+namespace ErrorWebAgency\EwaAIStringAssistant;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

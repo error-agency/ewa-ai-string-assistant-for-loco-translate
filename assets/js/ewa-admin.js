@@ -1,13 +1,15 @@
-/* global ewaAdmin, jQuery */
+/* global ewaasAdmin, ewaAdmin, jQuery */
 (function ($) {
     'use strict';
+
+    var config = (typeof ewaasAdmin !== 'undefined') ? ewaasAdmin : (typeof ewaAdmin !== 'undefined' ? ewaAdmin : {});
 
     // ─── Provider Tabs ──────────────────────────────────────────────────────
     $('.ewa-provider-tab input[type=radio]').on('change', function () {
         $('.ewa-provider-tab').removeClass('active');
         $(this).closest('.ewa-provider-tab').addClass('active');
 
-        const provider = $(this).val();
+        var provider = $(this).val();
 
         if (provider === 'ollama') {
             $('.ewa-row-apikey').hide();
@@ -23,8 +25,8 @@
 
     // ─── Default Prompt Preview ─────────────────────────────────────────────
     $('#ewa-show-default-prompt').on('click', function () {
-        const $btn = $(this);
-        const $pre = $('#ewa-default-prompt-preview');
+        var $btn = $(this);
+        var $pre = $('#ewa-default-prompt-preview');
         $pre.slideToggle(200, function () {
             $btn.text($pre.is(':visible') ? 'Hide default prompt' : 'View default prompt');
         });
@@ -32,19 +34,19 @@
 
     // ─── Load Models ────────────────────────────────────────────────────────
     $('#ewa-fetch-models').on('click', function () {
-        const $btn = $(this);
-        const $select = $('#ewa-model-select');
-        const $input = $('#ewa-model-input');
+        var $btn = $(this);
+        var $select = $('#ewa-model-select');
+        var $input = $('#ewa-model-input');
 
-        const provider    = $('.ewa-provider-tab input[type=radio]:checked').val() || 'openrouter';
-        const apiEndpoint = String($('#ewa-api-endpoint').val() || '').trim();
-        const apiKey      = String($('input[name="ewa_settings[api_key]"]').val() || '').trim();
+        var provider    = $('.ewa-provider-tab input[type=radio]:checked').val() || 'openrouter';
+        var apiEndpoint = String($('#ewa-api-endpoint').val() || '').trim();
+        var apiKey      = String($('input[name="ewa_settings[api_key]"]').val() || '').trim();
 
         $btn.text('Loading…').prop('disabled', true);
 
-        $.post(ewaAdmin.ajaxUrl, {
-            action: 'ewa_fetch_models',
-            nonce: ewaAdmin.nonce,
+        $.post(config.ajaxUrl, {
+            action: 'ewaas_fetch_models',
+            nonce: config.nonce,
             provider: provider,
             api_endpoint: apiEndpoint,
             api_key: apiKey,
@@ -52,15 +54,15 @@
             $btn.html('<span class="dashicons dashicons-update"></span> Load Models').prop('disabled', false);
 
             if (!res.success) {
-                alert('Error: ' + (res.data?.message || 'Unknown error'));
+                alert('Error: ' + (res.data ? res.data.message : 'Unknown error'));
                 return;
             }
 
-            const models = res.data.models;
+            var models = res.data.models;
             $select.empty().append('<option value="">— choose a model —</option>');
 
             models.forEach(function (m) {
-                let label = m.id;
+                var label = m.id;
                 if (m.name && m.name !== m.id) label += ' — ' + m.name;
                 if (m.context) label += ' (' + Math.round(m.context / 1000) + 'k ctx)';
                 $select.append($('<option>').val(m.id).text(label));
@@ -80,20 +82,20 @@
 
     // ─── Test Connection ────────────────────────────────────────────────────
     $('#ewa-test-connection').on('click', function () {
-        const $btn = $(this);
-        const $result = $('#ewa-test-result');
+        var $btn = $(this);
+        var $result = $('#ewa-test-result');
 
-        const provider    = $('.ewa-provider-tab input[type=radio]:checked').val() || 'openrouter';
-        const apiEndpoint = String($('#ewa-api-endpoint').val() || '').trim();
-        const apiKey      = String($('input[name="ewa_settings[api_key]"]').val() || '').trim();
-        const model       = String($('#ewa-model-input').val() || '').trim();
+        var provider    = $('.ewa-provider-tab input[type=radio]:checked').val() || 'openrouter';
+        var apiEndpoint = String($('#ewa-api-endpoint').val() || '').trim();
+        var apiKey      = String($('input[name="ewa_settings[api_key]"]').val() || '').trim();
+        var model       = String($('#ewa-model-input').val() || '').trim();
 
         $btn.html('<span class="dashicons dashicons-update ewa-spin"></span> Testing…').prop('disabled', true);
         $result.removeClass('ewa-test-ok ewa-test-err').empty();
 
-        $.post(ewaAdmin.ajaxUrl, {
-            action: 'ewa_test_connection',
-            nonce: ewaAdmin.nonce,
+        $.post(config.ajaxUrl, {
+            action: 'ewaas_test_connection',
+            nonce: config.nonce,
             provider: provider,
             api_endpoint: apiEndpoint,
             api_key: apiKey,
@@ -108,7 +110,7 @@
             } else {
                 $result.addClass('ewa-test-err')
                     .html('<span class="dashicons dashicons-dismiss" style="vertical-align:text-bottom;font-size:16px;color:#d63638;"></span> ' +
-                        $('<div>').text(res.data?.message || 'Unknown error').html());
+                        $('<div>').text(res.data ? res.data.message : 'Unknown error').html());
             }
         }).fail(function () {
             $btn.html('<span class="dashicons dashicons-rest-api"></span> Test Connection').prop('disabled', false);

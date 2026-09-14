@@ -1,6 +1,9 @@
-/* global ewaLoco, jQuery */
+/* global ewaasLoco, ewaLoco, jQuery */
+/* EWA AI String Assistant for Loco Translate */
 (function ($) {
     'use strict';
+
+    var config = (typeof ewaasLoco !== 'undefined') ? ewaasLoco : (typeof ewaLoco !== 'undefined' ? ewaLoco : {});
 
     /* ═══════════════════════════════════════════════════════════════════
        LOCALE MAP
@@ -44,7 +47,7 @@
        PATH DETECTION
     ═══════════════════════════════════════════════════════════════════ */
     function detectPoPath() {
-        if (ewaLoco.poPath && ewaLoco.poPath.length > 4) return ewaLoco.poPath;
+        if (config.poPath && config.poPath.length > 4) return config.poPath;
         var selectors = ['input[name="path"]','input[name="po-path"]',
                          'input[name="file"]','form[data-path]','[data-path]'];
         for (var i = 0; i < selectors.length; i++) {
@@ -58,7 +61,7 @@
     }
 
     function detectLocale(poPath) {
-        if (ewaLoco.detectedLocale) return ewaLoco.detectedLocale;
+        if (config.detectedLocale) return config.detectedLocale;
         var src = [poPath, window.location.search, document.title,
                    $('h1,h2,.loco-nav,.loco-title,.loco-lang').text()].join(' ');
         var m = src.match(/[-_]([a-z]{2,3}_[A-Z]{2,3})(?:\.po)?/);
@@ -93,10 +96,10 @@
             if (!running) return;
             if (currentJobId && navigator.sendBeacon) {
                 var fd = new FormData();
-                fd.append('action',  'ewa_cancel_job');
-                fd.append('nonce',   ewaLoco.nonce);
+                fd.append('action',  'ewaas_cancel_job');
+                fd.append('nonce',   config.nonce);
                 fd.append('job_id',  currentJobId);
-                navigator.sendBeacon(ewaLoco.ajaxUrl, fd);
+                navigator.sendBeacon(config.ajaxUrl, fd);
             }
             return 'Translation is in progress. Are you sure you want to leave?';
         });
@@ -172,18 +175,18 @@
             class: 'button button-primary ewa-ai-btn',
         }).append(
             $('<span>', { class: 'dashicons dashicons-translation', style: 'color:#ffffff !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;' }),
-            $('<span>', { text: ewaLoco.i18n.btnTranslate })
+            $('<span>', { text: config.i18n.btnTranslate })
         );
         var $stopBtn = $('<button>', {
             id: 'ewa-stop-btn', type: 'button',
             class: 'button ewa-stop-btn',
         }).append(
             $('<span>', { class: 'dashicons dashicons-controls-pause', style: 'color:#d63638 !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;' }),
-            $('<span>', { text: ewaLoco.i18n.btnStop })
+            $('<span>', { text: config.i18n.btnStop })
         ).hide();
 
         var $badge    = $('<span>', { class: 'ewa-model-badge',
-            text: ewaLoco.provider + ' · ' + ewaLoco.model });
+            text: config.provider + ' · ' + config.model });
         var $pathInfo = poPath ? $('<span>', {
             class: 'ewa-path-info', text: basename(poPath), title: poPath }) : null;
 
@@ -247,8 +250,8 @@
             var $res = $('#ewa-path-verify-result');
             if (!path) return;
             $res.text('Checking…').css('color','#787878');
-            $.post(ewaLoco.ajaxUrl, {
-                action:'ewa_get_po_info', nonce:ewaLoco.nonce, po_path:path,
+            $.post(config.ajaxUrl, {
+                action:'ewaas_get_po_info', nonce:config.nonce, po_path:path,
             }, function (res) {
                 if (res.success) {
                     $res.html('<span class="dashicons dashicons-yes-alt" style="color:#00a32a;font-size:16px;vertical-align:text-bottom;"></span> ' + res.data.untranslated + ' untranslated').css('color','#00a32a');
@@ -269,8 +272,8 @@
             cancelPending = true;
             $(this).prop('disabled', true).text('Stopping…');
             if (_xhrRef) { _xhrRef.abort(); _xhrRef = null; }
-            $.post(ewaLoco.ajaxUrl, {
-                action:'ewa_cancel_job', nonce:ewaLoco.nonce, job_id:currentJobId,
+            $.post(config.ajaxUrl, {
+                action:'ewaas_cancel_job', nonce:config.nonce, job_id:currentJobId,
             });
             showNotice('Stop signal sent — current batch will finish, then stop.', 'info');
         });
@@ -280,7 +283,7 @@
        TRANSLATION FLOW
     ═══════════════════════════════════════════════════════════════════ */
     function generateJobId() {
-        return 'ewa_' + Date.now() + '_' + Math.floor(Math.random() * 9999);
+        return 'ewaas_' + Date.now() + '_' + Math.floor(Math.random() * 9999);
     }
 
     function startTranslation(poPath, targetLang) {
@@ -292,8 +295,8 @@
         showNotice('Checking file…', 'info');
         $('#ewa-ai-btn').prop('disabled', true);
 
-        $.post(ewaLoco.ajaxUrl, {
-            action:'ewa_get_po_info', nonce:ewaLoco.nonce, po_path:poPath,
+        $.post(config.ajaxUrl, {
+            action:'ewaas_get_po_info', nonce:config.nonce, po_path:poPath,
         }, function (res) {
             $('#ewa-ai-btn').prop('disabled', false);
             clearNotice();
@@ -314,7 +317,7 @@
                 (info.untranslated !== 1 ? 's' : '') +
                 ' out of ' + info.total_entries + ' total?\n\n' +
                 'Language : ' + targetLang + '\n' +
-                'Model    : ' + ewaLoco.model + '\n' +
+                'Model    : ' + config.model + '\n' +
                 'File     : ' + basename(poPath) + '\n\n' +
                 'Important: Please ensure you have a backup of this file before continuing.\n' +
                 'The file will be saved automatically after each batch.'
@@ -356,9 +359,9 @@
         var batchStartMs = Date.now();
         var requestId    = 'req_' + Date.now() + '_' + Math.floor(Math.random() * 99999);
 
-        _xhrRef = $.post(ewaLoco.ajaxUrl, {
-            action          : 'ewa_translate_file',
-            nonce           : ewaLoco.nonce,
+        _xhrRef = $.post(config.ajaxUrl, {
+            action          : 'ewaas_translate_file',
+            nonce           : config.nonce,
             po_path         : poPath,
             target_lang     : targetLang,
             batch_index     : stats.batchCount,
@@ -558,12 +561,12 @@
         var $stop = $('#ewa-stop-btn');
         var $prog = $('#ewa-progress-wrap');
         if (on) {
-            $btn.prop('disabled', true).addClass('ewa-btn-busy').html('<span class="dashicons dashicons-update ewa-spin" style="color:#ffffff !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(ewaLoco.i18n.translating));
-            $stop.show().prop('disabled', false).html('<span class="dashicons dashicons-controls-pause" style="color:#ffffff !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(ewaLoco.i18n.btnStop));
+            $btn.prop('disabled', true).addClass('ewa-btn-busy').html('<span class="dashicons dashicons-update ewa-spin" style="color:#ffffff !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(config.i18n.translating));
+            $stop.show().prop('disabled', false).html('<span class="dashicons dashicons-controls-pause" style="color:#ffffff !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(config.i18n.btnStop));
             $prog.show();
         } else {
-            $btn.prop('disabled', false).removeClass('ewa-btn-busy').html('<span class="dashicons dashicons-translation" style="color:#ffffff !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(ewaLoco.i18n.btnTranslate));
-            $stop.hide().prop('disabled', false).html('<span class="dashicons dashicons-controls-pause" style="color:#d63638 !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(ewaLoco.i18n.btnStop));
+            $btn.prop('disabled', false).removeClass('ewa-btn-busy').html('<span class="dashicons dashicons-translation" style="color:#ffffff !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(config.i18n.btnTranslate));
+            $stop.hide().prop('disabled', false).html('<span class="dashicons dashicons-controls-pause" style="color:#d63638 !important;font-size:16px;width:16px;height:16px;line-height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></span> ' + escHtml(config.i18n.btnStop));
         }
     }
 

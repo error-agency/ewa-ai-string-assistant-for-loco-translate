@@ -1,6 +1,6 @@
 <?php
 /**
- * Test Suite for EWA AI Translator for Loco Translate (Error Web Agency).
+ * Test Suite for EWA AI String Assistant for Loco Translate (Error Web Agency).
  * Tests:
  * 1. msgctxt separation and deduplication
  * 2. Tokenizer placeholder validation (%s, %d, %02d, %1$s, %2$03d, {var}, {{var}}, %%)
@@ -12,9 +12,9 @@
 
 require_once __DIR__ . '/bootstrap.php';
 
-use ErrorWebAgency\LocoAITranslator\Po_Handler;
-use ErrorWebAgency\LocoAITranslator\Translation_Validator;
-use ErrorWebAgency\LocoAITranslator\Api_Client;
+use ErrorWebAgency\EwaAIStringAssistant\Po_Handler;
+use ErrorWebAgency\EwaAIStringAssistant\Translation_Validator;
+use ErrorWebAgency\EwaAIStringAssistant\Api_Client;
 
 class Test_Runner {
 
@@ -23,7 +23,7 @@ class Test_Runner {
 
 	public function run() {
 		echo "=======================================================\n";
-		echo "   EWA AI TRANSLATOR - AUTOMATED PIPELINE TEST SUITE\n";
+		echo "   EWA AI STRING ASSISTANT - AUTOMATED PIPELINE TEST SUITE\n";
 		echo "=======================================================\n\n";
 
 		$this->test_msgctxt_deduplication();

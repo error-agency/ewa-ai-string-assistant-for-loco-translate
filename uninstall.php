@@ -2,7 +2,7 @@
 /**
  * Fired when the plugin is uninstalled.
  *
- * @package ErrorWebAgency\LocoAITranslator
+ * @package ErrorWebAgency\EwaAIStringAssistant
  */
 
 // If uninstall not called from WordPress, then exit.

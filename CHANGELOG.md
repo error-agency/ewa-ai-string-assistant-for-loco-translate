@@ -1,8 +1,22 @@
-# Changelog — EWA AI Translator for Loco Translate
+# Changelog — EWA AI String Assistant for Loco Translate
 
 All notable changes to this plugin are documented here.  
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).  
 Versioning follows [Semantic Versioning](https://semver.org/).
+
+## [1.7.0] — 2026-09-14
+
+### WordPress.org Remediation & Compliance
+- **Plugin Rebrand & Slug Standardization** — Renamed plugin to **EWA AI String Assistant for Loco Translate** with canonical slug `ewa-ai-string-assistant-for-loco-translate` and text domain `ewa-ai-string-assistant-for-loco-translate`.
+- **Guideline 11 Admin Notice Compliance** — Removed persistent global administrative notices. Scoped requirement notices strictly to `plugins.php` and the plugin settings page with dismissal support.
+- **Prefix & Collision Isolation** — Namespaced all AJAX actions (`ewaas_*`), scripts/styles (`ewaas-*`), nonces (`ewaas_nonce`), and helper functions (`ewaas_plugin()`) with `ewaas_`.
+- **Settings Backward Compatibility** — Retained existing persistent settings key (`ewa_settings`) to preserve user configurations on upgrade.
+- **Comprehensive External Services Disclosure** — Fully documented third-party services in `readme.txt` under `== External Services ==` covering OpenRouter, Ollama (local vs remote), and Custom OpenAI-Compatible Endpoints with Terms of Service and Privacy Policy URLs.
+- **WordPress Privacy Policy Integration** — Integrated with Core Privacy Policy Guide via `wp_add_privacy_policy_content()`.
+- **WordPress 7.0 AI Client Evaluation** — Formally evaluated `wp_ai_client_prompt()` and retained direct provider adapter for WordPress 6.0+ compatibility and custom endpoint support (Option B).
+- **Trademark Disclaimers** — Added clear trademark and affiliation clarifications regarding Loco Translate.
+
+---
 
 ## [1.6.1] — 2026-08-14
 
