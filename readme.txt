@@ -82,14 +82,16 @@ When Ollama is selected, HTTP requests are sent to the endpoint specified by the
 
 = 3. OpenAI API =
 
-When configured with the OpenAI API preset (https://api.openai.com/v1), HTTP requests are sent directly from your WordPress server to OpenAI's official API servers.
+OpenAI API is an optional external service. It is used only when an administrator explicitly selects the OpenAI preset (https://api.openai.com/v1) or configures an OpenAI endpoint and provides an OpenAI API key.
 
 * **Purpose**: Translating Gettext PO strings using official OpenAI models (such as GPT-4o, GPT-4o-mini) and querying the list of available OpenAI models.
-* **Data Transmitted**: Source strings, plural forms, Gettext context (`msgctxt`), target language, system prompt instructions, selected model identifier, temperature settings, and the administrator's OpenAI API key (transmitted via standard HTTP Authorization Bearer header).
-* **When Data is Transmitted**: Exclusively upon explicit administrator action (clicking "AI Translate" in Loco Translate, "Test Connection", or "Load Models" in the settings screen). No background requests or automatic data collection occur.
+* **Data Transmitted**: Source strings, plural variations, Gettext context (`msgctxt`), target language name, system translation prompt and instructions, selected model identifier, and temperature settings. The administrator's OpenAI API key is transmitted via standard HTTP Authorization Bearer header for direct authentication with OpenAI servers.
+* **When Data is Transmitted**: Exclusively upon explicit administrator action (clicking "AI Translate" in Loco Translate, "Test Connection", or "Load Models" in the settings screen). No background requests, periodic polling, or automatic data collection occur.
+* **Direct Communication**: All requests are dispatched directly from your WordPress server to OpenAI's official API servers. Error Web Agency does not operate any intermediary proxy servers and never intercepts, logs, or stores your API keys or translation data.
 * **Provider**: OpenAI, Inc. / OpenAI Ireland Ltd.
 * **Service Website**: https://openai.com/
-* **Terms of Service**: https://openai.com/policies/terms-of-use/
+* **Services Agreement**: https://openai.com/policies/services-agreement/
+* **Service Terms**: https://openai.com/policies/service-terms/
 * **Privacy Policy**: https://openai.com/policies/privacy-policy/
 * **Enterprise Privacy & Data Handling**: https://openai.com/enterprise-privacy/
 

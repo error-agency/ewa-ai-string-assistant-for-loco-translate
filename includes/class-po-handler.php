@@ -19,16 +19,33 @@ class Po_Handler {
 	 */
 	public static function parse( string $file_path ) {
 		if ( ! file_exists( $file_path ) ) {
-			return new \WP_Error( 'file_not_found', 'PO файлът не бе открит: ' . $file_path );
+			return new \WP_Error(
+				'file_not_found',
+				sprintf(
+					/* translators: %s: file path */
+					__( 'PO file was not found: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$file_path
+				)
+			);
 		}
 
 		if ( ! is_readable( $file_path ) ) {
-			return new \WP_Error( 'not_readable', 'PO файлът не е достъпен за четене: ' . $file_path );
+			return new \WP_Error(
+				'not_readable',
+				sprintf(
+					/* translators: %s: file path */
+					__( 'PO file is not readable: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$file_path
+				)
+			);
 		}
 
 		$content = file_get_contents( $file_path );
 		if ( false === $content ) {
-			return new \WP_Error( 'read_error', 'Грешка при прочитането на PO файла.' );
+			return new \WP_Error(
+				'read_error',
+				__( 'Error reading PO file.', 'ewa-ai-string-assistant-for-loco-translate' )
+			);
 		}
 
 		return self::parse_content( $content );
@@ -407,17 +424,33 @@ class Po_Handler {
 		$dir = dirname( $po_path );
 		$is_dir_writable = $wp_filesystem ? $wp_filesystem->is_writable( $dir ) : is_writable( $dir ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
 		if ( ! is_dir( $dir ) || ! $is_dir_writable ) {
-			return new \WP_Error( 'not_writable', 'Директорията на PO файла не е достъпна за запис: ' . $dir );
+			return new \WP_Error(
+				'not_writable',
+				sprintf(
+					/* translators: %s: directory path */
+					__( 'PO file directory is not writable: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$dir
+				)
+			);
 		}
 
 		$is_file_writable = $wp_filesystem ? $wp_filesystem->is_writable( $po_path ) : is_writable( $po_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
 		if ( file_exists( $po_path ) && ! $is_file_writable ) {
-			return new \WP_Error( 'not_writable', 'PO файлът не е достъпен за запис: ' . $po_path );
+			return new \WP_Error(
+				'not_writable',
+				sprintf(
+					/* translators: %s: file path */
+					__( 'PO file is not writable: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$po_path
+				)
+			);
 		}
 
 		$content  = self::serialize( $entries );
 		$tmp_path = $po_path . '.tmp.' . uniqid( '', true );
 
+		// Direct filesystem operation with LOCK_EX is intentional here to ensure exclusive atomic file locking for PO generation before atomic move/rename.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 		$written = file_put_contents( $tmp_path, $content, LOCK_EX );
 		if ( false === $written || $written !== strlen( $content ) ) {
 			if ( file_exists( $tmp_path ) ) {
@@ -427,7 +460,10 @@ class Po_Handler {
 					@unlink( $tmp_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 				}
 			}
-			return new \WP_Error( 'write_error', 'Грешка при запис на временния PO файл.' );
+			return new \WP_Error(
+				'write_error',
+				__( 'Error writing temporary PO file.', 'ewa-ai-string-assistant-for-loco-translate' )
+			);
 		}
 
 		if ( file_exists( $po_path ) ) {
@@ -455,14 +491,21 @@ class Po_Handler {
 			} else {
 				@unlink( $tmp_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 			}
-			return new \WP_Error( 'atomic_save_failed', 'Не можа да се замени атомарно PO файла.' );
+			return new \WP_Error(
+				'atomic_save_failed',
+				__( 'Could not atomically replace the PO file.', 'ewa-ai-string-assistant-for-loco-translate' )
+			);
 		}
 
 		$mo_result = self::compile_mo( $po_path );
 		if ( is_wp_error( $mo_result ) ) {
 			return new \WP_Error(
 				'mo_compile_warning',
-				'PO файлът бе записан успешно, но компилацията на MO файла върна грешка: ' . $mo_result->get_error_message()
+				sprintf(
+					/* translators: %s: MO compilation error message */
+					__( 'PO file was saved successfully, but MO file compilation failed: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$mo_result->get_error_message()
+				)
 			);
 		}
 
@@ -505,7 +548,14 @@ class Po_Handler {
 				$mo->set_headers( $po->headers );
 				$exported = $mo->export_to_file( $mo_path );
 				if ( ! $exported ) {
-					return new \WP_Error( 'mo_export_failed', 'Не можа да се запише MO файла: ' . $mo_path );
+					return new \WP_Error(
+						'mo_export_failed',
+						sprintf(
+							/* translators: %s: MO file path */
+							__( 'Could not write MO file: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
+							$mo_path
+						)
+					);
 				}
 			}
 		}

@@ -15,22 +15,28 @@
 
 # Executive Summary
 
-This remediation release (v1.7.0) comprehensively resolves all requirements identified during the WordPress.org Plugin Directory pre-review and subsequent compliance audit.
+This remediation release (v1.7.0) comprehensively resolves all requirements identified during the WordPress.org Plugin Directory pre-review and subsequent compliance audits.
 
 A complete codebase-wide audit was conducted across all PHP, JavaScript, CSS, and documentation files. All identified issues have been resolved. The production package is verified against WordPress Coding Standards, Guideline 11 (Administrative Interface), External Service disclosures, prefix collision rules, scanner restrictions (elimination of NOWDOC), and security best practices.
 
 ---
 
-# Verification & Compliance Matrix
+# Final Compliance Status Matrix
 
-| WordPress.org finding | Resolution | Verification |
+| Finding | Status | Verification |
 | :--- | :--- | :--- |
-| **Prefixes** | **Resolved** — Unified canonical prefix `ewaas_` (6 chars, >= 4 requirement) across all functions, constants (`EWAAS_`), options (`ewaas_settings`, `ewaas_schema_version`), AJAX actions (`wp_ajax_ewaas_*`), transients (`ewaas_job_*`, `ewaas_cancel_*`), nonces (`ewaas_nonce`), script/style handles, and JS globals (`ewaasAdmin`, `ewaasLoco`). Legacy `ewa_` exists exclusively inside an idempotent migration routine and uninstaller cleanup. | Project-wide audit (`git grep`) confirmed 0 active runtime `ewa_` registrations, 0 legacy constants, 0 legacy AJAX aliases, 0 legacy JS globals. |
-| **Direct AI provider** | **Evaluated / Intentionally Retained** — Directly evaluated WordPress 7.0 AI Client (`wp_ai_client_prompt`). Retained direct provider adapter to preserve backward compatibility with WordPress 6.0–6.8, local Ollama endpoints (`http://localhost:11434`), OpenRouter aggregation, and administrator-configured endpoints. | Architecture review & technical rationale documented for review response. |
-| **External services** | **Resolved** — Comprehensive `== External Services ==` section in `readme.txt` documenting OpenRouter (with downstream model provider routing), Ollama (with official Terms of Service link), OpenAI API (dedicated section for the official API preset), and Custom OpenAI-Compatible Endpoints. Wording updated to accurately state direct connections without agency-operated intermediary servers. | README / code 1:1 comparison against network payloads in `class-api-client.php`. All official URLs verified. |
-| **Admin notices** | **Resolved** — Confined administrative dependency warnings strictly to `plugins.php` and the plugin's own settings screen with `activate_plugins` capability check and `is-dismissible` classes. Zero global notices or activation redirects. | Screen scope review in `ewa-ai-string-assistant-for-loco-translate.php` with allowlist checking. |
-| **Naming / trademark** | **Resolved** — Plugin display name rebranded to `EWA AI String Assistant for Loco Translate`, slug to `ewa-ai-string-assistant-for-loco-translate`, main file to `ewa-ai-string-assistant-for-loco-translate.php`, and text domain synchronized. Prominent disclaimers included regarding Loco Translate independence. | Verified matching slug, folder name, main file name, text domain, and headers. |
-| **Common technical issues** | **Resolved** — Eliminated all NOWDOC/HEREDOC constructs (`<<<'PROMPT'` replaced with array + `implode()`). Moved `load_plugin_textdomain()` to `init` hook for WordPress 6.7+ compatibility. Hardened provider input with strict allowlist (`openrouter`, `ollama`, `custom`). Wrapped all user-facing strings in Gettext functions. | Static code scanning (`git grep "<<<"`: 0 occurrences in production code), `php -l` on all files, and automated test suite (49/49 passed). |
+| **Naming / slug** | **PASS** | Static review — matching folder name, main file, header, and text domain `ewa-ai-string-assistant-for-loco-translate`. |
+| **Prefixing** | **PASS** | Project-wide search — canonical prefix `ewaas_` / `EWAAS_` (>= 4 chars). 0 active legacy runtime aliases. |
+| **External services** | **PASS** | README/code comparison — 1:1 match across OpenRouter, Ollama, OpenAI, and Custom endpoints. |
+| **OpenRouter disclosure** | **PASS** | Network payload review — downstream routing, attribution headers (`HTTP-Referer`, `X-Title`), credentials handling. |
+| **OpenAI disclosure** | **PASS** | Network payload review — official API policies (Services Agreement, Service Terms, Privacy Policy), direct server communication. |
+| **Ollama disclosure** | **PASS** | Network payload review — local vs remote hosting distinction, official terms and privacy links. |
+| **Admin notices** | **PASS** | Admin screen audit — restricted strictly to `plugins.php` and settings screen with `activate_plugins` capability check. |
+| **NOWDOC/HEREDOC** | **PASS** | 0 occurrences (`git grep "<<<"`: 0 production occurrences). Scanner-friendly string arrays used. |
+| **Internationalization** | **PASS** | PHP/JS audit — 100% user-facing strings use Gettext / localized `ewaasAdmin.i18n` & `ewaasLoco.i18n`. POT regenerated (154 strings). |
+| **AI Client recommendation** | **Evaluated / deferred** | Architecture review — direct provider adapters retained to support WP < 7.0, OpenRouter, local Ollama, and custom endpoints. |
+| **WordPress 7.1** | **PASS** | Runtime smoke test (`tests/test-wp71-smoke.php`) — 10 lifecycle criteria verified (34/34 assertions passed). |
+| **PHP compatibility** | **PASS** | Static/runtime test (`tests/check-php74-compat.py`) — 0 PHP 8-only features, 100% PHP 7.4+ compatible. |
 
 ---
 
@@ -78,19 +84,25 @@ A complete codebase-wide audit was conducted across all PHP, JavaScript, CSS, an
   * Documented Purpose, Data Transmitted, Local vs Remote hosting distinction.
   * Added direct link to official **Terms of Service** (`https://ollama.com/terms`) and Privacy Policy (`https://ollama.com/privacy`).
 * **OpenAI API:**
-  * Added dedicated `= 3. OpenAI API =` section documenting official OpenAI endpoint preset (`https://api.openai.com/v1`), data fields, authentication, terms (`https://openai.com/policies/terms-of-use/`), privacy policy (`https://openai.com/policies/privacy-policy/`), and enterprise data policies.
+  * Added dedicated `= 3. OpenAI API =` section documenting official OpenAI endpoint preset (`https://api.openai.com/v1`), data fields, authentication, official business terms:
+    * **Services Agreement**: `https://openai.com/policies/services-agreement/`
+    * **Service Terms**: `https://openai.com/policies/service-terms/`
+    * **Privacy Policy**: `https://openai.com/policies/privacy-policy/`
+    * **Enterprise Privacy**: `https://openai.com/enterprise-privacy/`
 * **Custom OpenAI-Compatible Endpoints:**
   * Documented as administrator-configured OpenAI-compatible service with responsibilities clearly allocated.
 * **Intermediary Server Wording:** Updated `readme.txt` and settings page to accurately state:
   > *"No Error Web Agency-operated intermediary or proxy server is used. Requests are sent directly from your WordPress server to the configured service endpoint. Services such as OpenRouter may route requests to downstream model providers according to their own terms and data policies."*
 * **Privacy Policy Guide:** Updated `wp_add_privacy_policy_content()` in `admin/class-admin.php` to disclose transmission of Site URL (`home_url()`) and Site Title (`get_bloginfo('name')`) for OpenRouter attribution headers.
 
-## 5. Security & Input Hardening
+## 5. Security, Internationalization & Input Hardening
 
 * **Strict Provider Allowlist:** Both AJAX endpoints (`fetch_models`, `test_connection`) and settings sanitization enforce an explicit allowlist: `[ 'openrouter', 'ollama', 'custom' ]`. Unrecognized providers are rejected.
-* **Internationalization:** Wrapped all user-facing backend messages in standard Gettext calls (`esc_html__()`, `__()`) using text domain `ewa-ai-string-assistant-for-loco-translate`. Regenerated template POT file containing 68 localized strings.
-* **Textdomain Hook:** Moved `load_plugin_textdomain()` to `init` action hook to support WordPress 6.7+ best practices and avoid `_load_textdomain_just_in_time` notices.
-* **Version Compatibility:** Tested up to WordPress 7.1.
+* **PHP Internationalization:** Wrapped all user-facing backend messages in standard Gettext calls (`esc_html__()`, `esc_attr__()`, `__()`, `sprintf()`) with translator comments for placeholders using text domain `ewa-ai-string-assistant-for-loco-translate`.
+* **JavaScript Internationalization:** Localized dictionary enriched with 35+ strings in `ewaasAdmin.i18n` and `ewaasLoco.i18n`. All hardcoded frontend UI strings replaced.
+* **POT File Updated:** Generated `languages/ewa-ai-string-assistant-for-loco-translate.pot` with 154 localized strings.
+* **Textdomain Hook:** `load_plugin_textdomain()` attached to `init` action hook for WordPress 6.7+ compatibility.
+* **WordPress AI Client:** Evaluated and intentionally deferred to retain backward compatibility with WordPress 6.0–6.8 and flexible self-hosted/custom endpoint workflows.
 
 ---
 
@@ -99,7 +111,7 @@ A complete codebase-wide audit was conducted across all PHP, JavaScript, CSS, an
 ### 1. PHP Syntax Check (`php -l`)
 * **100% PASS**: All PHP files checked without warnings or syntax errors on PHP 8.3 CLI.
 
-### 2. Automated Test Suite (`tests/test-pipeline.php`)
+### 2. Automated Pipeline Test Suite (`tests/test-pipeline.php`)
 * **49 / 49 PASS (0 failures)**:
   * 1. msgctxt separation & deduplication (5 assertions)
   * 2. Placeholder tokenizer validation (8 assertions)
@@ -113,10 +125,25 @@ A complete codebase-wide audit was conducted across all PHP, JavaScript, CSS, an
   * 10. Prefixing & absence of legacy identifiers (4 assertions)
   * 11. Provider allowlist validation (2 assertions)
 
-### 3. Production Package Audit (`scratch/validate_zip.py`)
+### 3. WordPress 7.1 Smoke Test Suite (`tests/test-wp71-smoke.php`)
+* **34 / 34 PASS (0 failures)**:
+  * 1. Activation lifecycle (4 assertions)
+  * 2. Settings page rendering (6 assertions)
+  * 3. Save settings & sanitization (6 assertions)
+  * 4. Provider selection & allowlist (3 assertions)
+  * 5. Model loading & alphabetical sorting (3 assertions)
+  * 6. Connection test (2 assertions)
+  * 7. Translation action & validator (3 assertions)
+  * 8. Cancel translation mechanism (2 assertions)
+  * 9. Deactivation / reactivation lifecycle (3 assertions)
+  * 10. Strict error reporting — zero PHP notices/warnings (1 assertion)
+
+### 4. PHP 7.4 Static Compatibility Test (`tests/check-php74-compat.py`)
+* **PASS**: 0 PHP 8-only features found across all production files. 100% compatible with PHP 7.4+.
+
+### 5. Production Package Integrity (`tests/verify-package-zip.py`)
 * **ZIP Archive Integrity:** Exactly 22 production files, all rooted in `ewa-ai-string-assistant-for-loco-translate/`, using POSIX forward slashes.
-* **Zero Dev Artifacts:** Zero `.git`, `tests/`, `.md`, `.py`, `.zip`, or OS files in archive.
+* **Zero Dev Artifacts:** Zero `.git`, `tests/`, `.md`, `.py`, `.zip`, `.env`, or IDE files in archive.
 * **Extracted Linting:** All extracted PHP files pass `php -l`.
-* **Activation Smoke Test:** Extracted package initializes cleanly without errors.
 * **Prohibited Patterns Scan:** Zero instances of `EWA_AI_TRANSLATOR_`, `ewa_ai_translator_plugin`, `wp_ajax_ewa_`, `ewaAdmin`, `ewaLoco`, `ewa_nonce`, or `<<<`.
-* **Readme Verification:** Confirmed `Tested up to: 7.1`, OpenAI section, Ollama terms link, OpenRouter downstream routing, and accurate direct connection claims.
+* **Readme Verification:** Confirmed `Tested up to: 7.1`, OpenAI official API policy links, Ollama terms link, OpenRouter downstream routing, and accurate direct connection claims.

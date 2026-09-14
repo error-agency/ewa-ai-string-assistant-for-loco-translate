@@ -204,7 +204,11 @@ class Api_Client {
 		if ( is_wp_error( $response ) ) {
 			return new \WP_Error(
 				'network_error',
-				'Грешка при връзката с Ollama: ' . $response->get_error_message(),
+				sprintf(
+					/* translators: %s: Ollama error message */
+					__( 'Connection error with Ollama: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$response->get_error_message()
+				),
 				[ 'http_status' => 0, 'retryable' => true ]
 			);
 		}
@@ -217,7 +221,11 @@ class Api_Client {
 			$retryable = ( $code >= 500 || 429 === $code || 408 === $code || 0 === $code );
 			return new \WP_Error(
 				'ollama_error',
-				'Ollama API грешка (HTTP ' . $code . ')',
+				sprintf(
+					/* translators: %d: HTTP status code */
+					__( 'Ollama API error (HTTP %d)', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$code
+				),
 				[ 'http_status' => $code, 'retryable' => $retryable ]
 			);
 		}
@@ -232,7 +240,11 @@ class Api_Client {
 		if ( is_wp_error( $response ) ) {
 			return new \WP_Error(
 				'network_error',
-				'Мрежова грешка при API заявка: ' . $response->get_error_message(),
+				sprintf(
+					/* translators: %s: API network error message */
+					__( 'Network error during API request: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$response->get_error_message()
+				),
 				[ 'http_status' => 0, 'retryable' => true ]
 			);
 		}
@@ -257,7 +269,12 @@ class Api_Client {
 
 			return new \WP_Error(
 				'api_error',
-				'API грешка ' . $code . ': ' . $msg,
+				sprintf(
+					/* translators: 1: HTTP status code, 2: API error message */
+					__( 'API error %1$d: %2$s', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$code,
+					$msg
+				),
 				[
 					'http_status' => $code,
 					'retryable'   => $retryable,
@@ -271,7 +288,7 @@ class Api_Client {
 		if ( empty( $content ) ) {
 			return new \WP_Error(
 				'empty_response',
-				'AI моделът върна празен отговор.',
+				__( 'AI model returned an empty response.', 'ewa-ai-string-assistant-for-loco-translate' ),
 				[ 'http_status' => 200, 'retryable' => true ]
 			);
 		}
@@ -313,7 +330,7 @@ class Api_Client {
 		if ( null === $items_arr ) {
 			return new \WP_Error(
 				'invalid_json_structure',
-				'Отговорът от AI не съдържа валиден JSON обект или масив от преводи.',
+				__( 'The response from the AI does not contain a valid JSON object or translations array.', 'ewa-ai-string-assistant-for-loco-translate' ),
 				[ 'http_status' => 200, 'retryable' => true ]
 			);
 		}
@@ -326,7 +343,7 @@ class Api_Client {
 			if ( ! is_array( $row ) || empty( $row['id'] ) ) {
 				return new \WP_Error(
 					'missing_item_id',
-					'Елемент от отговора на AI няма валидно "id" поле.',
+					__( 'An item in the AI response is missing a valid "id" field.', 'ewa-ai-string-assistant-for-loco-translate' ),
 					[ 'http_status' => 200, 'retryable' => true ]
 				);
 			}
@@ -336,7 +353,11 @@ class Api_Client {
 			if ( isset( $returned_ids[ $id ] ) ) {
 				return new \WP_Error(
 					'duplicate_item_id',
-					sprintf( 'AI отговорът съдържа дублирано ID: "%s".', $id ),
+					sprintf(
+						/* translators: %s: item ID */
+						__( 'AI response contains duplicate ID: "%s".', 'ewa-ai-string-assistant-for-loco-translate' ),
+						$id
+					),
 					[ 'http_status' => 200, 'retryable' => true ]
 				);
 			}
@@ -344,7 +365,11 @@ class Api_Client {
 			if ( ! isset( $item_map[ $id ] ) ) {
 				return new \WP_Error(
 					'unknown_item_id',
-					sprintf( 'AI отговорът съдържа непознато ID: "%s".', $id ),
+					sprintf(
+						/* translators: %s: item ID */
+						__( 'AI response contains unknown ID: "%s".', 'ewa-ai-string-assistant-for-loco-translate' ),
+						$id
+					),
 					[ 'http_status' => 200, 'retryable' => true ]
 				);
 			}
@@ -358,7 +383,11 @@ class Api_Client {
 				if ( ! is_array( $val ) ) {
 					return new \WP_Error(
 						'invalid_plural_type',
-						sprintf( 'За плурален запис "%s" бе върнат единичен низ вместо масив.', $id ),
+						sprintf(
+							/* translators: %s: item ID */
+							__( 'For plural entry "%s", a single string was returned instead of an array.', 'ewa-ai-string-assistant-for-loco-translate' ),
+							$id
+						),
 						[ 'http_status' => 200, 'retryable' => true ]
 					);
 				}
@@ -373,7 +402,12 @@ class Api_Client {
 				if ( is_wp_error( $plural_check ) ) {
 					return new \WP_Error(
 						'validation_failed',
-						sprintf( 'Валидацията на множествения превод за "%s" се провали: %s', $id, $plural_check->get_error_message() ),
+						sprintf(
+							/* translators: 1: item ID, 2: validation error message */
+							__( 'Validation of plural translation for "%1$s" failed: %2$s', 'ewa-ai-string-assistant-for-loco-translate' ),
+							$id,
+							$plural_check->get_error_message()
+						),
 						[ 'http_status' => 200, 'retryable' => true, 'failed_id' => $id ]
 					);
 				}
@@ -385,7 +419,11 @@ class Api_Client {
 				if ( ! is_string( $val ) || '' === trim( $val ) ) {
 					return new \WP_Error(
 						'invalid_singular_type',
-						sprintf( 'За запис "%s" бе върнат невалиден превод.', $id ),
+						sprintf(
+							/* translators: %s: item ID */
+							__( 'For entry "%s", an invalid translation was returned.', 'ewa-ai-string-assistant-for-loco-translate' ),
+							$id
+						),
 						[ 'http_status' => 200, 'retryable' => true ]
 					);
 				}
@@ -394,7 +432,12 @@ class Api_Client {
 				if ( is_wp_error( $pair_check ) ) {
 					return new \WP_Error(
 						'validation_failed',
-						sprintf( 'Валидацията на превода за "%s" се провали: %s', $id, $pair_check->get_error_message() ),
+						sprintf(
+							/* translators: 1: item ID, 2: validation error message */
+							__( 'Validation of translation for "%1$s" failed: %2$s', 'ewa-ai-string-assistant-for-loco-translate' ),
+							$id,
+							$pair_check->get_error_message()
+						),
 						[ 'http_status' => 200, 'retryable' => true, 'failed_id' => $id ]
 					);
 				}
@@ -407,7 +450,11 @@ class Api_Client {
 			if ( ! isset( $returned_ids[ $req_id ] ) ) {
 				return new \WP_Error(
 					'missing_requested_id',
-					sprintf( 'AI отговорът не съдържа очакваното ID: "%s".', $req_id ),
+					sprintf(
+						/* translators: %s: expected item ID */
+						__( 'AI response is missing expected ID: "%s".', 'ewa-ai-string-assistant-for-loco-translate' ),
+						$req_id
+					),
 					[ 'http_status' => 200, 'retryable' => true ]
 				);
 			}
@@ -430,7 +477,14 @@ class Api_Client {
 			$response = wp_remote_get( $url, [ 'timeout' => 15 ] );
 
 			if ( is_wp_error( $response ) ) {
-				return new \WP_Error( 'network_error', 'Грешка при зареждане на модели от Ollama: ' . $response->get_error_message() );
+				return new \WP_Error(
+					'network_error',
+					sprintf(
+						/* translators: %s: error message */
+						__( 'Error loading models from Ollama: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
+						$response->get_error_message()
+					)
+				);
 			}
 
 			$data   = json_decode( wp_remote_retrieve_body( $response ), true );
@@ -452,7 +506,14 @@ class Api_Client {
 		] );
 
 		if ( is_wp_error( $response ) ) {
-			return new \WP_Error( 'network_error', 'Грешка при зареждане на модели: ' . $response->get_error_message() );
+			return new \WP_Error(
+				'network_error',
+				sprintf(
+					/* translators: %s: error message */
+					__( 'Error loading models: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$response->get_error_message()
+				)
+			);
 		}
 
 		$data   = json_decode( wp_remote_retrieve_body( $response ), true );

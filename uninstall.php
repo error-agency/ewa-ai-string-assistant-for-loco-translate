@@ -12,8 +12,11 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 ( function () {
 	$delete_options = static function () {
+		// Delete canonical plugin options.
 		delete_option( 'ewaas_settings' );
 		delete_option( 'ewaas_schema_version' );
+
+		// Clean up historical legacy option keys from prior versions upon complete uninstallation.
 		delete_option( 'ewa_settings' );
 		delete_option( 'ewa_schema_version' );
 		delete_option( 'error_lait_settings' );

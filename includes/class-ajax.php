@@ -517,7 +517,7 @@ class Ajax {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
 		}
 
-		$out = $result[0] ?? '(празно)';
+		$out = $result[0] ?? __( '(empty)', 'ewa-ai-string-assistant-for-loco-translate' );
 
 		wp_send_json_success( [
 			'message'     => esc_html__( 'Connection successful!', 'ewa-ai-string-assistant-for-loco-translate' ),
@@ -536,11 +536,11 @@ class Ajax {
 		$path = trim( $raw );
 
 		if ( empty( $path ) ) {
-			return new \WP_Error( 'empty_path', 'Не е предоставен път до .po файл.' );
+			return new \WP_Error( 'empty_path', __( 'No PO file path provided.', 'ewa-ai-string-assistant-for-loco-translate' ) );
 		}
 
 		if ( strtolower( pathinfo( $path, PATHINFO_EXTENSION ) ) !== 'po' ) {
-			return new \WP_Error( 'not_po', 'Файлът трябва да има разширение .po.' );
+			return new \WP_Error( 'not_po', __( 'The file must have a .po extension.', 'ewa-ai-string-assistant-for-loco-translate' ) );
 		}
 
 		$path = wp_normalize_path( $path );
@@ -563,7 +563,11 @@ class Ajax {
 
 		return new \WP_Error(
 			'not_found',
-			sprintf( 'Файлът не бе открит: %s. Проверете дали съществува и е достъпен.', esc_html( basename( $path ) ) )
+			sprintf(
+				/* translators: %s: file basename */
+				__( 'File was not found: %s. Please verify it exists and is accessible.', 'ewa-ai-string-assistant-for-loco-translate' ),
+				esc_html( basename( $path ) )
+			)
 		);
 	}
 
@@ -576,15 +580,22 @@ class Ajax {
 	private function verify_po_path( $path ) {
 		$real_path = realpath( $path );
 		if ( ! $real_path || ! file_exists( $real_path ) ) {
-			return new \WP_Error( 'not_found', 'Файлът не съществува: ' . esc_html( basename( $path ) ) );
+			return new \WP_Error(
+			'not_found',
+			sprintf(
+				/* translators: %s: file basename */
+				__( 'File does not exist: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
+				esc_html( basename( $path ) )
+			)
+		);
 		}
 
 		if ( strtolower( pathinfo( $real_path, PATHINFO_EXTENSION ) ) !== 'po' ) {
-			return new \WP_Error( 'not_po', 'Файлът не е с разширение .po.' );
+			return new \WP_Error( 'not_po', __( 'File does not have a .po extension.', 'ewa-ai-string-assistant-for-loco-translate' ) );
 		}
 
 		if ( ! is_readable( $real_path ) ) {
-			return new \WP_Error( 'not_readable', 'Файлът не е достъпен за четене.' );
+			return new \WP_Error( 'not_readable', __( 'File is not readable.', 'ewa-ai-string-assistant-for-loco-translate' ) );
 		}
 
 		$real_path_norm = wp_normalize_path( $real_path );
@@ -604,7 +615,7 @@ class Ajax {
 		}
 
 		if ( ! $is_allowed ) {
-			return new \WP_Error( 'outside_allowed_roots', 'Файлът се намира извън разрешените WordPress директории за превод.' );
+			return new \WP_Error( 'outside_allowed_roots', __( 'File is located outside the allowed WordPress translation directories.', 'ewa-ai-string-assistant-for-loco-translate' ) );
 		}
 
 		return $real_path_norm;

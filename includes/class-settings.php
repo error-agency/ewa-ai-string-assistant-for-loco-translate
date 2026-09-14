@@ -38,6 +38,7 @@ class Settings {
 			$new_settings = get_option( self::OPTION_KEY, null );
 
 			if ( null === $new_settings ) {
+				// Legacy option keys are read only for one-time migration from previous plugin versions.
 				$legacy = get_option( 'ewa_settings', null );
 				if ( null === $legacy ) {
 					$legacy = get_option( 'error_lait_settings', null );

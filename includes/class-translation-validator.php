@@ -54,7 +54,12 @@ class Translation_Validator {
 		if ( count( $translations ) !== $nplurals ) {
 			return new \WP_Error(
 				'invalid_plural_count',
-				sprintf( 'Очаквани бяха %d множествени форми, но бяха получени %d.', $nplurals, count( $translations ) )
+				sprintf(
+					/* translators: 1: expected count, 2: received count */
+					__( 'Expected %1$d plural forms, but received %2$d.', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$nplurals,
+					count( $translations )
+				)
 			);
 		}
 
@@ -62,7 +67,11 @@ class Translation_Validator {
 			if ( ! is_string( $form ) || '' === trim( $form ) ) {
 				return new \WP_Error(
 					'empty_plural_form',
-					sprintf( 'Форма [%d] от множествения превод е празна.', $idx )
+					sprintf(
+						/* translators: %d: plural form index */
+						__( 'Plural form [%d] of the translation is empty.', 'ewa-ai-string-assistant-for-loco-translate' ),
+						$idx
+					)
 				);
 			}
 
@@ -84,7 +93,12 @@ class Translation_Validator {
 
 			return new \WP_Error(
 				'plural_placeholder_mismatch',
-				sprintf( 'Форма [%d] губи плейсхолдъри: %s', $idx, $check_plural->get_error_message() )
+				sprintf(
+					/* translators: 1: plural form index, 2: error message */
+					__( 'Form [%1$d] is missing placeholders: %2$s', 'ewa-ai-string-assistant-for-loco-translate' ),
+					$idx,
+					$check_plural->get_error_message()
+				)
 			);
 		}
 
@@ -104,7 +118,10 @@ class Translation_Validator {
 
 		// 1. Проверка за %% (literal percent)
 		if ( substr_count( $source, '%%' ) !== substr_count( $translation, '%%' ) ) {
-			return new \WP_Error( 'percent_mismatch', 'Несъответствие в броя на символите % (%%).' );
+			return new \WP_Error(
+				'percent_mismatch',
+				__( 'Mismatch in the count of percent signs (%%).', 'ewa-ai-string-assistant-for-loco-translate' )
+			);
 		}
 
 		// 2. Сравнение на позиционни и обикновени плейсхолдъри
@@ -116,7 +133,13 @@ class Translation_Validator {
 			if ( $found !== $count ) {
 				return new \WP_Error(
 					'missing_placeholder',
-					sprintf( 'Плейсхолдърът "%s" липсва или е променен в превода (очаквани: %d, намерени: %d).', $token, $count, $found )
+					sprintf(
+						/* translators: 1: placeholder token, 2: expected count, 3: found count */
+						__( 'Placeholder "%1$s" is missing or altered in translation (expected: %2$d, found: %3$d).', 'ewa-ai-string-assistant-for-loco-translate' ),
+						$token,
+						$count,
+						$found
+					)
 				);
 			}
 		}
@@ -126,7 +149,11 @@ class Translation_Validator {
 			if ( ! isset( $src_counts[ $token ] ) ) {
 				return new \WP_Error(
 					'unexpected_placeholder',
-					sprintf( 'Открит е неочакван нов плейсхолдър "%s" в превода.', $token )
+					sprintf(
+						/* translators: %s: placeholder token */
+						__( 'Unexpected new placeholder "%s" found in translation.', 'ewa-ai-string-assistant-for-loco-translate' ),
+						$token
+					)
 				);
 			}
 		}
@@ -193,7 +220,13 @@ class Translation_Validator {
 			if ( $found !== $count ) {
 				return new \WP_Error(
 					'missing_html_tag',
-					sprintf( 'HTML тагът "<%s>" липсва или броят му е променен в превода (очаквани: %d, намерени: %d).', $name, $count, $found )
+					sprintf(
+						/* translators: 1: HTML tag name, 2: expected count, 3: found count */
+						__( 'HTML tag "<%1$s>" is missing or count changed in translation (expected: %2$d, found: %3$d).', 'ewa-ai-string-assistant-for-loco-translate' ),
+						$name,
+						$count,
+						$found
+					)
 				);
 			}
 		}
@@ -202,7 +235,11 @@ class Translation_Validator {
 			if ( ! isset( $src_names[ $name ] ) ) {
 				return new \WP_Error(
 					'unexpected_html_tag',
-					sprintf( 'Открит е неочакван нов HTML таг "<%s>" в превода.', $name )
+					sprintf(
+						/* translators: %s: HTML tag name */
+						__( 'Unexpected new HTML tag "<%s>" found in translation.', 'ewa-ai-string-assistant-for-loco-translate' ),
+						$name
+					)
 				);
 			}
 		}
@@ -213,7 +250,11 @@ class Translation_Validator {
 			if ( count( $src_vals ) !== count( $dst_vals ) ) {
 				return new \WP_Error(
 					'missing_html_attribute',
-					sprintf( 'Броят на атрибутите "%s" в HTML таговете не съвпада.', $attr_name )
+					sprintf(
+						/* translators: %s: HTML attribute name */
+						__( 'The count of attribute "%s" in HTML tags does not match.', 'ewa-ai-string-assistant-for-loco-translate' ),
+						$attr_name
+					)
 				);
 			}
 			// Проверка дали плейсхолдърите вътре в атрибутите са запазени
@@ -225,7 +266,12 @@ class Translation_Validator {
 					if ( is_wp_error( $val_check ) ) {
 						return new \WP_Error(
 							'attribute_placeholder_mismatch',
-							sprintf( 'Плейсхолдър в атрибут "%s" бе повреден: %s', $attr_name, $val_check->get_error_message() )
+							sprintf(
+								/* translators: 1: HTML attribute name, 2: error message */
+								__( 'Placeholder in attribute "%1$s" was corrupted: %2$s', 'ewa-ai-string-assistant-for-loco-translate' ),
+								$attr_name,
+								$val_check->get_error_message()
+							)
 						);
 					}
 				}
@@ -287,7 +333,13 @@ class Translation_Validator {
 					}
 					return new \WP_Error(
 						'entity_mismatch',
-						sprintf( 'HTML ентитетът "%s" бе променен в превода (очаквани: %d, намерени: %d).', $entity, $src_count, $dst_count )
+						sprintf(
+							/* translators: 1: HTML entity, 2: expected count, 3: found count */
+							__( 'HTML entity "%1$s" was altered in translation (expected: %2$d, found: %3$d).', 'ewa-ai-string-assistant-for-loco-translate' ),
+							$entity,
+							$src_count,
+							$dst_count
+						)
 					);
 				}
 			}

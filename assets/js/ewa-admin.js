@@ -28,7 +28,9 @@
         var $btn = $(this);
         var $pre = $('#ewa-default-prompt-preview');
         $pre.slideToggle(200, function () {
-            $btn.text($pre.is(':visible') ? 'Hide default prompt' : 'View default prompt');
+            var hideText = (config.i18n && config.i18n.hideDefaultPrompt) ? config.i18n.hideDefaultPrompt : 'Hide default prompt';
+            var viewText = (config.i18n && config.i18n.viewDefaultPrompt) ? config.i18n.viewDefaultPrompt : 'View default prompt';
+            $btn.text($pre.is(':visible') ? hideText : viewText);
         });
     });
 
@@ -42,7 +44,13 @@
         var apiEndpoint = String($('#ewa-api-endpoint').val() || '').trim();
         var apiKey      = String($('input[name="ewaas_settings[api_key]"]').val() || '').trim();
 
-        $btn.text('Loading…').prop('disabled', true);
+        var loadingText    = (config.i18n && config.i18n.loading) ? config.i18n.loading : 'Loading…';
+        var loadModelsText = (config.i18n && config.i18n.loadModels) ? config.i18n.loadModels : 'Load Models';
+        var chooseText     = (config.i18n && config.i18n.chooseModel) ? config.i18n.chooseModel : '— choose a model —';
+        var unknownText    = (config.i18n && config.i18n.unknownError) ? config.i18n.unknownError : 'Unknown error';
+        var errorPrefix    = (config.i18n && config.i18n.errorPrefix) ? config.i18n.errorPrefix : 'Error:';
+
+        $btn.text(loadingText).prop('disabled', true);
 
         $.post(config.ajaxUrl, {
             action: 'ewaas_fetch_models',
@@ -51,15 +59,15 @@
             api_endpoint: apiEndpoint,
             api_key: apiKey,
         }, function (res) {
-            $btn.html('<span class="dashicons dashicons-update"></span> Load Models').prop('disabled', false);
+            $btn.html('<span class="dashicons dashicons-update"></span> ' + loadModelsText).prop('disabled', false);
 
             if (!res.success) {
-                alert('Error: ' + (res.data ? res.data.message : 'Unknown error'));
+                alert(errorPrefix + ' ' + (res.data ? res.data.message : unknownText));
                 return;
             }
 
             var models = res.data.models;
-            $select.empty().append('<option value="">— choose a model —</option>');
+            $select.empty().append($('<option>').val('').text(chooseText));
 
             models.forEach(function (m) {
                 var label = m.id;
@@ -75,8 +83,9 @@
                 $input.val($(this).val());
             });
         }).fail(function () {
-            $btn.html('<span class="dashicons dashicons-update"></span> Load Models').prop('disabled', false);
-            alert('Network error while loading models.');
+            $btn.html('<span class="dashicons dashicons-update"></span> ' + loadModelsText).prop('disabled', false);
+            var netErr = (config.i18n && config.i18n.networkErrorModels) ? config.i18n.networkErrorModels : 'Network error while loading models.';
+            alert(netErr);
         });
     });
 
@@ -90,7 +99,12 @@
         var apiKey      = String($('input[name="ewaas_settings[api_key]"]').val() || '').trim();
         var model       = String($('#ewa-model-input').val() || '').trim();
 
-        $btn.html('<span class="dashicons dashicons-update ewa-spin"></span> Testing…').prop('disabled', true);
+        var testingText        = (config.i18n && config.i18n.testing) ? config.i18n.testing : 'Testing…';
+        var testConnectionText = (config.i18n && config.i18n.testConnection) ? config.i18n.testConnection : 'Test Connection';
+        var unknownText        = (config.i18n && config.i18n.unknownError) ? config.i18n.unknownError : 'Unknown error';
+        var networkErrText     = (config.i18n && config.i18n.networkError) ? config.i18n.networkError : 'Network error';
+
+        $btn.html('<span class="dashicons dashicons-update ewa-spin"></span> ' + testingText).prop('disabled', true);
         $result.removeClass('ewa-test-ok ewa-test-err').empty();
 
         $.post(config.ajaxUrl, {
@@ -101,7 +115,7 @@
             api_key: apiKey,
             model: model,
         }, function (res) {
-            $btn.html('<span class="dashicons dashicons-rest-api"></span> Test Connection').prop('disabled', false);
+            $btn.html('<span class="dashicons dashicons-rest-api"></span> ' + testConnectionText).prop('disabled', false);
 
             if (res.success) {
                 $result.addClass('ewa-test-ok')
@@ -110,12 +124,12 @@
             } else {
                 $result.addClass('ewa-test-err')
                     .html('<span class="dashicons dashicons-dismiss" style="vertical-align:text-bottom;font-size:16px;color:#d63638;"></span> ' +
-                        $('<div>').text(res.data ? res.data.message : 'Unknown error').html());
+                        $('<div>').text(res.data ? res.data.message : unknownText).html());
             }
         }).fail(function () {
-            $btn.html('<span class="dashicons dashicons-rest-api"></span> Test Connection').prop('disabled', false);
+            $btn.html('<span class="dashicons dashicons-rest-api"></span> ' + testConnectionText).prop('disabled', false);
             $result.addClass('ewa-test-err')
-                .html('<span class="dashicons dashicons-dismiss" style="vertical-align:text-bottom;font-size:16px;color:#d63638;"></span> Network error');
+                .html('<span class="dashicons dashicons-dismiss" style="vertical-align:text-bottom;font-size:16px;color:#d63638;"></span> ' + networkErrText);
         });
     });
 

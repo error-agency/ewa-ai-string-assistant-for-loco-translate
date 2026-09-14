@@ -101,7 +101,7 @@
                 fd.append('job_id',  currentJobId);
                 navigator.sendBeacon(config.ajaxUrl, fd);
             }
-            return 'Translation is in progress. Are you sure you want to leave?';
+            return (config.i18n && config.i18n.leaveConfirm) ? config.i18n.leaveConfirm : 'Translation is in progress. Are you sure you want to leave?';
         });
     }
     function removeUnloadGuard() { $(window).off('beforeunload.ewa'); }
@@ -194,12 +194,12 @@
         if (!poPath) {
             $pathRow.append(
                 $('<span>', { class: 'dashicons dashicons-category', style: 'color:#2271b1 !important;vertical-align:middle;margin-right:4px;font-size:16px;width:16px;height:16px;display:inline-block;' }),
-                $('<span>', { text: 'Enter .po path: ' }),
+                $('<span>', { text: (config.i18n && config.i18n.enterPoPath) ? config.i18n.enterPoPath : 'Enter .po path: ' }),
                 $('<input>', { type:'text', id:'ewa-manual-path',
                     class:'regular-text ewa-manual-path',
-                    placeholder:'Absolute path or relative to wp-content…' }),
+                    placeholder: (config.i18n && config.i18n.pathPlaceholder) ? config.i18n.pathPlaceholder : 'Absolute path or relative to wp-content…' }),
                 ' ',
-                $('<button>', { type:'button', class:'button ewa-path-verify-btn', text:'Verify' }),
+                $('<button>', { type:'button', class:'button ewa-path-verify-btn', text: (config.i18n && config.i18n.verify) ? config.i18n.verify : 'Verify' }),
                 $('<span>', { id:'ewa-path-verify-result', style:'margin-left:8px;font-size:12px;' })
             ).show();
         }
@@ -217,11 +217,11 @@
 
         var $log = $('<div>', { id:'ewa-batch-log', class:'ewa-batch-log' }).hide().append(
             $('<div>', { class:'ewa-log-header' }).append(
-                $('<span>', { text:'Batch' }),
-                $('<span>', { text:'Strings' }),
-                $('<span>', { text:'Time' }),
-                $('<span>', { text:'Tokens (in/out)' }),
-                $('<span>', { text:'Preview' })
+                $('<span>', { text: (config.i18n && config.i18n.batchHeader) ? config.i18n.batchHeader : 'Batch' }),
+                $('<span>', { text: (config.i18n && config.i18n.stringsHeader) ? config.i18n.stringsHeader : 'Strings' }),
+                $('<span>', { text: (config.i18n && config.i18n.timeHeader) ? config.i18n.timeHeader : 'Time' }),
+                $('<span>', { text: (config.i18n && config.i18n.tokensHeader) ? config.i18n.tokensHeader : 'Tokens (in/out)' }),
+                $('<span>', { text: (config.i18n && config.i18n.previewHeader) ? config.i18n.previewHeader : 'Preview' })
             ),
             $('<div>', { id:'ewa-log-rows', class:'ewa-log-rows' })
         );
@@ -232,7 +232,7 @@
         return $('<div>', { id:'ewa-panel', class:'ewa-editor-panel' }).append(
             $('<div>', { class:'ewa-panel-controls' }).append(
                 $('<span>', { class:'dashicons dashicons-translation ewa-panel-icon', style:'color:#2271b1 !important;font-size:20px;width:20px;height:20px;line-height:20px;vertical-align:middle;margin-right:6px;display:inline-block;' }),
-                $('<span>', { class:'ewa-panel-label', text:'Translate to:' }),
+                $('<span>', { class:'ewa-panel-label', text: (config.i18n && config.i18n.translateTo) ? config.i18n.translateTo : 'Translate to:' }),
                 $langSelect, $btn, $stopBtn, $badge, $pathInfo
             ),
             $pathRow, $prog, $ticker, $log, $summary, $notices
@@ -249,16 +249,16 @@
             var path = $('#ewa-manual-path').val().trim();
             var $res = $('#ewa-path-verify-result');
             if (!path) return;
-            $res.text('Checking…').css('color','#787878');
+            $res.text((config.i18n && config.i18n.checking) ? config.i18n.checking : 'Checking…').css('color','#787878');
             $.post(config.ajaxUrl, {
                 action:'ewaas_get_po_info', nonce:config.nonce, po_path:path,
             }, function (res) {
                 if (res.success) {
-                    $res.html('<span class="dashicons dashicons-yes-alt" style="color:#00a32a;font-size:16px;vertical-align:text-bottom;"></span> ' + res.data.untranslated + ' untranslated').css('color','#00a32a');
+                    $res.html('<span class="dashicons dashicons-yes-alt" style="color:#00a32a;font-size:16px;vertical-align:text-bottom;"></span> ' + res.data.untranslated + ' ' + ((config.i18n && config.i18n.untranslated) ? config.i18n.untranslated : 'untranslated')).css('color','#00a32a');
                 } else {
-                    $res.html('<span class="dashicons dashicons-dismiss" style="color:#d63638;font-size:16px;vertical-align:text-bottom;"></span> ' + escHtml(res.data ? res.data.message : 'Error')).css('color','#d63638');
+                    $res.html('<span class="dashicons dashicons-dismiss" style="color:#d63638;font-size:16px;vertical-align:text-bottom;"></span> ' + escHtml(res.data ? res.data.message : ((config.i18n && config.i18n.error) ? config.i18n.error : 'Error'))).css('color','#d63638');
                 }
-            }).fail(function () { $res.html('<span class="dashicons dashicons-dismiss" style="color:#d63638;font-size:16px;vertical-align:text-bottom;"></span> Network error').css('color','#d63638'); });
+            }).fail(function () { $res.html('<span class="dashicons dashicons-dismiss" style="color:#d63638;font-size:16px;vertical-align:text-bottom;"></span> ' + ((config.i18n && config.i18n.networkError) ? config.i18n.networkError : 'Network error')).css('color','#d63638'); });
         });
 
         $('#ewa-ai-btn').on('click', function () {
@@ -270,12 +270,12 @@
         $('#ewa-stop-btn').on('click', function () {
             if (!running || !currentJobId) return;
             cancelPending = true;
-            $(this).prop('disabled', true).text('Stopping…');
+            $(this).prop('disabled', true).text((config.i18n && config.i18n.stopping) ? config.i18n.stopping : 'Stopping…');
             if (_xhrRef) { _xhrRef.abort(); _xhrRef = null; }
             $.post(config.ajaxUrl, {
                 action:'ewaas_cancel_job', nonce:config.nonce, job_id:currentJobId,
             });
-            showNotice('Stop signal sent — current batch will finish, then stop.', 'info');
+            showNotice((config.i18n && config.i18n.stopSignalSent) ? config.i18n.stopSignalSent : 'Stop signal sent — current batch will finish, then stop.', 'info');
         });
     }
 
@@ -288,11 +288,11 @@
 
     function startTranslation(poPath, targetLang) {
         if (!poPath) {
-            showNotice('Could not detect the .po file path. Enter it manually above.', 'error', true);
+            showNotice((config.i18n && config.i18n.couldNotDetectPath) ? config.i18n.couldNotDetectPath : 'Could not detect the .po file path. Enter it manually above.', 'error', true);
             $('#ewa-path-row').show();
             return;
         }
-        showNotice('Checking file…', 'info');
+        showNotice((config.i18n && config.i18n.checkingFile) ? config.i18n.checkingFile : 'Checking file…', 'info');
         $('#ewa-ai-btn').prop('disabled', true);
 
         $.post(config.ajaxUrl, {
@@ -302,13 +302,13 @@
             clearNotice();
 
             if (!res.success) {
-                showNotice(res.data ? res.data.message : 'Unknown error', 'error', true);
+                showNotice(res.data ? res.data.message : ((config.i18n && config.i18n.unknownError) ? config.i18n.unknownError : 'Unknown error'), 'error', true);
                 return;
             }
 
             var info = res.data;
             if (info.untranslated === 0) {
-                showNotice('All strings are already translated.', 'success');
+                showNotice((config.i18n && config.i18n.allStringsTranslated) ? config.i18n.allStringsTranslated : 'All strings are already translated.', 'success');
                 return;
             }
 
@@ -349,7 +349,7 @@
 
         }).fail(function () {
             $('#ewa-ai-btn').prop('disabled', false);
-            showNotice('✗ Network error while checking file.', 'error', true);
+            showNotice('✗ ' + ((config.i18n && config.i18n.networkErrorChecking) ? config.i18n.networkErrorChecking : 'Network error while checking file.'), 'error', true);
         });
     }
 
@@ -376,7 +376,7 @@
                 running = false;
                 setUiRunning(false);
                 removeUnloadGuard();
-                showNotice('✗ Error: ' + (res.data ? res.data.message : 'Unknown'), 'error', true);
+                showNotice('✗ ' + ((config.i18n && config.i18n.errorPrefix) ? config.i18n.errorPrefix : 'Error:') + ' ' + (res.data ? res.data.message : ((config.i18n && config.i18n.unknownError) ? config.i18n.unknownError : 'Unknown error')), 'error', true);
                 return;
             }
 
@@ -402,7 +402,7 @@
             updateSummaryLive();
 
             if (d.save_warning) {
-                showNotice('⚠ Warning: ' + d.save_warning, 'warning');
+                showNotice('⚠ ' + ((config.i18n && config.i18n.warningPrefix) ? config.i18n.warningPrefix : 'Warning:') + ' ' + d.save_warning, 'warning');
             }
 
             if (d.cancelled) { finishJob(false); return; }
@@ -419,7 +419,7 @@
             doBatch._netRetries[key] = (doBatch._netRetries[key] || 0) + 1;
 
             if (doBatch._netRetries[key] <= 2) {
-                showNotice('⚠ Network error — retrying in 3 s…', 'warning');
+                showNotice('⚠ ' + ((config.i18n && config.i18n.networkErrorRetrying) ? config.i18n.networkErrorRetrying : 'Network error — retrying in 3 s…'), 'warning');
                 setTimeout(function () {
                     doBatch(poPath, targetLang, totalOriginal);
                 }, 3000);
@@ -427,7 +427,7 @@
                 running = false;
                 setUiRunning(false);
                 removeUnloadGuard();
-                showNotice('✗ Network error after retries — translation stopped.', 'error', true);
+                showNotice('✗ ' + ((config.i18n && config.i18n.networkErrorStopped) ? config.i18n.networkErrorStopped : 'Network error after retries — translation stopped.'), 'error', true);
             }
         });
     }
@@ -445,18 +445,25 @@
 
         var msg;
         var noticeType = 'success';
+        var strStopped     = (config.i18n && config.i18n.stoppedNotice) ? config.i18n.stoppedNotice : 'Stopped.';
+        var strSavedSoFar  = (config.i18n && config.i18n.stringsSavedSoFar) ? config.i18n.stringsSavedSoFar : 'saved so far.';
+        var strCompletedErr= (config.i18n && config.i18n.completedWithErrors) ? config.i18n.completedWithErrors : 'Completed with errors.';
+        var strDone        = (config.i18n && config.i18n.done) ? config.i18n.done : 'Done!';
+        var strStrings     = (config.i18n && config.i18n.stringsCount) ? config.i18n.stringsCount : 'strings';
+        var strTranslated  = (config.i18n && config.i18n.translatedCount) ? config.i18n.translatedCount : 'translated';
+        var strSkipped     = (config.i18n && config.i18n.skippedCount) ? config.i18n.skippedCount : 'skipped/failed';
+        var strIn          = (config.i18n && config.i18n.inTime) ? config.i18n.inTime : 'in';
+
         if (!completed) {
-            msg = '⏹ Stopped. <strong>' + stats.translated + ' strings</strong> saved so far.';
+            msg = '⏹ ' + strStopped + ' <strong>' + stats.translated + ' ' + strStrings + '</strong> ' + strSavedSoFar;
             noticeType = 'warning';
         } else {
             if (stats.skipped > 0) {
-                msg = '⚠ Completed with errors. <strong>' + stats.translated + ' string' +
-                      (stats.translated !== 1 ? 's' : '') + '</strong> translated, <strong>' +
-                      stats.skipped + ' skipped/failed</strong> in ' + elStr + '.';
+                msg = '⚠ ' + strCompletedErr + ' <strong>' + stats.translated + ' ' + strStrings + '</strong> ' + strTranslated + ', <strong>' +
+                      stats.skipped + ' ' + strSkipped + '</strong> ' + strIn + ' ' + elStr + '.';
                 noticeType = 'warning';
             } else {
-                msg = '✓ Done! <strong>' + stats.translated + ' string' +
-                      (stats.translated !== 1 ? 's' : '') + '</strong> translated in ' + elStr + '.';
+                msg = '✓ ' + strDone + ' <strong>' + stats.translated + ' ' + strStrings + '</strong> ' + strTranslated + ' ' + strIn + ' ' + elStr + '.';
                 noticeType = 'success';
             }
         }
@@ -465,7 +472,7 @@
         showFinalSummary(completed, elStr);
 
         var $r = $('<button>', {
-            type:'button', class:'button button-small ewa-reload-btn', text:'↻ Reload editor',
+            type:'button', class:'button button-small ewa-reload-btn', text: (config.i18n && config.i18n.reloadEditor) ? config.i18n.reloadEditor : '↻ Reload editor',
         }).on('click', function () { removeUnloadGuard(); window.location.reload(); });
         $('#ewa-editor-notices .ewa-editor-notice').append(' ', $r);
     }
@@ -476,16 +483,17 @@
             $('#ewa-progress-pct').text(pct + '%');
         }
         if (done !== undefined && total !== undefined) {
-            $('#ewa-progress-cnt').text(' — ' + done + ' / ' + total + ' strings');
+            $('#ewa-progress-cnt').text(' — ' + done + ' / ' + total + ' ' + ((config.i18n && config.i18n.stringsCount) ? config.i18n.stringsCount : 'strings'));
         }
         if (done > 0 && total > 0 && stats.jobStartMs) {
             var elapsed  = (Date.now() - stats.jobStartMs) / 1000;
             var rate     = done / elapsed;
             var remaining = total - done;
             var etaSec   = rate > 0 ? Math.round(remaining / rate) : 0;
+            var etaPrefix = (config.i18n && config.i18n.eta) ? config.i18n.eta : 'ETA ~';
             var etaStr   = etaSec > 60
-                ? 'ETA ~' + Math.floor(etaSec/60) + 'm ' + (etaSec%60) + 's'
-                : (etaSec > 0 ? 'ETA ~' + etaSec + 's' : '');
+                ? etaPrefix + Math.floor(etaSec/60) + 'm ' + (etaSec%60) + 's'
+                : (etaSec > 0 ? etaPrefix + etaSec + 's' : '');
             $('#ewa-progress-eta').text(etaStr ? ' · ' + etaStr : '');
         }
     }
@@ -497,8 +505,9 @@
             var short = s.length > 55 ? s.substring(0, 55) + '…' : s;
             return '<span class="ewa-ticker-item">' + escHtml(short) + '</span>';
         });
+        var tickerLabel = (config.i18n && config.i18n.translatingTicker) ? config.i18n.translatingTicker : 'Translating:';
         $t.html(
-            '<span class="ewa-ticker-label">Translating:</span> ' +
+            '<span class="ewa-ticker-label">' + escHtml(tickerLabel) + '</span> ' +
             parts.join('<span class="ewa-ticker-sep"> · </span>')
         ).show();
     }
@@ -528,31 +537,43 @@
     function updateSummaryLive() {
         var elapsed = Math.round((Date.now() - stats.jobStartMs) / 1000);
         var $s = $('#ewa-summary').show();
+        var strTranslated = (config.i18n && config.i18n.translatedCount) ? config.i18n.translatedCount : 'translated';
+        var strSkipped    = (config.i18n && config.i18n.skippedCount) ? config.i18n.skippedCount : 'skipped';
+        var strTokens     = (config.i18n && config.i18n.tokensCount) ? config.i18n.tokensCount : 'tokens';
+        var strBatches    = (config.i18n && config.i18n.batchesCount) ? config.i18n.batchesCount : 'batches';
         $s.html(
             '<span><span class="dashicons dashicons-clock" style="vertical-align:text-bottom;font-size:16px;"></span> ' + fmtTime(elapsed) + '</span>' +
-            '<span><span class="dashicons dashicons-yes-alt" style="vertical-align:text-bottom;font-size:16px;color:#00a32a;"></span> ' + stats.translated + ' translated</span>' +
-            (stats.skipped > 0 ? '<span><span class="dashicons dashicons-warning" style="vertical-align:text-bottom;font-size:16px;color:#dba617;"></span> ' + stats.skipped + ' skipped</span>' : '') +
-            '<span><span class="dashicons dashicons-chart-bar" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.tokensTotal + ' tokens</span>' +
-            '<span><span class="dashicons dashicons-database" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.batchCount + ' batches</span>'
+            '<span><span class="dashicons dashicons-yes-alt" style="vertical-align:text-bottom;font-size:16px;color:#00a32a;"></span> ' + stats.translated + ' ' + strTranslated + '</span>' +
+            (stats.skipped > 0 ? '<span><span class="dashicons dashicons-warning" style="vertical-align:text-bottom;font-size:16px;color:#dba617;"></span> ' + stats.skipped + ' ' + strSkipped + '</span>' : '') +
+            '<span><span class="dashicons dashicons-chart-bar" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.tokensTotal + ' ' + strTokens + '</span>' +
+            '<span><span class="dashicons dashicons-database" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.batchCount + ' ' + strBatches + '</span>'
         );
     }
 
     function showFinalSummary(completed, elStr) {
         var $s = $('#ewa-summary').show();
+        var strCompWarn = (config.i18n && config.i18n.completedWithWarnings) ? config.i18n.completedWithWarnings : 'Completed with warnings';
+        var strComplete = (config.i18n && config.i18n.complete) ? config.i18n.complete : 'Complete';
+        var strStopped  = (config.i18n && config.i18n.stoppedNotice) ? config.i18n.stoppedNotice : 'Stopped';
+
         var statusLabel = completed
             ? (stats.skipped > 0
-                ? '<span class="dashicons dashicons-warning" style="vertical-align:text-bottom;font-size:16px;color:#dba617;"></span> Completed with warnings'
-                : '<span class="dashicons dashicons-yes-alt" style="vertical-align:text-bottom;font-size:16px;color:#00a32a;"></span> Complete')
-            : '<span class="dashicons dashicons-controls-pause" style="vertical-align:text-bottom;font-size:16px;color:#d63638;"></span> Stopped';
+                ? '<span class="dashicons dashicons-warning" style="vertical-align:text-bottom;font-size:16px;color:#dba617;"></span> ' + strCompWarn
+                : '<span class="dashicons dashicons-yes-alt" style="vertical-align:text-bottom;font-size:16px;color:#00a32a;"></span> ' + strComplete)
+            : '<span class="dashicons dashicons-controls-pause" style="vertical-align:text-bottom;font-size:16px;color:#d63638;"></span> ' + strStopped;
 
+        var strFinalTrans = (config.i18n && config.i18n.translatedCount) ? config.i18n.translatedCount : 'translated';
+        var strFinalSkip  = (config.i18n && config.i18n.skippedCount) ? config.i18n.skippedCount : 'skipped';
+        var strFinalTok   = (config.i18n && config.i18n.tokensCount) ? config.i18n.tokensCount : 'tokens';
+        var strFinalBatch = (config.i18n && config.i18n.batchesCount) ? config.i18n.batchesCount : 'batches';
         $s.html(
             '<strong>' + statusLabel + '</strong>' +
             '<span><span class="dashicons dashicons-clock" style="vertical-align:text-bottom;font-size:16px;"></span> ' + elStr + '</span>' +
-            '<span><span class="dashicons dashicons-yes-alt" style="vertical-align:text-bottom;font-size:16px;color:#00a32a;"></span> ' + stats.translated + ' translated</span>' +
-            (stats.skipped > 0 ? '<span><span class="dashicons dashicons-warning" style="vertical-align:text-bottom;font-size:16px;color:#dba617;"></span> ' + stats.skipped + ' skipped</span>' : '') +
-            '<span><span class="dashicons dashicons-chart-bar" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.tokensTotal + ' tokens</span>' +
+            '<span><span class="dashicons dashicons-yes-alt" style="vertical-align:text-bottom;font-size:16px;color:#00a32a;"></span> ' + stats.translated + ' ' + strFinalTrans + '</span>' +
+            (stats.skipped > 0 ? '<span><span class="dashicons dashicons-warning" style="vertical-align:text-bottom;font-size:16px;color:#dba617;"></span> ' + stats.skipped + ' ' + strFinalSkip + '</span>' : '') +
+            '<span><span class="dashicons dashicons-chart-bar" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.tokensTotal + ' ' + strFinalTok + '</span>' +
             '<span><span class="dashicons dashicons-arrow-up-alt" style="vertical-align:text-bottom;font-size:14px;"></span> ' + stats.tokensPrompt + ' / <span class="dashicons dashicons-arrow-down-alt" style="vertical-align:text-bottom;font-size:14px;"></span> ' + stats.tokensCompletion + '</span>' +
-            '<span><span class="dashicons dashicons-database" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.batchCount + ' batches</span>'
+            '<span><span class="dashicons dashicons-database" style="vertical-align:text-bottom;font-size:16px;"></span> ' + stats.batchCount + ' ' + strFinalBatch + '</span>'
         );
     }
 
