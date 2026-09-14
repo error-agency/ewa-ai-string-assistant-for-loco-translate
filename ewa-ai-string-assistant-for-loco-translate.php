@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       EWA AI String Assistant for Loco Translate
  * Plugin URI:        https://github.com/error-agency/ewa-ai-string-assistant-for-loco-translate
- * Description:       Adds AI-assisted string translation to Loco Translate using OpenRouter, Ollama, or a custom OpenAI-compatible endpoint.
- * Version:           1.7.0
+ * Description:       Adds AI-assisted string translation to Loco Translate using native WordPress AI Client (WordPress 7.0+), OpenRouter, Ollama, or custom OpenAI-compatible endpoints.
+ * Version:           1.8.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Error Web Agency
@@ -38,7 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'EWAAS_VERSION', '1.7.0' );
+define( 'EWAAS_VERSION', '1.8.0' );
 define( 'EWAAS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'EWAAS_URL', plugin_dir_url( __FILE__ ) );
 define( 'EWAAS_BASENAME', plugin_basename( __FILE__ ) );
@@ -61,6 +61,10 @@ final class Plugin {
 	}
 
 	private function includes() {
+		require_once EWAAS_PATH . 'includes/class-ai-transport-interface.php';
+		require_once EWAAS_PATH . 'includes/class-wp-ai-client-transport.php';
+		require_once EWAAS_PATH . 'includes/class-direct-ai-transport.php';
+		require_once EWAAS_PATH . 'includes/class-ai-transport-manager.php';
 		require_once EWAAS_PATH . 'includes/class-settings.php';
 		require_once EWAAS_PATH . 'includes/class-translation-validator.php';
 		require_once EWAAS_PATH . 'includes/class-api-client.php';

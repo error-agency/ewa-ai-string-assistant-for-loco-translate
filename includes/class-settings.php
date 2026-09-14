@@ -10,7 +10,7 @@ class Settings {
 	private static $instance = null;
 	const OPTION_KEY         = 'ewaas_settings';
 	const SCHEMA_VERSION_KEY = 'ewaas_schema_version';
-	const SCHEMA_VERSION     = '1.7.0';
+	const SCHEMA_VERSION     = '1.8.0';
 
 	public static function instance() {
 		if ( null === self::$instance ) {
@@ -47,8 +47,21 @@ class Settings {
 					$legacy = get_option( 'lat_settings', null );
 				}
 				if ( is_array( $legacy ) && ! empty( $legacy ) ) {
-					$clean = $this->sanitize_settings( $legacy );
+					$clean                 = $this->sanitize_settings( $legacy );
+					$clean['ai_transport'] = 'direct';
 					add_option( self::OPTION_KEY, $clean );
+				} else {
+					// Чиста нова инсталация (Fresh install)
+					$default_transport = AI_Transport_Manager::is_wp_ai_client_supported() ? 'wordpress' : 'direct';
+					add_option( self::OPTION_KEY, [
+						'ai_transport' => $default_transport,
+					] );
+				}
+			} elseif ( is_array( $new_settings ) ) {
+				// Надграждане от v1.7.0 (Upgrade): запазваме direct режим за съществуващи инсталации
+				if ( empty( $new_settings['ai_transport'] ) ) {
+					$new_settings['ai_transport'] = 'direct';
+					update_option( self::OPTION_KEY, $new_settings );
 				}
 			}
 
@@ -60,11 +73,24 @@ class Settings {
 		$existing = get_option( self::OPTION_KEY, [] );
 		$clean    = [];
 
-		$provider          = sanitize_text_field( $input['provider'] ?? 'openrouter' );
+		// Избор на AI транспортен слой (WordPress AI Client или Direct HTTP)
+		$transport = sanitize_key( $input['ai_transport'] ?? '' );
+		if ( in_array( $transport, [ 'wordpress', 'direct' ], true ) ) {
+			$clean['ai_transport'] = $transport;
+		} else {
+			$clean['ai_transport'] = $existing['ai_transport'] ?? ( AI_Transport_Manager::is_wp_ai_client_supported() ? 'wordpress' : 'direct' );
+		}
+
+		// Опционално предпочитание за модел(и) в WordPress AI Client режим
+		$clean['preferred_models'] = sanitize_text_field( $input['preferred_models'] ?? '' );
+
+		// Директен доставчик
+		$provider          = sanitize_text_field( $input['provider'] ?? ( $existing['provider'] ?? 'openrouter' ) );
 		$clean['provider'] = in_array( $provider, [ 'openrouter', 'ollama', 'custom' ], true ) ? $provider : 'openrouter';
 
-		$clean['api_endpoint'] = esc_url_raw( trim( $input['api_endpoint'] ?? '' ) );
+		$clean['api_endpoint'] = esc_url_raw( trim( $input['api_endpoint'] ?? ( $existing['api_endpoint'] ?? '' ) ) );
 
+		// Запазване на старите API ключове при преминаване към WordPress режим
 		$submitted_key = trim( $input['api_key'] ?? '' );
 		if ( ! empty( $input['clear_api_key'] ) ) {
 			$clean['api_key'] = '';
@@ -74,12 +100,12 @@ class Settings {
 			$clean['api_key'] = sanitize_text_field( $submitted_key );
 		}
 
-		$clean['model']           = sanitize_text_field( $input['model'] ?? '' );
-		$clean['batch_size']      = absint( $input['batch_size'] ?? 40 );
-		$clean['max_retries']     = absint( $input['max_retries'] ?? 3 );
-		$clean['system_prompt']   = sanitize_textarea_field( $input['system_prompt'] ?? '' );
-		$clean['skip_translated'] = ! empty( $input['skip_translated'] ) ? 1 : 0;
-		$clean['temperature']     = floatval( $input['temperature'] ?? 0.3 );
+		$clean['model']           = sanitize_text_field( $input['model'] ?? ( $existing['model'] ?? '' ) );
+		$clean['batch_size']      = absint( $input['batch_size'] ?? ( $existing['batch_size'] ?? 40 ) );
+		$clean['max_retries']     = absint( $input['max_retries'] ?? ( $existing['max_retries'] ?? 3 ) );
+		$clean['system_prompt']   = sanitize_textarea_field( $input['system_prompt'] ?? ( $existing['system_prompt'] ?? '' ) );
+		$clean['skip_translated'] = isset( $input['skip_translated'] ) ? ( ! empty( $input['skip_translated'] ) ? 1 : 0 ) : ( $existing['skip_translated'] ?? 1 );
+		$clean['temperature']     = floatval( $input['temperature'] ?? ( $existing['temperature'] ?? 0.3 ) );
 
 		$clean['batch_size']  = max( 5, min( 100, $clean['batch_size'] ) );
 		$clean['max_retries'] = max( 0, min( 10,  $clean['max_retries'] ) );
@@ -88,21 +114,32 @@ class Settings {
 		return $clean;
 	}
 
+	/**
+	 * Връща конфигурацията по подразбиране според текущата WordPress среда.
+	 *
+	 * @return array
+	 */
+	public static function get_defaults(): array {
+		$default_transport = AI_Transport_Manager::is_wp_ai_client_supported() ? 'wordpress' : 'direct';
+
+		return [
+			'ai_transport'     => $default_transport,
+			'preferred_models' => '',
+			'provider'         => 'openrouter',
+			'api_endpoint'     => 'https://' . 'openrouter' . '.ai/api/v1',
+			'api_key'          => '',
+			'model'            => 'openai/gpt-4o-mini',
+			'batch_size'       => 40,
+			'max_retries'      => 3,
+			'system_prompt'    => '',
+			'skip_translated'  => 1,
+			'temperature'      => 0.3,
+		];
+	}
+
 	public function get( $key = null, $default = null ) {
 		$options = get_option( self::OPTION_KEY, [] );
-
-		// Подразбираща се AI конфигурация. Запазва се съвместимост с WP 6.0+ и гъвкави крайни точки.
-		$defaults = [
-			'provider'        => 'openrouter',
-			'api_endpoint'    => 'https://' . 'openrouter' . '.ai/api/v1',
-			'api_key'         => '',
-			'model'           => 'openai/gpt-4o-mini',
-			'batch_size'      => 40,
-			'max_retries'     => 3,
-			'system_prompt'   => '',
-			'skip_translated' => 1,
-			'temperature'     => 0.3,
-		];
+		$defaults = self::get_defaults();
 
 		$options = wp_parse_args( $options, $defaults );
 

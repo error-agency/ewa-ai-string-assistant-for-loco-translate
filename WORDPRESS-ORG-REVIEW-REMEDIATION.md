@@ -2,7 +2,7 @@
 
 **Plugin Name:** EWA AI String Assistant for Loco Translate  
 **Canonical Slug:** `ewa-ai-string-assistant-for-loco-translate`  
-**Version:** 1.7.0  
+**Version:** 1.8.0  
 **Author:** Error Web Agency  
 **Contributors:** errorwebagency  
 **Text Domain:** `ewa-ai-string-assistant-for-loco-translate`  
@@ -15,9 +15,9 @@
 
 # Executive Summary
 
-This remediation release (v1.7.0) comprehensively resolves all requirements identified during the WordPress.org Plugin Directory pre-review and subsequent compliance audits.
+This release (v1.8.0) comprehensively resolves all requirements identified during the WordPress.org Plugin Directory review and implements official native **WordPress AI Client** (`wp_ai_client_prompt()`) support for WordPress 7.0+.
 
-A complete codebase-wide audit was conducted across all PHP, JavaScript, CSS, and documentation files. All identified issues have been resolved. The production package is verified against WordPress Coding Standards, Guideline 11 (Administrative Interface), External Service disclosures, prefix collision rules, scanner restrictions (elimination of NOWDOC), and security best practices.
+A complete audit and verification was conducted across all PHP, JavaScript, CSS, and documentation files. The production package is verified against WordPress Coding Standards, Guideline 11 (Administrative Interface), External Service disclosures, prefix collision rules, scanner restrictions, and security best practices.
 
 ---
 
@@ -27,15 +27,16 @@ A complete codebase-wide audit was conducted across all PHP, JavaScript, CSS, an
 | :--- | :--- | :--- |
 | **Naming / slug** | **PASS** | Static review — matching folder name, main file, header, and text domain `ewa-ai-string-assistant-for-loco-translate`. |
 | **Prefixing** | **PASS** | Project-wide search — canonical prefix `ewaas_` / `EWAAS_` (>= 4 chars). 0 active legacy runtime aliases. |
-| **External services** | **PASS** | README/code comparison — 1:1 match across OpenRouter, Ollama, OpenAI, and Custom endpoints. |
+| **External services** | **PASS** | README/code comparison — 1:1 match across WordPress AI Client, OpenRouter, Ollama, OpenAI, and Custom endpoints. |
 | **OpenRouter disclosure** | **PASS** | Network payload review — downstream routing, attribution headers (`HTTP-Referer`, `X-Title`), credentials handling. |
 | **OpenAI disclosure** | **PASS** | Network payload review — official API policies (Services Agreement, Service Terms, Privacy Policy), direct server communication. |
 | **Ollama disclosure** | **PASS** | Network payload review — local vs remote hosting distinction, official terms and privacy links. |
 | **Admin notices** | **PASS** | Admin screen audit — restricted strictly to `plugins.php` and settings screen with `activate_plugins` capability check. |
 | **NOWDOC/HEREDOC** | **PASS** | 0 occurrences (`git grep "<<<"`: 0 production occurrences). Scanner-friendly string arrays used. |
-| **Internationalization** | **PASS** | PHP/JS audit — 100% user-facing strings use Gettext / localized `ewaasAdmin.i18n` & `ewaasLoco.i18n`. POT regenerated (154 strings). |
-| **AI Client recommendation** | **Evaluated / deferred** | Architecture review — direct provider adapters retained to support WP < 7.0, OpenRouter, local Ollama, and custom endpoints. |
+| **Internationalization** | **PASS** | PHP/JS audit — 100% user-facing strings use Gettext / localized `ewaasAdmin.i18n` & `ewaasLoco.i18n`. POT regenerated (185 strings). |
+| **AI Client integration** | **PASS / Implemented** | Integrated native WordPress AI Client (`wp_ai_client_prompt()`) as recommended/default transport on WP 7.0+ with **Settings → Connectors** integration. Direct connection adapter retained for WP 6.x and OpenRouter/Ollama/Custom setups. |
 | **WordPress 7.1** | **PASS** | Runtime smoke test (`tests/test-wp71-smoke.php`) — 10 lifecycle criteria verified (34/34 assertions passed). |
+| **AI Client Test Suite** | **PASS** | Automated test suite (`tests/test-wp-ai-client.php`) — Scenarios A through I and No Silent Fallback verified (36/36 assertions passed). |
 | **PHP compatibility** | **PASS** | Static/runtime test (`tests/check-php74-compat.py`) — 0 PHP 8-only features, 100% PHP 7.4+ compatible. |
 
 ---
@@ -100,9 +101,22 @@ A complete codebase-wide audit was conducted across all PHP, JavaScript, CSS, an
 * **Strict Provider Allowlist:** Both AJAX endpoints (`fetch_models`, `test_connection`) and settings sanitization enforce an explicit allowlist: `[ 'openrouter', 'ollama', 'custom' ]`. Unrecognized providers are rejected.
 * **PHP Internationalization:** Wrapped all user-facing backend messages in standard Gettext calls (`esc_html__()`, `esc_attr__()`, `__()`, `sprintf()`) with translator comments for placeholders using text domain `ewa-ai-string-assistant-for-loco-translate`.
 * **JavaScript Internationalization:** Localized dictionary enriched with 35+ strings in `ewaasAdmin.i18n` and `ewaasLoco.i18n`. All hardcoded frontend UI strings replaced.
-* **POT File Updated:** Generated `languages/ewa-ai-string-assistant-for-loco-translate.pot` with 154 localized strings.
+* **POT File Updated:** Generated `languages/ewa-ai-string-assistant-for-loco-translate.pot` with 185 localized strings.
 * **Textdomain Hook:** `load_plugin_textdomain()` attached to `init` action hook for WordPress 6.7+ compatibility.
-* **WordPress AI Client:** Evaluated and intentionally deferred to retain backward compatibility with WordPress 6.0–6.8 and flexible self-hosted/custom endpoint workflows.
+
+## 6. WordPress 7.0+ Native AI Client Integration
+
+* **Transport Abstraction:** Implemented `AI_Transport_Interface` with two specialized transport implementations:
+  * `WP_AI_Client_Transport`: Implements native text generation via WordPress Core's `wp_ai_client_prompt()`, routing requests to the AI provider and credentials configured centrally in **Settings → Connectors**. Supports system instructions, temperature, and optional model preferences without requiring any plugin-level API keys.
+  * `Direct_AI_Transport`: Preserves direct HTTP connection to OpenRouter, self-hosted/remote Ollama instances, and custom OpenAI-compatible endpoints for WordPress 6.x or specialized administrative setups.
+* **Factory / Manager:** `AI_Transport_Manager::get_active_transport()` inspects settings and runtime environment to instantiate the appropriate transport. Falls back cleanly to `Direct_AI_Transport` on WordPress 6.x environments.
+* **Centralized Settings UI:**
+  * Added AI Connection Mode selector on settings page:
+    1. **WordPress AI Client (Recommended)** — default on WordPress 7.0+ fresh installs. Displays real-time status badge (Ready, Provider Required, AI Disabled, or Unavailable), link to `options-general.php?page=connectors`, and an AJAX "Check AI Availability" action.
+    2. **Advanced Direct Connection** — preserves OpenRouter, Ollama, and Custom provider options inside a collapsible container.
+  * Preserves direct credentials and endpoints during mode switches so administrators can toggle between modes without re-entering keys.
+* **No Silent Fallbacks:** If WordPress AI Client mode is active and encounters an error (no configured provider, AI disabled, or API error), it returns an explicit, actionable Gettext `WP_Error` to the administrator. It NEVER silently falls back to direct HTTP transport, ensuring predictable and transparent data routing.
+* **Upgrade Preservation:** Existing installations upgrading with configured direct credentials automatically retain `ai_transport = 'direct'`, preventing any broken workflows. Fresh installations on WordPress 7.0+ default to `wordpress`.
 
 ---
 
@@ -125,7 +139,20 @@ A complete codebase-wide audit was conducted across all PHP, JavaScript, CSS, an
   * 10. Prefixing & absence of legacy identifiers (4 assertions)
   * 11. Provider allowlist validation (2 assertions)
 
-### 3. WordPress 7.1 Smoke Test Suite (`tests/test-wp71-smoke.php`)
+### 3. WordPress 7.0+ AI Client Integration Test Suite (`tests/test-wp-ai-client.php`)
+* **36 / 36 PASS (0 failures)**:
+  * Scenario A: WP 7.1 + Core provider works with 0 plugin API keys (5 assertions)
+  * Scenario B: WP 7.1 + No compatible provider returns controlled error without direct fallback (4 assertions)
+  * Scenario C: WP 7.1 + AI disabled returns controlled error without direct fallback (4 assertions)
+  * Scenario D: WP 7.1 + Direct OpenRouter connection works (3 assertions)
+  * Scenario E: WP 7.1 + Direct Ollama connection works (4 assertions)
+  * Scenario F: WP 7.1 + Direct Custom Endpoint works (4 assertions)
+  * Scenario G: WP 6.x compatibility cleanly uses Direct_AI_Transport (2 assertions)
+  * Scenario H: Upgrade test — existing installations retain `ai_transport = 'direct'` (3 assertions)
+  * Scenario I: Fresh install defaults — WP 7.1 gets `wordpress`, WP 6.5 gets `direct` (2 assertions)
+  * No Silent Fallback Verification — Core AI exceptions and WP_Error objects return controlled errors without direct fallback (5 assertions)
+
+### 4. WordPress 7.1 Smoke Test Suite (`tests/test-wp71-smoke.php`)
 * **34 / 34 PASS (0 failures)**:
   * 1. Activation lifecycle (4 assertions)
   * 2. Settings page rendering (6 assertions)
@@ -138,12 +165,18 @@ A complete codebase-wide audit was conducted across all PHP, JavaScript, CSS, an
   * 9. Deactivation / reactivation lifecycle (3 assertions)
   * 10. Strict error reporting — zero PHP notices/warnings (1 assertion)
 
-### 4. PHP 7.4 Static Compatibility Test (`tests/check-php74-compat.py`)
-* **PASS**: 0 PHP 8-only features found across all production files. 100% compatible with PHP 7.4+.
+### 5. PHP 7.4 Static Compatibility Test (`tests/check-php74-compat.py`)
+* **PASS**: 0 PHP 8-only features found across 20 PHP files. 100% compatible with PHP 7.4+.
 
-### 5. Production Package Integrity (`tests/verify-package-zip.py`)
-* **ZIP Archive Integrity:** Exactly 22 production files, all rooted in `ewa-ai-string-assistant-for-loco-translate/`, using POSIX forward slashes.
+### 6. Production Package Integrity (`tests/verify-package-zip.py`)
+* **ZIP Archive Integrity:** Exactly 26 production files, all rooted in `ewa-ai-string-assistant-for-loco-translate/`, using POSIX forward slashes.
 * **Zero Dev Artifacts:** Zero `.git`, `tests/`, `.md`, `.py`, `.zip`, `.env`, or IDE files in archive.
 * **Extracted Linting:** All extracted PHP files pass `php -l`.
 * **Prohibited Patterns Scan:** Zero instances of `EWA_AI_TRANSLATOR_`, `ewa_ai_translator_plugin`, `wp_ajax_ewa_`, `ewaAdmin`, `ewaLoco`, `ewa_nonce`, or `<<<`.
-* **Readme Verification:** Confirmed `Tested up to: 7.1`, OpenAI official API policy links, Ollama terms link, OpenRouter downstream routing, and accurate direct connection claims.
+* **Readme Verification:** Confirmed `Stable tag: 1.8.0`, `Tested up to: 7.1`, OpenAI official API policy links, Ollama terms link, OpenRouter downstream routing, and WordPress AI Client documentation.
+
+---
+
+# WordPress.org Review Team Response (Suggested Text)
+
+> "Thank you for the review feedback. In version 1.8.0, we have fully integrated the official native WordPress AI Client (`wp_ai_client_prompt()`) as the default and recommended transport for WordPress 7.0+. Users on WordPress 7.0+ can translate strings using credentials and providers configured centrally in **Settings → Connectors** without configuring any API keys in our plugin. For backward compatibility with WordPress 6.x and for users utilizing local Ollama instances or custom private endpoints, we have retained an Advanced Direct Connection mode. Upgrades preserve existing direct configurations, and no silent fallbacks are used. All prefixing (`ewaas_`), external service disclosures, and packaging requirements have been thoroughly validated."

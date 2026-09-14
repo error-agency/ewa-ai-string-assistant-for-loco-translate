@@ -1,5 +1,7 @@
 <?php
 use ErrorWebAgency\EwaAIStringAssistant\Settings;
+use ErrorWebAgency\EwaAIStringAssistant\AI_Transport_Manager;
+use ErrorWebAgency\EwaAIStringAssistant\WP_AI_Client_Transport;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -9,14 +11,18 @@ if ( ! current_user_can( 'manage_options' ) ) {
 }
 
 ( function () {
-	$ewaas_settings = Settings::instance()->get();
-	$ewaas_provider = $ewaas_settings['provider'];
+	$ewaas_settings          = Settings::instance()->get();
+	$ewaas_provider          = $ewaas_settings['provider'];
+	$ewaas_ai_transport       = $ewaas_settings['ai_transport'];
+	$ewaas_is_wp_ai_supported = AI_Transport_Manager::is_wp_ai_client_supported();
+	$ewaas_wp_ai_status       = WP_AI_Client_Transport::get_status();
+	$connectors_url           = admin_url( 'options-general.php?page=connectors' );
 ?>
 <div class="wrap ewa-settings-wrap">
 	<h1 class="ewa-page-title">
 		<span class="dashicons dashicons-translation ewa-logo"></span>
 		<?php esc_html_e( 'EWA AI String Assistant for Loco Translate', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
-		<span class="ewa-version">v<?php echo esc_html( defined( 'EWAAS_VERSION' ) ? EWAAS_VERSION : '1.7.0' ); ?></span>
+		<span class="ewa-version">v<?php echo esc_html( defined( 'EWAAS_VERSION' ) ? EWAAS_VERSION : '1.8.0' ); ?></span>
 	</h1>
 
 	<?php settings_errors( 'ewaas_settings_group' ); ?>
@@ -28,7 +34,7 @@ if ( ! current_user_can( 'manage_options' ) ) {
 			<?php esc_html_e( 'AI Service Transparency & Data Transmission Disclosure', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
 		</p>
 		<p style="margin: 0; font-size: 12px; color: #50575e; line-height: 1.5;">
-			<?php esc_html_e( 'This plugin connects to external AI services (OpenRouter, OpenAI, a self-hosted/remote Ollama instance, or an administrator-configured OpenAI-compatible endpoint) ONLY when an administrator explicitly initiates a translation or connection test. Source strings, context, and translation instructions are sent directly from your WordPress server to the configured endpoint. No Error Web Agency-operated intermediary or proxy server is used. Services such as OpenRouter may route requests to downstream model providers according to their own terms and data policies.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+			<?php esc_html_e( 'This plugin connects to external AI services (via the native WordPress AI Client and configured connectors, or via direct connection to OpenRouter, an OpenAI endpoint, a self-hosted/remote Ollama instance, or an administrator-configured OpenAI-compatible endpoint) ONLY when an administrator explicitly initiates a translation or connection test. Source strings, context, and translation instructions are sent directly from your WordPress server to the configured endpoint. No Error Web Agency-operated intermediary or proxy server is used.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
 		</p>
 	</div>
 
@@ -39,126 +45,253 @@ if ( ! current_user_can( 'manage_options' ) ) {
 			<form method="post" action="options.php" id="ewa-settings-form">
 				<?php settings_fields( 'ewaas_settings_group' ); ?>
 
-				<!-- 1. AI Provider & Connection Card -->
+				<!-- 0. AI Connection Mode Card -->
 				<div class="ewa-card">
 					<h2 class="ewa-card-title">
-						<span class="dashicons dashicons-cloud"></span>
-						<?php esc_html_e( 'AI Provider & Connection', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+						<span class="dashicons dashicons-networking"></span>
+						<?php esc_html_e( 'AI Connection Mode', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
 					</h2>
 
-					<div class="ewa-provider-tabs">
-						<label class="ewa-provider-tab <?php echo 'openrouter' === $ewaas_provider ? 'active' : ''; ?>">
-							<input type="radio" name="ewaas_settings[provider]" value="openrouter"
-								<?php checked( $ewaas_provider, 'openrouter' ); ?>>
-							<span class="dashicons dashicons-cloud ewa-provider-icon"></span>
-							<strong>OpenRouter</strong>
-							<small><?php esc_html_e( 'Cloud API aggregator', 'ewa-ai-string-assistant-for-loco-translate' ); ?></small>
-						</label>
-						<label class="ewa-provider-tab <?php echo 'ollama' === $ewaas_provider ? 'active' : ''; ?>">
-							<input type="radio" name="ewaas_settings[provider]" value="ollama"
-								<?php checked( $ewaas_provider, 'ollama' ); ?>>
-							<span class="dashicons dashicons-admin-home ewa-provider-icon"></span>
-							<strong>Ollama</strong>
-							<small><?php esc_html_e( 'Local / self-hosted LLM', 'ewa-ai-string-assistant-for-loco-translate' ); ?></small>
-						</label>
-						<label class="ewa-provider-tab <?php echo 'custom' === $ewaas_provider ? 'active' : ''; ?>">
-							<input type="radio" name="ewaas_settings[provider]" value="custom"
-								<?php checked( $ewaas_provider, 'custom' ); ?>>
-							<span class="dashicons dashicons-admin-tools ewa-provider-icon"></span>
-							<strong><?php esc_html_e( 'Custom Endpoint', 'ewa-ai-string-assistant-for-loco-translate' ); ?></strong>
-							<small><?php esc_html_e( 'OpenAI-compatible API', 'ewa-ai-string-assistant-for-loco-translate' ); ?></small>
-						</label>
+					<?php if ( $ewaas_is_wp_ai_supported ) : ?>
+						<div class="ewa-transport-options" style="margin-bottom: 12px;">
+							<label class="ewa-transport-option" style="display: block; margin-bottom: 12px; cursor: pointer;">
+								<input type="radio" name="ewaas_settings[ai_transport]" value="wordpress" class="ewa-transport-radio"
+									<?php checked( $ewaas_ai_transport, 'wordpress' ); ?>>
+								<strong><?php esc_html_e( 'WordPress AI Client — Recommended', 'ewa-ai-string-assistant-for-loco-translate' ); ?></strong>
+								<p class="description" style="margin: 4px 0 0 24px;">
+									<?php esc_html_e( 'Uses the AI provider and credentials configured centrally in WordPress Settings → Connectors. Secure and managed by WordPress core.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+								</p>
+							</label>
+							<label class="ewa-transport-option" style="display: block; cursor: pointer;">
+								<input type="radio" name="ewaas_settings[ai_transport]" value="direct" class="ewa-transport-radio"
+									<?php checked( $ewaas_ai_transport, 'direct' ); ?>>
+								<strong><?php esc_html_e( 'Advanced Direct Connection', 'ewa-ai-string-assistant-for-loco-translate' ); ?></strong>
+								<p class="description" style="margin: 4px 0 0 24px;">
+									<?php esc_html_e( 'Configure OpenRouter, a local/remote Ollama instance, or a custom OpenAI-compatible endpoint directly.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+								</p>
+							</label>
+						</div>
+
+						<?php if ( 'direct' === $ewaas_ai_transport ) : ?>
+							<div class="notice notice-info inline" style="margin: 10px 0 5px; padding: 10px 12px;">
+								<p style="margin: 0; font-size: 13px;">
+									<span class="dashicons dashicons-info" style="vertical-align: middle; color: #2271b1;"></span>
+									<?php esc_html_e( 'WordPress AI Client is available on this site. You can switch to it anytime to use providers and credentials configured centrally in WordPress.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+								</p>
+							</div>
+						<?php endif; ?>
+
+					<?php else : ?>
+						<input type="hidden" name="ewaas_settings[ai_transport]" value="direct">
+						<div class="notice notice-info inline" style="margin: 0 0 10px; padding: 10px 12px;">
+							<p style="margin: 0; font-size: 13px;">
+								<span class="dashicons dashicons-info" style="vertical-align: middle; color: #2271b1;"></span>
+								<?php esc_html_e( 'WordPress AI Client is available in WordPress 7.0 and later. This site uses the compatible direct connection mode.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+							</p>
+						</div>
+					<?php endif; ?>
+				</div>
+
+				<!-- 0.1 WordPress AI Client Details Card (visible only when transport == wordpress) -->
+				<div class="ewa-card" id="ewa-card-wp-ai-client" style="<?php echo 'wordpress' === $ewaas_ai_transport ? '' : 'display:none;'; ?>">
+					<h2 class="ewa-card-title">
+						<span class="dashicons dashicons-admin-generic"></span>
+						<?php esc_html_e( 'WordPress AI Client Configuration', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+					</h2>
+
+					<div id="ewa-wp-ai-status-container" style="margin-bottom: 15px;">
+						<?php if ( 'available' === $ewaas_wp_ai_status ) : ?>
+							<div class="notice notice-success inline" style="margin: 0; padding: 10px 12px;">
+								<p style="margin: 0;">
+									<span class="dashicons dashicons-yes-alt" style="color: #46b450; vertical-align: middle;"></span>
+									<strong><?php esc_html_e( 'Status: Ready', 'ewa-ai-string-assistant-for-loco-translate' ); ?></strong> —
+									<?php esc_html_e( 'WordPress AI Client is available and a compatible text-generation provider is configured.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+								</p>
+							</div>
+						<?php elseif ( 'ai_disabled' === $ewaas_wp_ai_status ) : ?>
+							<div class="notice notice-warning inline" style="margin: 0; padding: 10px 12px;">
+								<p style="margin: 0;">
+									<span class="dashicons dashicons-warning" style="color: #dba617; vertical-align: middle;"></span>
+									<strong><?php esc_html_e( 'Status: AI Disabled', 'ewa-ai-string-assistant-for-loco-translate' ); ?></strong> —
+									<?php esc_html_e( 'AI features are disabled in this WordPress environment.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+								</p>
+							</div>
+						<?php elseif ( 'client_unavailable' === $ewaas_wp_ai_status ) : ?>
+							<div class="notice notice-error inline" style="margin: 0; padding: 10px 12px;">
+								<p style="margin: 0;">
+									<span class="dashicons dashicons-no-alt" style="color: #dc3232; vertical-align: middle;"></span>
+									<strong><?php esc_html_e( 'Status: Unavailable', 'ewa-ai-string-assistant-for-loco-translate' ); ?></strong> —
+									<?php esc_html_e( 'The WordPress AI Client is not available on this site.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+								</p>
+							</div>
+						<?php else : ?>
+							<div class="notice notice-warning inline" style="margin: 0; padding: 10px 12px;">
+								<p style="margin: 0;">
+									<span class="dashicons dashicons-warning" style="color: #dba617; vertical-align: middle;"></span>
+									<strong><?php esc_html_e( 'Status: Provider Required', 'ewa-ai-string-assistant-for-loco-translate' ); ?></strong> —
+									<?php esc_html_e( 'No compatible text-generation AI provider is configured in WordPress Settings → Connectors.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+								</p>
+							</div>
+						<?php endif; ?>
 					</div>
 
 					<table class="form-table ewa-form-table">
 						<tr>
-							<th><?php esc_html_e( 'API Endpoint', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
+							<th><?php esc_html_e( 'AI Providers', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
 							<td>
-								<input type="url" name="ewaas_settings[api_endpoint]"
-									value="<?php echo esc_attr( $ewaas_settings['api_endpoint'] ); ?>"
-									class="regular-text" id="ewa-api-endpoint"
-									placeholder="https://openrouter.ai/api/v1">
-								<div class="ewa-presets">
-									<button type="button" class="button button-small ewa-preset"
-										data-value="https://openrouter.ai/api/v1">
-										OpenRouter
-									</button>
-									<button type="button" class="button button-small ewa-preset"
-										data-value="http://localhost:11434">
-										Ollama local
-									</button>
-									<button type="button" class="button button-small ewa-preset"
-										data-value="https://api.openai.com/v1">
-										OpenAI
-									</button>
-								</div>
-							</td>
-						</tr>
-						<tr class="ewa-row-apikey" <?php echo 'ollama' === $ewaas_provider ? 'style="display:none"' : ''; ?>>
-							<th><?php esc_html_e( 'API Key', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
-							<td>
-								<input type="password" name="ewaas_settings[api_key]"
-									value=""
-									placeholder="<?php echo ! empty( $ewaas_settings['api_key'] ) ? esc_attr__( 'API key saved — leave empty to keep', 'ewa-ai-string-assistant-for-loco-translate' ) : ''; ?>"
-									class="regular-text" autocomplete="new-password">
-								<?php if ( ! empty( $ewaas_settings['api_key'] ) ) : ?>
-									<label style="margin-left:10px;">
-										<input type="checkbox" name="ewaas_settings[clear_api_key]" value="1">
-										<?php esc_html_e( 'Clear saved API key', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
-									</label>
-								<?php endif; ?>
-								<p class="description">
-									<?php esc_html_e( 'Leave empty if using a local Ollama endpoint without authentication.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
-									<a href="https://openrouter.ai/keys" target="_blank" rel="noopener">
-										<?php esc_html_e( 'Get OpenRouter key ↗', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
-									</a>
-								</p>
-							</td>
-						</tr>
-						<tr>
-							<th><?php esc_html_e( 'Connection Test', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
-							<td>
-								<button type="button" id="ewa-test-connection" class="button button-secondary">
-									<span class="dashicons dashicons-rest-api"></span>
-									<?php esc_html_e( 'Test Connection', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+								<a href="<?php echo esc_url( $connectors_url ); ?>" class="button button-secondary" target="_blank" rel="noopener">
+									<span class="dashicons dashicons-admin-plugins" style="vertical-align: text-bottom;"></span>
+									<?php esc_html_e( 'Manage AI Providers (Settings → Connectors) ↗', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+								</a>
+								<button type="button" id="ewa-check-wp-ai-status" class="button button-secondary" style="margin-left: 8px;">
+									<span class="dashicons dashicons-update" style="vertical-align: text-bottom;"></span>
+									<?php esc_html_e( 'Check AI Availability', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
 								</button>
-								<span id="ewa-test-result" class="ewa-test-result"></span>
+								<span id="ewa-wp-ai-check-result" style="margin-left: 10px; font-weight: 600;"></span>
+								<p class="description" style="margin-top: 6px;">
+									<?php esc_html_e( 'Configure API credentials and AI connectors globally in WordPress. Additional AI providers can be added through compatible WordPress AI provider plugins.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+								</p>
 							</td>
 						</tr>
-					</table>
-				</div>
-
-				<!-- 2. Model Selection Card -->
-				<div class="ewa-card">
-					<h2 class="ewa-card-title">
-						<span class="dashicons dashicons-lightbulb"></span>
-						<?php esc_html_e( 'Model Selection', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
-					</h2>
-
-					<table class="form-table ewa-form-table">
 						<tr>
-							<th><?php esc_html_e( 'Active Model', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
+							<th><?php esc_html_e( 'Model Preference (Optional)', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
 							<td>
-								<div class="ewa-model-row">
-									<input type="text" name="ewaas_settings[model]" id="ewa-model-input"
-										value="<?php echo esc_attr( $ewaas_settings['model'] ); ?>"
-										class="regular-text"
-										placeholder="openai/gpt-4o-mini">
-									<button type="button" id="ewa-fetch-models" class="button">
-										<span class="dashicons dashicons-update"></span>
-										<?php esc_html_e( 'Load Models', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
-									</button>
-								</div>
-								<select id="ewa-model-select" style="display:none; margin-top:8px; width:100%; max-width:500px;">
-									<option value=""><?php esc_html_e( '— choose a model —', 'ewa-ai-string-assistant-for-loco-translate' ); ?></option>
-								</select>
+								<input type="text" name="ewaas_settings[preferred_models]" id="ewa-preferred-models"
+									value="<?php echo esc_attr( $ewaas_settings['preferred_models'] ?? '' ); ?>"
+									class="regular-text" placeholder="<?php esc_attr_e( 'Automatic compatible model (leave blank)', 'ewa-ai-string-assistant-for-loco-translate' ); ?>">
 								<p class="description">
-									<?php esc_html_e( 'Type model ID directly or click Load Models to fetch from provider.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+									<?php esc_html_e( 'Optional comma-separated list of preferred model IDs (e.g. openai/gpt-4o-mini, claude-3-5-sonnet). If blank or unsupported, WordPress automatically selects the best available model.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
 								</p>
 							</td>
 						</tr>
 					</table>
 				</div>
+
+				<!-- DIRECT CONNECTION CONTAINER (visible only when transport == direct) -->
+				<div id="ewa-direct-settings-container" style="<?php echo 'direct' === $ewaas_ai_transport ? '' : 'display:none;'; ?>">
+
+					<!-- 1. AI Provider & Connection Card -->
+					<div class="ewa-card">
+						<h2 class="ewa-card-title">
+							<span class="dashicons dashicons-cloud"></span>
+							<?php esc_html_e( 'Direct Provider & Connection', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+						</h2>
+
+						<div class="ewa-provider-tabs">
+							<label class="ewa-provider-tab <?php echo 'openrouter' === $ewaas_provider ? 'active' : ''; ?>">
+								<input type="radio" name="ewaas_settings[provider]" value="openrouter"
+									<?php checked( $ewaas_provider, 'openrouter' ); ?>>
+								<span class="dashicons dashicons-cloud ewa-provider-icon"></span>
+								<strong>OpenRouter</strong>
+								<small><?php esc_html_e( 'Cloud API aggregator', 'ewa-ai-string-assistant-for-loco-translate' ); ?></small>
+							</label>
+							<label class="ewa-provider-tab <?php echo 'ollama' === $ewaas_provider ? 'active' : ''; ?>">
+								<input type="radio" name="ewaas_settings[provider]" value="ollama"
+									<?php checked( $ewaas_provider, 'ollama' ); ?>>
+								<span class="dashicons dashicons-admin-home ewa-provider-icon"></span>
+								<strong>Ollama</strong>
+								<small><?php esc_html_e( 'Local / self-hosted LLM', 'ewa-ai-string-assistant-for-loco-translate' ); ?></small>
+							</label>
+							<label class="ewa-provider-tab <?php echo 'custom' === $ewaas_provider ? 'active' : ''; ?>">
+								<input type="radio" name="ewaas_settings[provider]" value="custom"
+									<?php checked( $ewaas_provider, 'custom' ); ?>>
+								<span class="dashicons dashicons-admin-tools ewa-provider-icon"></span>
+								<strong><?php esc_html_e( 'Custom Endpoint', 'ewa-ai-string-assistant-for-loco-translate' ); ?></strong>
+								<small><?php esc_html_e( 'OpenAI-compatible API', 'ewa-ai-string-assistant-for-loco-translate' ); ?></small>
+							</label>
+						</div>
+
+						<table class="form-table ewa-form-table">
+							<tr>
+								<th><?php esc_html_e( 'API Endpoint', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
+								<td>
+									<input type="url" name="ewaas_settings[api_endpoint]"
+										value="<?php echo esc_attr( $ewaas_settings['api_endpoint'] ); ?>"
+										class="regular-text" id="ewa-api-endpoint"
+										placeholder="https://openrouter.ai/api/v1">
+									<div class="ewa-presets">
+										<button type="button" class="button button-small ewa-preset"
+											data-value="https://openrouter.ai/api/v1">
+											OpenRouter
+										</button>
+										<button type="button" class="button button-small ewa-preset"
+											data-value="http://localhost:11434">
+											Ollama local
+										</button>
+										<button type="button" class="button button-small ewa-preset"
+											data-value="https://api.openai.com/v1">
+											OpenAI
+										</button>
+									</div>
+								</td>
+							</tr>
+							<tr class="ewa-row-apikey" <?php echo 'ollama' === $ewaas_provider ? 'style="display:none"' : ''; ?>>
+								<th><?php esc_html_e( 'API Key', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
+								<td>
+									<input type="password" name="ewaas_settings[api_key]"
+										value=""
+										placeholder="<?php echo ! empty( $ewaas_settings['api_key'] ) ? esc_attr__( 'API key saved — leave empty to keep', 'ewa-ai-string-assistant-for-loco-translate' ) : ''; ?>"
+										class="regular-text" autocomplete="new-password">
+									<?php if ( ! empty( $ewaas_settings['api_key'] ) ) : ?>
+										<label style="margin-left:10px;">
+											<input type="checkbox" name="ewaas_settings[clear_api_key]" value="1">
+											<?php esc_html_e( 'Clear saved API key', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+										</label>
+									<?php endif; ?>
+									<p class="description">
+										<?php esc_html_e( 'Leave empty if using a local Ollama endpoint without authentication.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+										<a href="https://openrouter.ai/keys" target="_blank" rel="noopener">
+											<?php esc_html_e( 'Get OpenRouter key ↗', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+										</a>
+									</p>
+								</td>
+							</tr>
+							<tr>
+								<th><?php esc_html_e( 'Connection Test', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
+								<td>
+									<button type="button" id="ewa-test-connection" class="button button-secondary">
+										<span class="dashicons dashicons-rest-api"></span>
+										<?php esc_html_e( 'Test Connection', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+									</button>
+									<span id="ewa-test-result" class="ewa-test-result"></span>
+								</td>
+							</tr>
+						</table>
+					</div>
+
+					<!-- 2. Model Selection Card -->
+					<div class="ewa-card">
+						<h2 class="ewa-card-title">
+							<span class="dashicons dashicons-lightbulb"></span>
+							<?php esc_html_e( 'Direct Model Selection', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+						</h2>
+
+						<table class="form-table ewa-form-table">
+							<tr>
+								<th><?php esc_html_e( 'Active Model', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
+								<td>
+									<div class="ewa-model-row">
+										<input type="text" name="ewaas_settings[model]" id="ewa-model-input"
+											value="<?php echo esc_attr( $ewaas_settings['model'] ); ?>"
+											class="regular-text"
+											placeholder="openai/gpt-4o-mini">
+										<button type="button" id="ewa-fetch-models" class="button">
+											<span class="dashicons dashicons-update"></span>
+											<?php esc_html_e( 'Load Models', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+										</button>
+									</div>
+									<select id="ewa-model-select" style="display:none; margin-top:8px; width:100%; max-width:500px;">
+										<option value=""><?php esc_html_e( '— choose a model —', 'ewa-ai-string-assistant-for-loco-translate' ); ?></option>
+									</select>
+									<p class="description">
+										<?php esc_html_e( 'Type model ID directly or click Load Models to fetch from provider.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+									</p>
+								</td>
+							</tr>
+						</table>
+					</div>
+
+				</div><!-- /#ewa-direct-settings-container -->
 
 				<!-- 3. Progressive Disclosure: Advanced Settings Card -->
 				<div class="ewa-card ewa-advanced-card">

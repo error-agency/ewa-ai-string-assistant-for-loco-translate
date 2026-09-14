@@ -3,21 +3,23 @@ Contributors: errorwebagency
 Tags: translation, ai, localization, gettext, loco translate
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 Requires PHP: 7.4
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-AI-assisted string translation for Loco Translate using OpenRouter, Ollama, or a custom OpenAI-compatible endpoint.
+AI-assisted string translation for Loco Translate using native WordPress AI Client (WordPress 7.0+), OpenRouter, Ollama, or custom OpenAI-compatible endpoints.
 
 == Description ==
 
 EWA AI String Assistant for Loco Translate integrates state-of-the-art AI translation directly into the Loco Translate editor for WordPress plugins and themes.
 
-Translate untranslated Gettext PO strings in seconds using top AI models via OpenRouter (Anthropic Claude, OpenAI GPT, Google Gemini, DeepSeek, Meta Llama), a locally hosted or remote Ollama instance, or any custom OpenAI-compatible API endpoint.
+On WordPress 7.0+, it seamlessly leverages the official, native **WordPress AI Client** (`wp_ai_client_prompt`) and connectors configured centrally in WordPress Core, requiring zero plugin-level API keys. For WordPress 6.x or specialized setups, it provides an **Advanced Direct Connection** mode supporting OpenRouter (Anthropic Claude, OpenAI GPT, Google Gemini, DeepSeek, Meta Llama), locally hosted or remote Ollama instances, or any custom OpenAI-compatible API endpoint.
 
 = Key Features =
 
+* **Native WordPress AI Client Support (WordPress 7.0+)**: Seamlessly uses the AI provider and credentials configured centrally in WordPress Core (**Settings → Connectors**) with zero plugin-level API keys required.
+* **Advanced Direct Connection Mode**: Full support for OpenRouter, local or remote self-hosted Ollama instances, and custom OpenAI-compatible endpoints with idempotent settings retention.
 * **Direct Loco Translate Integration**: Adds an "🤖 AI Translate" action panel to the Loco Translate PO file editor toolbar.
 * **Deterministic ID-Based AI Protocol**: Uses stable entry IDs (`entry_X`) and strict JSON envelope validation to guarantee 1:1 translation mapping without drift or alignment offset.
 * **Strict Token & Placeholder Validation**: Validates printf specifiers (`%s`, `%d`, `%1$s`, `%%`), variable templates (`{var}`, `{{var}}`), HTML tags, attributes (`href`, `src`), and HTML entities to prevent code corruption in translations.
@@ -25,12 +27,8 @@ Translate untranslated Gettext PO strings in seconds using top AI models via Ope
 * **Native Plural Forms**: Automatically requests and maps the exact number of plural forms (`nplurals`) defined for the target locale. Partial plural forms are safely detected and completed.
 * **Smart Filtering & Cost Optimization**: Automatically skips non-translatable strings (numbers, URLs, pure placeholders, HTML tags) in memory without making redundant API requests.
 * **Atomic File Saving & Compilation**: Writes PO files atomically using temporary files and filesystem locks, preserving file permissions and automatically compiling binary `.mo` files via WordPress POMO classes.
-* **Multiple AI Providers**:
-  * **OpenRouter**: Access hundreds of cutting-edge models (e.g. Claude 3.5 Sonnet, GPT-4o, DeepSeek V3, Llama 3.3) with your own API key.
-  * **Ollama**: Connect to local or remote self-hosted LLMs with zero API costs.
-  * **Custom Endpoints**: Connect to any OpenAI-compatible API endpoint.
 * **Real-Time Progress & Analytics**: Monitor batch progress, elapsed time, strings translated, and token usage in real time.
-* **Direct API Connections**: No Error Web Agency-operated intermediary or proxy server is used. Requests are sent directly from your WordPress server to the configured service endpoint. Services such as OpenRouter may route requests to third-party model providers under their own terms and data policies.
+* **Direct & Secure Communication**: In WordPress AI Client mode, calls are dispatched via WordPress Core connectors. In Direct mode, calls are sent directly from your server to the configured endpoint without any intermediary proxy servers.
 * **100% Free & Open Source**: No paywalls, no trial limits, no feature restrictions.
 
 = Important Disclaimer & Recommendations =
@@ -38,15 +36,25 @@ Translate untranslated Gettext PO strings in seconds using top AI models via Ope
 * **Loco Translate Disclaimer**: Loco Translate is an independent project by Tim Whitlock. This plugin is an independent third-party add-on and is not affiliated with, sponsored, or endorsed by Loco Translate or its authors.
 * **Backup First**: Always create a complete backup of your `.po` and `.mo` files before performing automated AI translations.
 * **Review Translations**: AI-generated translations are automated suggestions. Site owners are advised to review translated strings for context, grammar, and tone before deploying them on public or production sites.
-* **API Usage & Costs**: If using paid third-party APIs (such as OpenRouter), monitor your usage and set spending limits on your provider dashboard. Developers are not responsible for third-party billing charges.
+* **API Usage & Costs**: If using paid third-party APIs (such as OpenRouter or commercial providers), monitor your usage and set spending limits on your provider dashboard. Developers are not responsible for third-party billing charges.
 
 == External Services ==
 
 This plugin can connect to external AI services when an administrator configures a provider and explicitly initiates an operation that requires the provider, including translating strings, testing a connection, or loading available models.
 
-Translation content is sent only to the provider selected and configured by the administrator. No data is ever transmitted automatically or in the background.
+Translation content is sent only to the provider selected and configured by the administrator (or configured centrally in WordPress Core Connectors). No data is ever transmitted automatically or in the background.
 
-= 1. OpenRouter =
+= 1. WordPress AI Client (WordPress 7.0+) =
+
+When the site is running WordPress 7.0 or higher and WordPress AI Client mode is active (default for new installations), translation requests are delegated directly to the official WordPress AI Client API (`wp_ai_client_prompt()`).
+
+* **Purpose**: Translating Gettext PO strings using the central AI provider configured in WordPress Core (**Settings → Connectors**).
+* **Data Transmitted**: Source strings, plural variations, Gettext context (`msgctxt`), target language name, translation instructions, and optional model preferences.
+* **Routing & Authentication**: WordPress Core handles authentication, credential storage, and transport routing directly to the administrator's chosen AI provider. No credentials are stored or handled by this plugin in WordPress AI Client mode.
+* **When Data is Transmitted**: Exclusively upon explicit administrator action (clicking "AI Translate" in Loco Translate editor or "Check AI Availability" in settings).
+* **Service Policies**: Refer to the privacy policy and terms of service of the specific AI provider configured in your WordPress **Settings → Connectors** screen.
+
+= 2. OpenRouter (Direct Connection Mode) =
 
 When OpenRouter is configured, HTTP requests required for AI translation are sent to the OpenRouter API.
 
@@ -65,7 +73,7 @@ When OpenRouter is configured, HTTP requests required for AI translation are sen
 * **Terms of Service**: https://openrouter.ai/terms
 * **Privacy Policy**: https://openrouter.ai/privacy
 
-= 2. Ollama =
+= 3. Ollama (Direct Connection Mode) =
 
 When Ollama is selected, HTTP requests are sent to the endpoint specified by the administrator (defaulting to `http://localhost:11434`).
 
@@ -80,7 +88,7 @@ When Ollama is selected, HTTP requests are sent to the endpoint specified by the
 * **Terms of Service**: https://ollama.com/terms
 * **Privacy Policy**: https://ollama.com/privacy
 
-= 3. OpenAI API =
+= 4. OpenAI API (Direct Connection Mode) =
 
 OpenAI API is an optional external service. It is used only when an administrator explicitly selects the OpenAI preset (https://api.openai.com/v1) or configures an OpenAI endpoint and provides an OpenAI API key.
 
@@ -95,7 +103,7 @@ OpenAI API is an optional external service. It is used only when an administrato
 * **Privacy Policy**: https://openai.com/policies/privacy-policy/
 * **Enterprise Privacy & Data Handling**: https://openai.com/enterprise-privacy/
 
-= 4. Custom OpenAI-Compatible Endpoints =
+= 5. Custom OpenAI-Compatible Endpoints (Direct Connection Mode) =
 
 When a custom endpoint is configured, requests are sent directly from your WordPress server to the endpoint URL specified by the administrator.
 
@@ -110,10 +118,11 @@ When a custom endpoint is configured, requests are sent directly from your WordP
 2. Upload the `ewa-ai-string-assistant-for-loco-translate` folder to your `/wp-content/plugins/` directory, or install the ZIP file via **Plugins → Add New → Upload Plugin**.
 3. Activate the plugin through the **Plugins** menu in WordPress.
 4. Navigate to **Settings → EWA AI String Assistant** in the WordPress admin menu.
-5. Select your AI provider (**OpenRouter**, **Ollama**, or **Custom Endpoint**) and enter your API credentials or endpoint URL.
-6. Select your preferred model and adjust translation parameters (temperature, batch size).
-7. Go to **Loco Translate → Plugins** or **Loco Translate → Themes**, and open any PO translation file in the editor.
-8. Click the **🤖 AI Translate** button in the editor toolbar, review the settings, and click **Start Translation**.
+5. Choose your AI Connection Mode:
+   * **WordPress AI Client (Recommended)**: Available on WordPress 7.0+. Uses credentials and connectors configured in **Settings → Connectors**.
+   * **Advanced Direct Connection**: Configure OpenRouter, Ollama, or a custom OpenAI-compatible endpoint directly.
+6. Go to **Loco Translate → Plugins** or **Loco Translate → Themes**, and open any PO translation file in the editor.
+7. Click the **🤖 AI Translate** button in the editor toolbar, review the settings, and click **Start Translation**.
 
 == Frequently Asked Questions ==
 
@@ -123,7 +132,7 @@ Yes. EWA AI String Assistant for Loco Translate is an add-on that specifically e
 
 = Is an API key required to use the plugin? =
 
-An API key is required when using OpenRouter or commercial OpenAI-compatible providers. However, if you use a locally hosted Ollama instance, no API key is required and all translations run locally and free of charge.
+On WordPress 7.0+ with the native WordPress AI Client mode active, no plugin-level API key is required — credentials and connectors are managed centrally by WordPress Core (**Settings → Connectors**). In Direct Connection mode, an API key is required for OpenRouter or commercial OpenAI endpoints, but local Ollama instances require no API keys.
 
 = Does this plugin send data to third parties automatically? =
 
@@ -155,10 +164,18 @@ The site administrator is solely responsible for creating and maintaining backup
 
 == Screenshots ==
 
-1. Settings page to configure AI provider (OpenRouter, Ollama, Custom Endpoint), API credentials, model selection, temperature, and batch limits.
+1. Settings page with AI Connection Mode selector (WordPress AI Client vs Advanced Direct Connection), live readiness indicator, and direct provider settings.
 2. AI Translate toolbar button and interactive modal panel within the Loco Translate PO file editor.
 
 == Changelog ==
+
+= 1.8.0 =
+* Integrated native WordPress AI Client (wp_ai_client_prompt) as the recommended and default AI transport for WordPress 7.0+.
+* Added centralized AI Connection Mode settings (WordPress AI Client vs Advanced Direct Connection).
+* Implemented modular transport architecture (WP_AI_Client_Transport and Direct_AI_Transport under AI_Transport_Interface).
+* Added real-time WordPress AI status check and direct link to WordPress Connectors settings.
+* Preserved complete backward compatibility for WordPress 6.x and retained existing direct configurations upon upgrade.
+* Updated privacy policy declarations and external service disclosures for WordPress Core AI routing.
 
 = 1.7.0 =
 * WordPress.org compliance and remediation release.
@@ -195,6 +212,9 @@ The site administrator is solely responsible for creating and maintaining backup
 * Initial release of the AI translation add-on for Loco Translate.
 
 == Upgrade Notice ==
+
+= 1.8.0 =
+Upgrade to version 1.8.0 to use the native WordPress 7.0+ AI Client and Connectors with zero API key configuration, or continue using Advanced Direct Connection mode seamlessly.
 
 = 1.7.0 =
 Upgrade to version 1.7.0 for WordPress.org compliance enhancements, improved namespacing, full external service disclosures, and enhanced admin notice handling.

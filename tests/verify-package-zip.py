@@ -102,7 +102,7 @@ assert "Contributors: errorwebagency" in readme_text, "Missing Contributors in r
 assert "Requires at least: 6.0" in readme_text, "Missing Requires at least in readme"
 assert "Tested up to: 7.1" in readme_text, "Missing Tested up to 7.1 in readme"
 assert "Requires PHP: 7.4" in readme_text, "Missing Requires PHP 7.4 in readme"
-assert "Stable tag: 1.7.0" in readme_text, "Missing Stable tag in readme"
+assert "Stable tag: 1.8.0" in readme_text, "Missing Stable tag in readme"
 assert "== External Services ==" in readme_text, "Missing External Services header"
 assert "https://openai.com/policies/services-agreement/" in readme_text, "Missing OpenAI Services Agreement"
 assert "https://openai.com/policies/service-terms/" in readme_text, "Missing OpenAI Service Terms"

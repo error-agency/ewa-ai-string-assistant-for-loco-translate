@@ -126,6 +126,8 @@ class Admin {
 				'testing'               => __( 'Testing…', 'ewa-ai-string-assistant-for-loco-translate' ),
 				'stopping'              => __( 'Stopping…', 'ewa-ai-string-assistant-for-loco-translate' ),
 				'checking'              => __( 'Checking…', 'ewa-ai-string-assistant-for-loco-translate' ),
+				'checkingStatus'        => __( 'Checking AI status…', 'ewa-ai-string-assistant-for-loco-translate' ),
+				'checkStatus'           => __( 'Check AI Availability', 'ewa-ai-string-assistant-for-loco-translate' ),
 				'checkingFile'          => __( 'Checking file…', 'ewa-ai-string-assistant-for-loco-translate' ),
 				'translateTo'           => __( 'Translate to:', 'ewa-ai-string-assistant-for-loco-translate' ),
 				'loadModels'            => __( 'Load Models', 'ewa-ai-string-assistant-for-loco-translate' ),
@@ -217,7 +219,7 @@ class Admin {
 			'<p>%s</p>',
 			esc_html__( 'Suggested text for your website privacy policy regarding translation features:', 'ewa-ai-string-assistant-for-loco-translate' ),
 			esc_html__( 'EWA AI String Assistant for Loco Translate', 'ewa-ai-string-assistant-for-loco-translate' ),
-			esc_html__( 'When administrators use the AI translation features in Loco Translate, source strings and translation parameters are sent directly to the AI service provider chosen by the administrator (OpenRouter, an administrator-configured OpenAI endpoint, a self-hosted or remote Ollama instance, or a custom OpenAI-compatible endpoint). When using OpenRouter, your site URL and site title are also transmitted in standard HTTP request headers for usage attribution. No visitor personal data or frontend tracking information is collected or transmitted.', 'ewa-ai-string-assistant-for-loco-translate' )
+			esc_html__( 'When administrators use the AI translation features in Loco Translate, source strings and translation parameters are sent to the AI service configured on your site. If WordPress AI Client mode is active (WordPress 7.0+), requests are securely routed via WordPress Core AI architecture to the provider configured in Settings → Connectors. If Advanced Direct Connection mode is active, requests are sent directly to the administrator-configured endpoint (OpenRouter, OpenAI-compatible endpoint, or self-hosted/remote Ollama instance). When using OpenRouter in direct mode, the site URL and title are transmitted in standard HTTP headers for usage attribution. No visitor personal data or frontend tracking information is collected or transmitted.', 'ewa-ai-string-assistant-for-loco-translate' )
 		);
 
 		wp_add_privacy_policy_content(

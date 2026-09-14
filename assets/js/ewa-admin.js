@@ -4,6 +4,45 @@
 
     var config = (typeof ewaasAdmin !== 'undefined') ? ewaasAdmin : {};
 
+    // ─── AI Transport Mode Toggle ──────────────────────────────────────────
+    $('input[name="ewaas_settings[ai_transport]"]').on('change', function () {
+        var transport = $(this).val();
+        if (transport === 'wordpress') {
+            $('#ewa-card-wp-ai-client').slideDown(200);
+            $('#ewa-direct-settings-container').slideUp(200);
+        } else {
+            $('#ewa-card-wp-ai-client').slideUp(200);
+            $('#ewa-direct-settings-container').slideDown(200);
+        }
+    });
+
+    // ─── Check WordPress AI Client Status ───────────────────────────────────
+    $('#ewa-check-wp-ai-status').on('click', function () {
+        var $btn         = $(this);
+        var $result      = $('#ewa-wp-ai-check-result');
+        var checkingText = (config.i18n && config.i18n.checkingStatus) ? config.i18n.checkingStatus : 'Checking…';
+        var checkText    = (config.i18n && config.i18n.checkStatus) ? config.i18n.checkStatus : 'Check AI Availability';
+        var networkErr   = (config.i18n && config.i18n.networkError) ? config.i18n.networkError : 'Network error';
+
+        $btn.prop('disabled', true).text(checkingText);
+        $result.text('').css('color', '');
+
+        $.post(config.ajaxUrl, {
+            action: 'ewaas_check_ai_status',
+            nonce: config.nonce
+        }, function (res) {
+            $btn.prop('disabled', false).html('<span class="dashicons dashicons-update" style="vertical-align:text-bottom;"></span> ' + checkText);
+            if (res.success) {
+                $result.css('color', '#00a32a').text(res.data && res.data.message ? res.data.message : 'Ready');
+            } else {
+                $result.css('color', '#d63638').text(res.data && res.data.message ? res.data.message : 'Unavailable');
+            }
+        }).fail(function () {
+            $btn.prop('disabled', false).html('<span class="dashicons dashicons-update" style="vertical-align:text-bottom;"></span> ' + checkText);
+            $result.css('color', '#d63638').text(networkErr);
+        });
+    });
+
     // ─── Provider Tabs ──────────────────────────────────────────────────────
     $('.ewa-provider-tab input[type=radio]').on('change', function () {
         $('.ewa-provider-tab').removeClass('active');

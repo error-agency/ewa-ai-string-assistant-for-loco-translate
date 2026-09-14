@@ -170,6 +170,12 @@ if ( ! function_exists( 'esc_url_raw' ) ) {
 	}
 }
 
+if ( ! function_exists( 'esc_url' ) ) {
+	function esc_url( $url ) {
+		return htmlspecialchars( (string) $url, ENT_QUOTES, 'UTF-8' );
+	}
+}
+
 if ( ! function_exists( 'sanitize_url' ) ) {
 	function sanitize_url( $url ) {
 		return esc_url_raw( $url );
@@ -489,8 +495,70 @@ if ( ! function_exists( 'wp_remote_retrieve_headers' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_supports_ai' ) ) {
+	function wp_supports_ai() {
+		return $GLOBALS['wp_mock_supports_ai'] ?? true;
+	}
+}
+
+if ( ! class_exists( 'Mock_WP_AI_Prompt_Builder' ) ) {
+	class Mock_WP_AI_Prompt_Builder {
+		public $instruction = '';
+		public $temp        = null;
+		public $models      = [];
+		public $prompt      = '';
+
+		public function system_instruction( $inst ) {
+			$this->instruction = $inst;
+			return $this;
+		}
+
+		public function temperature( $t ) {
+			$this->temp = $t;
+			return $this;
+		}
+
+		public function preferred_models( $m ) {
+			$this->models = $m;
+			return $this;
+		}
+
+		public function is_supported_for_text_generation() {
+			return $GLOBALS['wp_mock_ai_supported_for_text'] ?? true;
+		}
+
+		public function generate_text() {
+			if ( isset( $GLOBALS['wp_mock_ai_generate_exception'] ) ) {
+				throw new \Exception( $GLOBALS['wp_mock_ai_generate_exception'] );
+			}
+			if ( isset( $GLOBALS['wp_mock_ai_generate_error'] ) ) {
+				return new WP_Error( 'ai_client_error', $GLOBALS['wp_mock_ai_generate_error'] );
+			}
+			if ( isset( $GLOBALS['wp_mock_ai_generate_handler'] ) && is_callable( $GLOBALS['wp_mock_ai_generate_handler'] ) ) {
+				return call_user_func( $GLOBALS['wp_mock_ai_generate_handler'], $this->prompt, $this );
+			}
+			return '{"translations":[]}';
+		}
+	}
+}
+
+if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
+	function wp_ai_client_prompt( $prompt = '' ) {
+		if ( isset( $GLOBALS['wp_mock_ai_prompt_exception'] ) ) {
+			throw new \Exception( $GLOBALS['wp_mock_ai_prompt_exception'] );
+		}
+		$builder = new Mock_WP_AI_Prompt_Builder();
+		$builder->prompt = $prompt;
+		return $builder;
+	}
+}
+
 // Require plugin files
 require_once __DIR__ . '/../ewa-ai-string-assistant-for-loco-translate.php';
+require_once __DIR__ . '/../includes/class-ai-transport-interface.php';
+require_once __DIR__ . '/../includes/class-wp-ai-client-transport.php';
+require_once __DIR__ . '/../includes/class-direct-ai-transport.php';
+require_once __DIR__ . '/../includes/class-ai-transport-manager.php';
 require_once __DIR__ . '/../includes/class-settings.php';
 require_once __DIR__ . '/../includes/class-translation-validator.php';
 require_once __DIR__ . '/../includes/class-api-client.php';

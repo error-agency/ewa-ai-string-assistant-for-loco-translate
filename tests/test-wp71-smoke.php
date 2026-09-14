@@ -96,7 +96,7 @@ class WP71_Smoke_Test_Runner {
 		// Симулиране на initial activation
 		Settings::instance()->maybe_migrate_settings();
 		$schema = get_option( Settings::SCHEMA_VERSION_KEY );
-		$this->assert( '1.7.0' === $schema, 'Версията на схемата след активация е 1.7.0.' );
+		$this->assert( Settings::SCHEMA_VERSION === $schema, 'Версията на схемата след активация съответства на SCHEMA_VERSION (1.8.0).' );
 
 		$settings = Settings::instance()->get();
 		$this->assert( is_array( $settings ), 'Настройките по подразбиране са масив.' );
@@ -347,7 +347,7 @@ class WP71_Smoke_Test_Runner {
 		// 2. Реактивация
 		Settings::instance()->maybe_migrate_settings();
 		$schema = get_option( Settings::SCHEMA_VERSION_KEY );
-		$this->assert( '1.7.0' === $schema, 'Версията на схемата остава 1.7.0 след реактивация.' );
+		$this->assert( Settings::SCHEMA_VERSION === $schema, 'Версията на схемата остава актуална (1.8.0) след реактивация.' );
 
 		$reloaded_settings = get_option( Settings::OPTION_KEY );
 		$this->assert( $reloaded_settings === $active_settings, 'Настройките са запазени непокътнати след реактивация.' );

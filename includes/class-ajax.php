@@ -23,6 +23,7 @@ class Ajax {
 		add_action( 'wp_ajax_ewaas_cancel_job', [ $this, 'cancel_job' ] );
 		add_action( 'wp_ajax_ewaas_fetch_models', [ $this, 'fetch_models' ] );
 		add_action( 'wp_ajax_ewaas_test_connection', [ $this, 'test_connection' ] );
+		add_action( 'wp_ajax_ewaas_check_ai_status', [ $this, 'check_ai_status' ] );
 	}
 
 	private function verify_security() {
@@ -448,6 +449,10 @@ class Ajax {
 	public function fetch_models() {
 		$this->verify_security();
 
+		if ( ! empty( $_POST['ai_transport'] ) && 'wordpress' === sanitize_key( wp_unslash( $_POST['ai_transport'] ) ) ) {
+			wp_send_json_error( [ 'message' => esc_html__( 'Model selection is managed centrally in WordPress Settings → Connectors.', 'ewa-ai-string-assistant-for-loco-translate' ) ] );
+		}
+
 		$overrides = [];
 		if ( ! empty( $_POST['provider'] ) ) {
 			$provider = sanitize_text_field( wp_unslash( $_POST['provider'] ) );
@@ -479,7 +484,48 @@ class Ajax {
 	public function test_connection() {
 		$this->verify_security();
 
-		$overrides = [];
+		$transport_mode = isset( $_POST['ai_transport'] ) ? sanitize_key( wp_unslash( $_POST['ai_transport'] ) ) : Settings::instance()->get( 'ai_transport' );
+
+		if ( 'wordpress' === $transport_mode ) {
+			$status = WP_AI_Client_Transport::get_status();
+			if ( 'available' !== $status ) {
+				if ( 'ai_disabled' === $status ) {
+					wp_send_json_error( [ 'message' => esc_html__( 'AI features are disabled in this WordPress environment.', 'ewa-ai-string-assistant-for-loco-translate' ) ] );
+				} elseif ( 'client_unavailable' === $status ) {
+					wp_send_json_error( [ 'message' => esc_html__( 'The WordPress AI Client is not available on this site.', 'ewa-ai-string-assistant-for-loco-translate' ) ] );
+				} else {
+					wp_send_json_error( [ 'message' => esc_html__( 'No compatible text-generation AI provider is configured in WordPress Settings → Connectors.', 'ewa-ai-string-assistant-for-loco-translate' ) ] );
+				}
+			}
+
+			// Пробен превод през WordPress AI Client
+			$test_batch = [
+				[
+					'index'      => 0,
+					'msgid'      => 'Hello',
+					'plural'     => null,
+					'msgctxt'    => null,
+					'duplicates' => [],
+				],
+			];
+
+			$client = new Api_Client( [ 'ai_transport' => 'wordpress' ] );
+			$result = $client->translate_batch( $test_batch, 'Bulgarian' );
+
+			if ( is_wp_error( $result ) ) {
+				wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+			}
+
+			$out = $result[0] ?? __( '(empty)', 'ewa-ai-string-assistant-for-loco-translate' );
+
+			wp_send_json_success( [
+				'message'     => esc_html__( 'WordPress AI Client connection successful!', 'ewa-ai-string-assistant-for-loco-translate' ),
+				'test_input'  => 'Hello',
+				'test_output' => is_array( $out ) ? implode( ' / ', $out ) : $out,
+			] );
+		}
+
+		$overrides = [ 'ai_transport' => 'direct' ];
 		if ( ! empty( $_POST['provider'] ) ) {
 			$provider = sanitize_text_field( wp_unslash( $_POST['provider'] ) );
 			if ( ! in_array( $provider, [ 'openrouter', 'ollama', 'custom' ], true ) ) {
@@ -524,6 +570,46 @@ class Ajax {
 			'test_input'  => 'Hello',
 			'test_output' => is_array( $out ) ? implode( ' / ', $out ) : $out,
 		] );
+	}
+
+	/**
+	 * Проверява и връща текущия статус на WordPress AI Client.
+	 */
+	public function check_ai_status() {
+		$this->verify_security();
+
+		$status = WP_AI_Client_Transport::get_status();
+
+		switch ( $status ) {
+			case 'available':
+				wp_send_json_success( [
+					'status'  => 'available',
+					'message' => esc_html__( 'WordPress AI Client is available and a compatible text-generation provider is configured.', 'ewa-ai-string-assistant-for-loco-translate' ),
+				] );
+				break;
+
+			case 'ai_disabled':
+				wp_send_json_error( [
+					'status'  => 'ai_disabled',
+					'message' => esc_html__( 'AI features are disabled in this WordPress environment.', 'ewa-ai-string-assistant-for-loco-translate' ),
+				] );
+				break;
+
+			case 'client_unavailable':
+				wp_send_json_error( [
+					'status'  => 'client_unavailable',
+					'message' => esc_html__( 'The WordPress AI Client is not available on this site.', 'ewa-ai-string-assistant-for-loco-translate' ),
+				] );
+				break;
+
+			case 'no_text_provider':
+			default:
+				wp_send_json_error( [
+					'status'  => 'no_text_provider',
+					'message' => esc_html__( 'No compatible text-generation AI provider is configured in WordPress Settings → Connectors.', 'ewa-ai-string-assistant-for-loco-translate' ),
+				] );
+				break;
+		}
 	}
 
 	/**

@@ -60,15 +60,63 @@ class Api_Client {
 			return [];
 		}
 
-		$provider = $this->get_setting( 'provider' );
-
-		switch ( $provider ) {
-			case 'ollama':
-				return $this->call_ollama( $batch_items, $target_lang, $nplurals, $correction_prompt, $temp_override );
-			case 'openrouter':
-			default:
-				return $this->call_openai_compatible( $batch_items, $target_lang, $nplurals, $correction_prompt, $temp_override );
+		$sys_prompt = $this->get_setting( 'system_prompt' );
+		if ( empty( $sys_prompt ) ) {
+			$sys_prompt = Settings::default_system_prompt( $target_lang, $nplurals );
 		}
+
+		if ( ! empty( $correction_prompt ) ) {
+			$sys_prompt .= "\nIMPORTANT CORRECTION FOR THIS RETRY: " . $correction_prompt;
+		}
+
+		$prepared     = $this->prepare_payload( $batch_items );
+		$user_content = 'Translate the following items to ' . $target_lang . ":\n" .
+						wp_json_encode( $prepared['payload'], JSON_UNESCAPED_UNICODE );
+
+		$preferred = [];
+		$pref_str  = (string) $this->get_setting( 'preferred_models', '' );
+		if ( '' !== $pref_str ) {
+			$preferred = array_filter( array_map( 'trim', explode( ',', $pref_str ) ) );
+		}
+
+		$temp = null !== $temp_override ? (float) $temp_override : (float) $this->get_setting( 'temperature', 0.3 );
+
+		// Делегиране към активния AI транспортен слой
+		$transport = AI_Transport_Manager::get_active_transport( $this->overrides );
+
+		$transport_res = $transport->generate( $user_content, [
+			'system_prompt' => $sys_prompt,
+			'temperature'   => $temp,
+			'models'        => $preferred,
+			'target_lang'   => $target_lang,
+		] );
+
+		if ( is_wp_error( $transport_res ) ) {
+			return $transport_res;
+		}
+
+		$raw_content = $transport_res['text'] ?? '';
+		if ( empty( $raw_content ) ) {
+			return new \WP_Error(
+				'empty_response',
+				__( 'AI model returned an empty response.', 'ewa-ai-string-assistant-for-loco-translate' ),
+				[ 'http_status' => 200, 'retryable' => true ]
+			);
+		}
+
+		$parsed = $this->parse_raw_content( $raw_content, $prepared['map'], $nplurals );
+		if ( is_wp_error( $parsed ) ) {
+			return $parsed;
+		}
+
+		$usage           = $transport_res['_usage'] ?? [];
+		$parsed['_usage'] = [
+			'prompt'     => (int) ( $usage['prompt']     ?? 0 ),
+			'completion' => (int) ( $usage['completion'] ?? 0 ),
+			'total'      => (int) ( $usage['total']      ?? 0 ),
+		];
+
+		return $parsed;
 	}
 
 	/**
@@ -82,7 +130,8 @@ class Api_Client {
 		$map     = [];
 
 		foreach ( $batch_items as $item ) {
-			$id_str         = 'entry_' . $item['index'];
+			$idx            = $item['index'] ?? 0;
+			$id_str         = 'entry_' . $idx;
 			$map[ $id_str ] = $item;
 
 			$unit = [ 'id' => $id_str ];
@@ -90,11 +139,11 @@ class Api_Client {
 				$unit['context'] = $item['msgctxt'];
 			}
 
-			if ( null !== $item['plural'] ) {
+			if ( ! empty( $item['plural'] ) ) {
 				$unit['singular'] = $item['msgid'];
 				$unit['plural']   = $item['plural'];
 			} else {
-				$unit['text'] = $item['msgid'];
+				$unit['text'] = $item['msgid'] ?? '';
 			}
 
 			$payload[] = $unit;
@@ -104,208 +153,6 @@ class Api_Client {
 			'payload' => $payload,
 			'map'     => $map,
 		];
-	}
-
-	/**
-	 * OpenRouter / OpenAI-compatible endpoint call.
-	 */
-	private function call_openai_compatible( array $batch_items, string $target_lang, int $nplurals, string $correction_prompt, $temp_override ) {
-		$endpoint   = $this->build_endpoint_url( 'chat/completions' );
-		$api_key    = $this->get_setting( 'api_key' );
-		$model      = $this->get_setting( 'model' );
-		$temp       = null !== $temp_override ? (float) $temp_override : (float) $this->get_setting( 'temperature', 0.3 );
-		$sys_prompt = $this->get_setting( 'system_prompt' );
-
-		if ( empty( $sys_prompt ) ) {
-			$sys_prompt = Settings::default_system_prompt( $target_lang, $nplurals );
-		}
-
-		if ( ! empty( $correction_prompt ) ) {
-			$sys_prompt .= "\nIMPORTANT CORRECTION FOR THIS RETRY: " . $correction_prompt;
-		}
-
-		$prepared     = $this->prepare_payload( $batch_items );
-		$user_content = 'Translate the following items to ' . $target_lang . ":\n" .
-						wp_json_encode( $prepared['payload'], JSON_UNESCAPED_UNICODE );
-
-		$body_arr = [
-			'model'       => $model,
-			'temperature' => $temp,
-			'messages'    => [
-				[ 'role' => 'system', 'content' => $sys_prompt ],
-				[ 'role' => 'user',   'content' => $user_content ],
-			],
-		];
-
-		// Capability-aware JSON format
-		$provider = $this->get_setting( 'provider' );
-		if ( 'openrouter' === $provider || 'custom' === $provider ) {
-			$body_arr['response_format'] = [ 'type' => 'json_object' ];
-		}
-
-		$body    = wp_json_encode( $body_arr );
-		$headers = [
-			'Content-Type'  => 'application/json',
-			'Authorization' => 'Bearer ' . $api_key,
-		];
-
-		if ( strpos( $this->get_setting( 'api_endpoint' ), 'openrouter' ) !== false ) {
-			$headers['HTTP-Referer'] = home_url();
-			$headers['X-Title']      = get_bloginfo( 'name' );
-		}
-
-		$response = wp_remote_post( $endpoint, [
-			'timeout' => 120,
-			'headers' => $headers,
-			'body'    => $body,
-		] );
-
-		return $this->parse_openai_response( $response, $prepared['map'], $nplurals );
-	}
-
-	/**
-	 * Ollama call.
-	 */
-	private function call_ollama( array $batch_items, string $target_lang, int $nplurals, string $correction_prompt, $temp_override ) {
-		$endpoint   = $this->build_endpoint_url( 'api/chat' );
-		$model      = $this->get_setting( 'model' );
-		$temp       = null !== $temp_override ? (float) $temp_override : (float) $this->get_setting( 'temperature', 0.3 );
-		$sys_prompt = $this->get_setting( 'system_prompt' );
-
-		if ( empty( $sys_prompt ) ) {
-			$sys_prompt = Settings::default_system_prompt( $target_lang, $nplurals );
-		}
-
-		if ( ! empty( $correction_prompt ) ) {
-			$sys_prompt .= "\nIMPORTANT CORRECTION FOR THIS RETRY: " . $correction_prompt;
-		}
-
-		$prepared     = $this->prepare_payload( $batch_items );
-		$user_content = 'Translate the following items to ' . $target_lang . ":\n" .
-						wp_json_encode( $prepared['payload'], JSON_UNESCAPED_UNICODE );
-
-		$body_arr = [
-			'model'    => $model,
-			'stream'   => false,
-			'format'   => 'json',
-			'options'  => [ 'temperature' => $temp ],
-			'messages' => [
-				[ 'role' => 'system', 'content' => $sys_prompt ],
-				[ 'role' => 'user',   'content' => $user_content ],
-			],
-		];
-
-		$response = wp_remote_post( $endpoint, [
-			'timeout' => 180,
-			'headers' => [ 'Content-Type' => 'application/json' ],
-			'body'    => wp_json_encode( $body_arr ),
-		] );
-
-		if ( is_wp_error( $response ) ) {
-			return new \WP_Error(
-				'network_error',
-				sprintf(
-					/* translators: %s: Ollama error message */
-					__( 'Connection error with Ollama: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
-					$response->get_error_message()
-				),
-				[ 'http_status' => 0, 'retryable' => true ]
-			);
-		}
-
-		$code = wp_remote_retrieve_response_code( $response );
-		$raw  = wp_remote_retrieve_body( $response );
-		$data = json_decode( $raw, true );
-
-		if ( $code !== 200 || empty( $data['message']['content'] ) ) {
-			$retryable = ( $code >= 500 || 429 === $code || 408 === $code || 0 === $code );
-			return new \WP_Error(
-				'ollama_error',
-				sprintf(
-					/* translators: %d: HTTP status code */
-					__( 'Ollama API error (HTTP %d)', 'ewa-ai-string-assistant-for-loco-translate' ),
-					$code
-				),
-				[ 'http_status' => $code, 'retryable' => $retryable ]
-			);
-		}
-
-		return $this->parse_raw_content( $data['message']['content'], $prepared['map'], $nplurals );
-	}
-
-	/**
-	 * Парсира и валидира отговора от OpenAI-съвместими API-та.
-	 */
-	private function parse_openai_response( $response, array $item_map, int $nplurals ) {
-		if ( is_wp_error( $response ) ) {
-			return new \WP_Error(
-				'network_error',
-				sprintf(
-					/* translators: %s: API network error message */
-					__( 'Network error during API request: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
-					$response->get_error_message()
-				),
-				[ 'http_status' => 0, 'retryable' => true ]
-			);
-		}
-
-		$code    = wp_remote_retrieve_response_code( $response );
-		$headers = wp_remote_retrieve_headers( $response );
-		$raw     = wp_remote_retrieve_body( $response );
-		$data    = json_decode( $raw, true );
-
-		$retry_after = 0;
-		if ( isset( $headers['retry-after'] ) ) {
-			$retry_after = (int) $headers['retry-after'];
-		}
-
-		if ( $code !== 200 ) {
-			$msg       = $data['error']['message'] ?? ( 'HTTP ' . $code );
-			$retryable = ( $code >= 500 || 429 === $code || 408 === $code );
-
-			if ( in_array( $code, [ 401, 403, 404 ], true ) ) {
-				$retryable = false;
-			}
-
-			return new \WP_Error(
-				'api_error',
-				sprintf(
-					/* translators: 1: HTTP status code, 2: API error message */
-					__( 'API error %1$d: %2$s', 'ewa-ai-string-assistant-for-loco-translate' ),
-					$code,
-					$msg
-				),
-				[
-					'http_status' => $code,
-					'retryable'   => $retryable,
-					'retry_after' => $retry_after,
-				]
-			);
-		}
-
-		$content = $data['choices'][0]['message']['content'] ?? '';
-
-		if ( empty( $content ) ) {
-			return new \WP_Error(
-				'empty_response',
-				__( 'AI model returned an empty response.', 'ewa-ai-string-assistant-for-loco-translate' ),
-				[ 'http_status' => 200, 'retryable' => true ]
-			);
-		}
-
-		$parsed = $this->parse_raw_content( $content, $item_map, $nplurals );
-		if ( is_wp_error( $parsed ) ) {
-			return $parsed;
-		}
-
-		$usage           = $data['usage'] ?? [];
-		$parsed['_usage'] = [
-			'prompt'     => (int) ( $usage['prompt_tokens']     ?? 0 ),
-			'completion' => (int) ( $usage['completion_tokens'] ?? 0 ),
-			'total'      => (int) ( $usage['total_tokens']      ?? 0 ),
-		];
-
-		return $parsed;
 	}
 
 	/**
@@ -376,9 +223,9 @@ class Api_Client {
 
 			$returned_ids[ $id ] = true;
 			$orig_item           = $item_map[ $id ];
-			$po_index            = $orig_item['index'];
+			$po_index            = $orig_item['index'] ?? 0;
 
-			if ( null !== $orig_item['plural'] ) {
+			if ( ! empty( $orig_item['plural'] ) ) {
 				$val = $row['translations'] ?? ( $row['translation'] ?? null );
 				if ( ! is_array( $val ) ) {
 					return new \WP_Error(
@@ -469,77 +316,14 @@ class Api_Client {
 	 * @return array|\WP_Error
 	 */
 	public function fetch_models() {
-		$provider = $this->get_setting( 'provider' );
-		$api_key  = $this->get_setting( 'api_key' );
-
-		if ( 'ollama' === $provider ) {
-			$url      = $this->build_endpoint_url( 'api/tags' );
-			$response = wp_remote_get( $url, [ 'timeout' => 15 ] );
-
-			if ( is_wp_error( $response ) ) {
-				return new \WP_Error(
-					'network_error',
-					sprintf(
-						/* translators: %s: error message */
-						__( 'Error loading models from Ollama: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
-						$response->get_error_message()
-					)
-				);
-			}
-
-			$data   = json_decode( wp_remote_retrieve_body( $response ), true );
-			$models = [];
-			foreach ( ( $data['models'] ?? [] ) as $m ) {
-				$models[] = [ 'id' => $m['name'], 'name' => $m['name'] ];
-			}
-			return $models;
+		$transport = AI_Transport_Manager::get_active_transport( $this->overrides );
+		if ( $transport instanceof Direct_AI_Transport ) {
+			return $transport->fetch_models();
 		}
 
-		// OpenRouter / OpenAI compatible
-		$url      = $this->build_endpoint_url( 'models' );
-		$response = wp_remote_get( $url, [
-			'timeout' => 20,
-			'headers' => [
-				'Authorization' => 'Bearer ' . $api_key,
-				'Content-Type'  => 'application/json',
-			],
-		] );
-
-		if ( is_wp_error( $response ) ) {
-			return new \WP_Error(
-				'network_error',
-				sprintf(
-					/* translators: %s: error message */
-					__( 'Error loading models: %s', 'ewa-ai-string-assistant-for-loco-translate' ),
-					$response->get_error_message()
-				)
-			);
-		}
-
-		$data   = json_decode( wp_remote_retrieve_body( $response ), true );
-		$raw    = $data['data'] ?? [];
-		$models = [];
-
-		foreach ( $raw as $m ) {
-			$id = $m['id'] ?? '';
-			if ( empty( $id ) ) {
-				continue;
-			}
-			$arch = $m['architecture']['modality'] ?? '';
-			if ( $arch && ! in_array( $arch, [ 'text->text', 'text+image->text', '' ], true ) ) {
-				continue;
-			}
-			$models[] = [
-				'id'          => $id,
-				'name'        => $m['name'] ?? $id,
-				'context'     => $m['context_length'] ?? null,
-				'pricing_in'  => $m['pricing']['prompt'] ?? null,
-				'pricing_out' => $m['pricing']['completion'] ?? null,
-			];
-		}
-
-		usort( $models, fn( $a, $b ) => strcmp( $a['id'], $b['id'] ) );
-
-		return $models;
+		return new \WP_Error(
+			'wp_ai_client_no_direct_models',
+			__( 'Model selection is managed centrally in WordPress Settings → Connectors.', 'ewa-ai-string-assistant-for-loco-translate' )
+		);
 	}
 }
