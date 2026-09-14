@@ -312,7 +312,7 @@
     display: inline-block !important;
 }
 
-/* ── Actions ─────────────────────────────────────────────────────── */
+/* ── Actions & Button Groups ─────────────────────────────────────── */
 .ewa-actions {
     display: flex;
     align-items: center;
@@ -321,23 +321,71 @@
     padding: 20px 0 0;
 }
 
+.ewa-wp-ai-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.ewa-wp-ai-btn-group .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    line-height: 30px;
+    padding: 0 12px;
+    margin: 0 !important;
+}
+
+.ewa-wp-ai-btn-group .button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    vertical-align: middle;
+    margin: 0 !important;
+}
+
+@keyframes ewa-spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.ewa-spin {
+    animation: ewa-spin 1s linear infinite;
+    display: inline-block;
+}
+
 .ewa-test-result {
     font-size: 13px;
     font-weight: 500;
-    padding: 6px 12px;
+    padding: 10px 14px;
     border-radius: 4px;
+    line-height: 1.5;
+    margin: 10px 0;
+    max-width: 600px;
+    box-sizing: border-box;
+}
+
+.ewa-test-result:empty {
+    display: none !important;
+    padding: 0;
+    margin: 0;
+    border: none;
 }
 
 .ewa-test-ok {
     background: #edfaef;
-    color: var(--ewa-green);
+    color: #007017;
     border: 1px solid #b8e6bc;
 }
 
 .ewa-test-err {
-    background: #fce8e8;
-    color: var(--ewa-red);
-    border: 1px solid #f5c2c2;
+    background: #fcf0f1;
+    color: #d63638;
+    border: 1px solid #f5c6cb;
 }
 
 /* ── File Translate ──────────────────────────────────────────────── */

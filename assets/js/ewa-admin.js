@@ -24,22 +24,31 @@
         var checkText    = (config.i18n && config.i18n.checkStatus) ? config.i18n.checkStatus : 'Check AI Availability';
         var networkErr   = (config.i18n && config.i18n.networkError) ? config.i18n.networkError : 'Network error';
 
-        $btn.prop('disabled', true).text(checkingText);
-        $result.text('').css('color', '');
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update ewa-spin"></span> ' + checkingText);
+        $result.removeClass('ewa-test-ok ewa-test-err').hide().empty();
 
         $.post(config.ajaxUrl, {
             action: 'ewaas_check_ai_status',
             nonce: config.nonce
         }, function (res) {
-            $btn.prop('disabled', false).html('<span class="dashicons dashicons-update" style="vertical-align:text-bottom;"></span> ' + checkText);
+            $btn.prop('disabled', false).html('<span class="dashicons dashicons-update"></span> ' + checkText);
             if (res.success) {
-                $result.css('color', '#00a32a').text(res.data && res.data.message ? res.data.message : 'Ready');
+                $result.addClass('ewa-test-ok').show().html(
+                    '<span class="dashicons dashicons-yes-alt" style="vertical-align:text-bottom;font-size:16px;color:#00a32a;margin-right:4px;"></span> ' +
+                    $('<div>').text(res.data && res.data.message ? res.data.message : 'Ready').html()
+                );
             } else {
-                $result.css('color', '#d63638').text(res.data && res.data.message ? res.data.message : 'Unavailable');
+                $result.addClass('ewa-test-err').show().html(
+                    '<span class="dashicons dashicons-dismiss" style="vertical-align:text-bottom;font-size:16px;color:#d63638;margin-right:4px;"></span> ' +
+                    $('<div>').text(res.data && res.data.message ? res.data.message : 'Unavailable').html()
+                );
             }
         }).fail(function () {
-            $btn.prop('disabled', false).html('<span class="dashicons dashicons-update" style="vertical-align:text-bottom;"></span> ' + checkText);
-            $result.css('color', '#d63638').text(networkErr);
+            $btn.prop('disabled', false).html('<span class="dashicons dashicons-update"></span> ' + checkText);
+            $result.addClass('ewa-test-err').show().html(
+                '<span class="dashicons dashicons-dismiss" style="vertical-align:text-bottom;font-size:16px;color:#d63638;margin-right:4px;"></span> ' +
+                $('<div>').text(networkErr).html()
+            );
         });
     });
 

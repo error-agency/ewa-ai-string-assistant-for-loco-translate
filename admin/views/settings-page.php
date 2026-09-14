@@ -16,7 +16,7 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	$ewaas_ai_transport       = $ewaas_settings['ai_transport'];
 	$ewaas_is_wp_ai_supported = AI_Transport_Manager::is_wp_ai_client_supported();
 	$ewaas_wp_ai_status       = WP_AI_Client_Transport::get_status();
-	$connectors_url           = admin_url( 'options-general.php?page=connectors' );
+	$connectors_url           = admin_url( 'options-connectors.php' );
 ?>
 <div class="wrap ewa-settings-wrap">
 	<h1 class="ewa-page-title">
@@ -139,16 +139,18 @@ if ( ! current_user_can( 'manage_options' ) ) {
 						<tr>
 							<th><?php esc_html_e( 'AI Providers', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
 							<td>
-								<a href="<?php echo esc_url( $connectors_url ); ?>" class="button button-secondary" target="_blank" rel="noopener">
-									<span class="dashicons dashicons-admin-plugins" style="vertical-align: text-bottom;"></span>
-									<?php esc_html_e( 'Manage AI Providers (Settings → Connectors) ↗', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
-								</a>
-								<button type="button" id="ewa-check-wp-ai-status" class="button button-secondary" style="margin-left: 8px;">
-									<span class="dashicons dashicons-update" style="vertical-align: text-bottom;"></span>
-									<?php esc_html_e( 'Check AI Availability', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
-								</button>
-								<span id="ewa-wp-ai-check-result" style="margin-left: 10px; font-weight: 600;"></span>
-								<p class="description" style="margin-top: 6px;">
+								<div class="ewa-wp-ai-btn-group">
+									<a href="<?php echo esc_url( $connectors_url ); ?>" class="button button-secondary" target="_blank" rel="noopener">
+										<span class="dashicons dashicons-admin-plugins"></span>
+										<?php esc_html_e( 'Manage AI Providers (Settings → Connectors) ↗', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+									</a>
+									<button type="button" id="ewa-check-wp-ai-status" class="button button-secondary">
+										<span class="dashicons dashicons-update"></span>
+										<?php esc_html_e( 'Check AI Availability', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+									</button>
+								</div>
+								<div id="ewa-wp-ai-check-result" class="ewa-test-result" style="display: none; margin-bottom: 8px;"></div>
+								<p class="description">
 									<?php esc_html_e( 'Configure API credentials and AI connectors globally in WordPress. Additional AI providers can be added through compatible WordPress AI provider plugins.', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
 								</p>
 							</td>
@@ -249,11 +251,13 @@ if ( ! current_user_can( 'manage_options' ) ) {
 							<tr>
 								<th><?php esc_html_e( 'Connection Test', 'ewa-ai-string-assistant-for-loco-translate' ); ?></th>
 								<td>
-									<button type="button" id="ewa-test-connection" class="button button-secondary">
-										<span class="dashicons dashicons-rest-api"></span>
-										<?php esc_html_e( 'Test Connection', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
-									</button>
-									<span id="ewa-test-result" class="ewa-test-result"></span>
+									<div class="ewa-wp-ai-btn-group">
+										<button type="button" id="ewa-test-connection" class="button button-secondary">
+											<span class="dashicons dashicons-rest-api"></span>
+											<?php esc_html_e( 'Test Connection', 'ewa-ai-string-assistant-for-loco-translate' ); ?>
+										</button>
+									</div>
+									<div id="ewa-test-result" class="ewa-test-result" style="display: none; margin: 10px 0 12px;"></div>
 								</td>
 							</tr>
 						</table>
