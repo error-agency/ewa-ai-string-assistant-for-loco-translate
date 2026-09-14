@@ -15,6 +15,7 @@ require_once __DIR__ . '/bootstrap.php';
 use ErrorWebAgency\EwaAIStringAssistant\Po_Handler;
 use ErrorWebAgency\EwaAIStringAssistant\Translation_Validator;
 use ErrorWebAgency\EwaAIStringAssistant\Api_Client;
+use ErrorWebAgency\EwaAIStringAssistant\Settings;
 
 class Test_Runner {
 
@@ -33,6 +34,10 @@ class Test_Runner {
 		$this->test_deterministic_id_mapping();
 		$this->test_po_roundtrip_integrity();
 		$this->test_atomic_file_saving();
+		$this->test_settings_migration();
+		$this->test_system_prompt_structure();
+		$this->test_prefix_and_global_isolation();
+		$this->test_provider_allowlist();
 
 		echo "\n-------------------------------------------------------\n";
 		echo sprintf( "РЕЗУЛТАТ: %d преминати, %d провали.\n", $this->passed, $this->failed );
@@ -288,6 +293,84 @@ PO;
 		@unlink( $po_file );
 		@unlink( $tmp_dir . '/test.mo' );
 		@rmdir( $tmp_dir );
+	}
+
+	/**
+	 * 8. Test Settings Migration & Schema Update
+	 */
+	private function test_settings_migration() {
+		echo "\n--- 8. Testing Settings Migration ---\n";
+
+		// Setup legacy options
+		$GLOBALS['wp_options'] = [];
+		$GLOBALS['wp_options']['ewa_settings'] = [
+			'api_key'      => 'sk-test-secret-12345',
+			'provider'     => 'openrouter',
+			'model'        => 'anthropic/claude-3.5-sonnet',
+			'api_endpoint' => 'https://openrouter.ai/api/v1',
+			'temperature'  => 0.2,
+			'batch_size'   => 25,
+		];
+		$GLOBALS['wp_options']['ewa_schema_version'] = '1.6.0';
+
+		$settings = Settings::instance();
+		$settings->maybe_migrate_settings();
+
+		$migrated = get_option( Settings::OPTION_KEY );
+		$this->assert( is_array( $migrated ), 'Мигрираните настройки трябва да съществуват в новия ключ ewaas_settings' );
+		$this->assert( ( $migrated['api_key'] ?? '' ) === 'sk-test-secret-12345', 'API ключът трябва да бъде запазен непокътнат при миграция' );
+		$this->assert( ( $migrated['model'] ?? '' ) === 'anthropic/claude-3.5-sonnet', 'Моделът трябва да бъде запазен' );
+		$this->assert( ( $migrated['provider'] ?? '' ) === 'openrouter', 'Доставчикът трябва да бъде запазен' );
+		$this->assert( get_option( Settings::SCHEMA_VERSION_KEY ) === Settings::SCHEMA_VERSION, 'Схемата трябва да бъде обновена до 1.7.0' );
+
+		// Test idempotency: modifying existing ewaas_settings and re-running migration should NOT overwrite with legacy
+		$migrated['model'] = 'openai/gpt-4o';
+		update_option( Settings::OPTION_KEY, $migrated );
+		$settings->maybe_migrate_settings();
+		$rechecked = get_option( Settings::OPTION_KEY );
+		$this->assert( $rechecked['model'] === 'openai/gpt-4o', 'Миграцията трябва да бъде идемпотентна и да не презаписва съществуващи настройки' );
+	}
+
+	/**
+	 * 9. Test Scanner-Friendly Default System Prompt Structure
+	 */
+	private function test_system_prompt_structure() {
+		echo "\n--- 9. Testing System Prompt Structure ---\n";
+
+		$prompt = Settings::default_system_prompt( 'Bulgarian', 2 );
+
+		$this->assert( false !== strpos( $prompt, 'Translate the provided source strings into Bulgarian.' ), 'Целевият език трябва да бъде заменен коректно' );
+		$this->assert( false !== strpos( $prompt, 'containing exactly 2 elements.' ), 'Множествените форми {nplurals} трябва да бъдат заменени коректно' );
+		$this->assert( false !== strpos( $prompt, '1. OUTPUT FORMAT' ), 'Секция OUTPUT FORMAT трябва да присъства' );
+		$this->assert( false !== strpos( $prompt, '12. FINAL VALIDATION' ), 'Секция FINAL VALIDATION трябва да присъства' );
+		$this->assert( false === strpos( $prompt, '<<<' ), 'Системният промпт не трябва да съдържа NOWDOC/HEREDOC маркери' );
+	}
+
+	/**
+	 * 10. Test Prefixing and Absence of Legacy Identifiers
+	 */
+	private function test_prefix_and_global_isolation() {
+		echo "\n--- 10. Testing Prefixing & Isolation ---\n";
+
+		$this->assert( defined( 'EWAAS_VERSION' ), 'Каноничната константа EWAAS_VERSION трябва да бъде дефинирана' );
+		$this->assert( ! defined( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION' ), 'Legacy константата EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION НЕ трябва да съществува' );
+		$this->assert( ! function_exists( 'ewa_ai_translator_plugin' ), 'Legacy функцията ewa_ai_translator_plugin() НЕ трябва да съществува' );
+		$this->assert( function_exists( 'ErrorWebAgency\EwaAIStringAssistant\ewaas_plugin' ), 'Каноничната функция ewaas_plugin() трябва да съществува в неймспейса' );
+	}
+
+	/**
+	 * 11. Test Provider Allowlist
+	 */
+	private function test_provider_allowlist() {
+		echo "\n--- 11. Testing Provider Allowlist ---\n";
+
+		$settings = Settings::instance();
+
+		$valid = $settings->sanitize_settings( [ 'provider' => 'ollama' ] );
+		$this->assert( $valid['provider'] === 'ollama', 'Валиден доставчик ollama трябва да бъде приет' );
+
+		$invalid = $settings->sanitize_settings( [ 'provider' => 'untrusted_cloud' ] );
+		$this->assert( $invalid['provider'] === 'openrouter', 'Невалиден доставчик трябва да върне подразбиращия се openrouter' );
 	}
 }
 

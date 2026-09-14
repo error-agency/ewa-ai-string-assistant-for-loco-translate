@@ -12,6 +12,8 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 ( function () {
 	$delete_options = static function () {
+		delete_option( 'ewaas_settings' );
+		delete_option( 'ewaas_schema_version' );
 		delete_option( 'ewa_settings' );
 		delete_option( 'ewa_schema_version' );
 		delete_option( 'error_lait_settings' );

@@ -23,21 +23,14 @@ class Ajax {
 		add_action( 'wp_ajax_ewaas_cancel_job', [ $this, 'cancel_job' ] );
 		add_action( 'wp_ajax_ewaas_fetch_models', [ $this, 'fetch_models' ] );
 		add_action( 'wp_ajax_ewaas_test_connection', [ $this, 'test_connection' ] );
-
-		// Backward-compatible AJAX hooks for smooth transition.
-		add_action( 'wp_ajax_ewa_get_po_info', [ $this, 'get_po_info' ] );
-		add_action( 'wp_ajax_ewa_translate_file', [ $this, 'translate_file' ] );
-		add_action( 'wp_ajax_ewa_cancel_job', [ $this, 'cancel_job' ] );
-		add_action( 'wp_ajax_ewa_fetch_models', [ $this, 'fetch_models' ] );
-		add_action( 'wp_ajax_ewa_test_connection', [ $this, 'test_connection' ] );
 	}
 
 	private function verify_security() {
-		if ( ! check_ajax_referer( 'ewaas_nonce', 'nonce', false ) && ! check_ajax_referer( 'ewa_nonce', 'nonce', false ) ) {
-			wp_send_json_error( [ 'message' => 'Невалидна сесия (nonce).' ], 403 );
+		if ( ! check_ajax_referer( 'ewaas_nonce', 'nonce', false ) ) {
+			wp_send_json_error( [ 'message' => esc_html__( 'Invalid session token (nonce).', 'ewa-ai-string-assistant-for-loco-translate' ) ], 403 );
 		}
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( [ 'message' => 'Недостатъчни права.' ], 403 );
+			wp_send_json_error( [ 'message' => esc_html__( 'Insufficient permissions.', 'ewa-ai-string-assistant-for-loco-translate' ) ], 403 );
 		}
 	}
 
@@ -97,11 +90,6 @@ class Ajax {
 		$job_state     = get_transient( $transient_key );
 
 		if ( ! is_array( $job_state ) ) {
-			// Check legacy transient key as fallback
-			$job_state = get_transient( 'ewa_job_' . $job_id );
-		}
-
-		if ( ! is_array( $job_state ) ) {
 			$entries         = Po_Handler::parse( $po_path );
 			if ( is_wp_error( $entries ) ) {
 				wp_send_json_error( [ 'message' => $entries->get_error_message() ] );
@@ -134,15 +122,13 @@ class Ajax {
 		}
 
 		// Проверка за отмяна
-		if ( ! empty( $job_state['cancelled'] ) || get_transient( 'ewaas_cancel_' . $job_id ) || get_transient( 'ewa_cancel_' . $job_id ) ) {
+		if ( ! empty( $job_state['cancelled'] ) || get_transient( 'ewaas_cancel_' . $job_id ) ) {
 			delete_transient( $transient_key );
-			delete_transient( 'ewa_job_' . $job_id );
 			delete_transient( 'ewaas_cancel_' . $job_id );
-			delete_transient( 'ewa_cancel_' . $job_id );
 			wp_send_json_success( [
 				'done'      => true,
 				'cancelled' => true,
-				'message'   => 'Преводът бе отменен от потребителя.',
+				'message'   => esc_html__( 'Translation was cancelled by the user.', 'ewa-ai-string-assistant-for-loco-translate' ),
 			] );
 		}
 
@@ -233,10 +219,9 @@ class Ajax {
 
 		if ( 0 === $remaining_now ) {
 			delete_transient( $transient_key );
-			delete_transient( 'ewa_job_' . $job_id );
 			$response = [
 				'done'       => true,
-				'message'    => 'Всички низове са преведени успешно.',
+				'message'    => esc_html__( 'All strings translated successfully.', 'ewa-ai-string-assistant-for-loco-translate' ),
 				'translated' => count( array_unique( $job_state['translated_indices'] ) ),
 				'skipped'    => count( array_unique( $job_state['failed_indices'] ) ),
 				'total'      => $total_initial,
@@ -304,7 +289,7 @@ class Ajax {
 			// Неповтаряеми грешки (напр. 401 Unauthorized, 403 Forbidden, 404) спират веднага
 			if ( ! $is_retryable ) {
 				wp_send_json_error( [
-					'message'   => 'Фатална грешка от AI провайдъра: ' . $last_error_msg,
+					'message'   => sprintf( esc_html__( 'Fatal error from AI provider: %s', 'ewa-ai-string-assistant-for-loco-translate' ), $last_error_msg ),
 					'retryable' => false,
 				] );
 			}
@@ -439,7 +424,6 @@ class Ajax {
 
 		if ( $is_done ) {
 			delete_transient( $transient_key );
-			delete_transient( 'ewa_job_' . $job_id );
 		} else {
 			set_transient( $transient_key, $job_state, 2 * HOUR_IN_SECONDS );
 		}
@@ -452,15 +436,13 @@ class Ajax {
 
 		$job_id = sanitize_key( $_POST['job_id'] ?? '' );
 		if ( empty( $job_id ) ) {
-			wp_send_json_error( [ 'message' => 'Не е предоставен job_id.' ] );
+			wp_send_json_error( [ 'message' => esc_html__( 'No job ID provided.', 'ewa-ai-string-assistant-for-loco-translate' ) ] );
 		}
 
 		set_transient( 'ewaas_cancel_' . $job_id, 1, 10 * MINUTE_IN_SECONDS );
-		set_transient( 'ewa_cancel_' . $job_id, 1, 10 * MINUTE_IN_SECONDS );
 		delete_transient( 'ewaas_job_' . $job_id );
-		delete_transient( 'ewa_job_' . $job_id );
 
-		wp_send_json_success( [ 'message' => 'Сигналът за отмяна е изпратен.' ] );
+		wp_send_json_success( [ 'message' => esc_html__( 'Cancellation signal sent.', 'ewa-ai-string-assistant-for-loco-translate' ) ] );
 	}
 
 	public function fetch_models() {
@@ -468,7 +450,11 @@ class Ajax {
 
 		$overrides = [];
 		if ( ! empty( $_POST['provider'] ) ) {
-			$overrides['provider'] = sanitize_text_field( wp_unslash( $_POST['provider'] ) );
+			$provider = sanitize_text_field( wp_unslash( $_POST['provider'] ) );
+			if ( ! in_array( $provider, [ 'openrouter', 'ollama', 'custom' ], true ) ) {
+				wp_send_json_error( [ 'message' => esc_html__( 'Invalid AI provider.', 'ewa-ai-string-assistant-for-loco-translate' ) ] );
+			}
+			$overrides['provider'] = $provider;
 		}
 		if ( ! empty( $_POST['api_endpoint'] ) ) {
 			$overrides['api_endpoint'] = sanitize_url( wp_unslash( $_POST['api_endpoint'] ) );
@@ -495,7 +481,11 @@ class Ajax {
 
 		$overrides = [];
 		if ( ! empty( $_POST['provider'] ) ) {
-			$overrides['provider'] = sanitize_text_field( wp_unslash( $_POST['provider'] ) );
+			$provider = sanitize_text_field( wp_unslash( $_POST['provider'] ) );
+			if ( ! in_array( $provider, [ 'openrouter', 'ollama', 'custom' ], true ) ) {
+				wp_send_json_error( [ 'message' => esc_html__( 'Invalid AI provider.', 'ewa-ai-string-assistant-for-loco-translate' ) ] );
+			}
+			$overrides['provider'] = $provider;
 		}
 		if ( ! empty( $_POST['api_endpoint'] ) ) {
 			$overrides['api_endpoint'] = sanitize_url( wp_unslash( $_POST['api_endpoint'] ) );
@@ -530,7 +520,7 @@ class Ajax {
 		$out = $result[0] ?? '(празно)';
 
 		wp_send_json_success( [
-			'message'     => 'Връзката е успешна!',
+			'message'     => esc_html__( 'Connection successful!', 'ewa-ai-string-assistant-for-loco-translate' ),
 			'test_input'  => 'Hello',
 			'test_output' => is_array( $out ) ? implode( ' / ', $out ) : $out,
 		] );

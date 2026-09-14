@@ -55,7 +55,6 @@ class Admin {
 			);
 			$js_data = $this->get_js_data();
 			wp_localize_script( 'ewaas-admin', 'ewaasAdmin', $js_data );
-			wp_localize_script( 'ewaas-admin', 'ewaAdmin', $js_data );
 		}
 
 		// Inject into Loco Translate editor pages.
@@ -102,7 +101,6 @@ class Admin {
 			);
 			$loco_data = $this->get_loco_js_data();
 			wp_localize_script( 'ewaas-loco', 'ewaasLoco', $loco_data );
-			wp_localize_script( 'ewaas-loco', 'ewaLoco', $loco_data );
 		}
 	}
 
@@ -173,7 +171,7 @@ class Admin {
 			'<p>%s</p>',
 			esc_html__( 'Suggested text for your website privacy policy regarding translation features:', 'ewa-ai-string-assistant-for-loco-translate' ),
 			esc_html__( 'EWA AI String Assistant for Loco Translate', 'ewa-ai-string-assistant-for-loco-translate' ),
-			esc_html__( 'When administrators use the AI translation features in Loco Translate, source strings and translation parameters are sent directly to the AI service provider chosen by the administrator (OpenRouter, a self-hosted or remote Ollama instance, or a custom OpenAI-compatible endpoint). No visitor personal data or frontend tracking information is collected or transmitted.', 'ewa-ai-string-assistant-for-loco-translate' )
+			esc_html__( 'When administrators use the AI translation features in Loco Translate, source strings and translation parameters are sent directly to the AI service provider chosen by the administrator (OpenRouter, an administrator-configured OpenAI endpoint, a self-hosted or remote Ollama instance, or a custom OpenAI-compatible endpoint). When using OpenRouter, your site URL and site title are also transmitted in standard HTTP request headers for usage attribution. No visitor personal data or frontend tracking information is collected or transmitted.', 'ewa-ai-string-assistant-for-loco-translate' )
 		);
 
 		wp_add_privacy_policy_content(

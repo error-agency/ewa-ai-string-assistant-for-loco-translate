@@ -34,15 +34,15 @@ msgstr ""
 msgid "https://error.bg/"
 msgstr ""
 
-#: ewa-ai-string-assistant-for-loco-translate.php:129
+#: ewa-ai-string-assistant-for-loco-translate.php:116
 msgid "This plugin requires PHP version 7.4 or higher. Your server is running version %s."
 msgstr ""
 
-#: ewa-ai-string-assistant-for-loco-translate.php:139
+#: ewa-ai-string-assistant-for-loco-translate.php:126
 msgid "This plugin requires WordPress version 6.0 or higher. You are running version %s."
 msgstr ""
 
-#: ewa-ai-string-assistant-for-loco-translate.php:147
+#: ewa-ai-string-assistant-for-loco-translate.php:134
 msgid "Loco Translate plugin is required for this plugin to work."
 msgstr ""
 
@@ -50,44 +50,44 @@ msgstr ""
 msgid "EWA AI String Assistant"
 msgstr ""
 
-#: admin/class-admin.php:118
+#: admin/class-admin.php:116
 msgid "Translating…"
 msgstr ""
 
-#: admin/class-admin.php:119
+#: admin/class-admin.php:117
 msgid "Done!"
 msgstr ""
 
-#: admin/class-admin.php:120
+#: admin/class-admin.php:118
 msgid "Error"
 msgstr ""
 
-#: admin/class-admin.php:121
+#: admin/class-admin.php:119
 msgid "No untranslated strings found."
 msgstr ""
 
-#: admin/class-admin.php:122
+#: admin/class-admin.php:120
 msgid "This will translate untranslated strings using AI. Please ensure you have a backup of your translation files before proceeding. Continue?"
 msgstr ""
 
-#: admin/class-admin.php:123
+#: admin/class-admin.php:121
 msgid "AI Translate"
 msgstr ""
 
-#: admin/class-admin.php:124
+#: admin/class-admin.php:122
 msgid "Stop"
 msgstr ""
 
-#: admin/class-admin.php:159
+#: admin/class-admin.php:157
 msgid "Settings"
 msgstr ""
 
-#: admin/class-admin.php:174
+#: admin/class-admin.php:172
 msgid "Suggested text for your website privacy policy regarding translation features:"
 msgstr ""
 
-#: admin/class-admin.php:176
-msgid "When administrators use the AI translation features in Loco Translate, source strings and translation parameters are sent directly to the AI service provider chosen by the administrator (OpenRouter, a self-hosted or remote Ollama instance, or a custom OpenAI-compatible endpoint). No visitor personal data or frontend tracking information is collected or transmitted."
+#: admin/class-admin.php:174
+msgid "When administrators use the AI translation features in Loco Translate, source strings and translation parameters are sent directly to the AI service provider chosen by the administrator (OpenRouter, an administrator-configured OpenAI endpoint, a self-hosted or remote Ollama instance, or a custom OpenAI-compatible endpoint). When using OpenRouter, your site URL and site title are also transmitted in standard HTTP request headers for usage attribution. No visitor personal data or frontend tracking information is collected or transmitted."
 msgstr ""
 
 #: admin/views/settings-page.php:28
@@ -95,7 +95,7 @@ msgid "AI Service Transparency & Data Transmission Disclosure"
 msgstr ""
 
 #: admin/views/settings-page.php:31
-msgid "This plugin connects to external AI services (OpenRouter, a self-hosted/remote Ollama instance, or a custom OpenAI-compatible endpoint) ONLY when an administrator explicitly initiates a translation or connection test. Source strings, context, and translation instructions are sent directly from your server to your selected provider. No data is ever transmitted automatically or in the background, and no intermediary servers are used."
+msgid "This plugin connects to external AI services (OpenRouter, OpenAI, a self-hosted/remote Ollama instance, or an administrator-configured OpenAI-compatible endpoint) ONLY when an administrator explicitly initiates a translation or connection test. Source strings, context, and translation instructions are sent directly from your WordPress server to the configured endpoint. No Error Web Agency-operated intermediary or proxy server is used. Services such as OpenRouter may route requests to downstream model providers according to their own terms and data policies."
 msgstr ""
 
 #: admin/views/settings-page.php:46
@@ -264,4 +264,41 @@ msgstr ""
 
 #: admin/views/settings-page.php:272
 msgid "This plugin is provided "as is" without warranty. Developers and Error Web Agency (EWA) assume no liability for translation inaccuracies, file overwrites, data loss, or API costs."
+msgstr ""
+
+#: includes/class-ajax.php:30
+msgid "Invalid session token (nonce)."
+msgstr ""
+
+#: includes/class-ajax.php:33
+msgid "Insufficient permissions."
+msgstr ""
+
+#: includes/class-ajax.php:131
+msgid "Translation was cancelled by the user."
+msgstr ""
+
+#: includes/class-ajax.php:224
+msgid "All strings translated successfully."
+msgstr ""
+
+#: includes/class-ajax.php:292
+msgid "Fatal error from AI provider: %s"
+msgstr ""
+
+#: includes/class-ajax.php:439
+msgid "No job ID provided."
+msgstr ""
+
+#: includes/class-ajax.php:445
+msgid "Cancellation signal sent."
+msgstr ""
+
+#: includes/class-ajax.php:455
+#: includes/class-ajax.php:486
+msgid "Invalid AI provider."
+msgstr ""
+
+#: includes/class-ajax.php:523
+msgid "Connection successful!"
 msgstr ""

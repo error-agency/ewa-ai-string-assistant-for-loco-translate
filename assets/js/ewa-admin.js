@@ -1,8 +1,8 @@
-/* global ewaasAdmin, ewaAdmin, jQuery */
+/* global ewaasAdmin, jQuery */
 (function ($) {
     'use strict';
 
-    var config = (typeof ewaasAdmin !== 'undefined') ? ewaasAdmin : (typeof ewaAdmin !== 'undefined' ? ewaAdmin : {});
+    var config = (typeof ewaasAdmin !== 'undefined') ? ewaasAdmin : {};
 
     // ─── Provider Tabs ──────────────────────────────────────────────────────
     $('.ewa-provider-tab input[type=radio]').on('change', function () {
@@ -40,7 +40,7 @@
 
         var provider    = $('.ewa-provider-tab input[type=radio]:checked').val() || 'openrouter';
         var apiEndpoint = String($('#ewa-api-endpoint').val() || '').trim();
-        var apiKey      = String($('input[name="ewa_settings[api_key]"]').val() || '').trim();
+        var apiKey      = String($('input[name="ewaas_settings[api_key]"]').val() || '').trim();
 
         $btn.text('Loading…').prop('disabled', true);
 
@@ -87,7 +87,7 @@
 
         var provider    = $('.ewa-provider-tab input[type=radio]:checked').val() || 'openrouter';
         var apiEndpoint = String($('#ewa-api-endpoint').val() || '').trim();
-        var apiKey      = String($('input[name="ewa_settings[api_key]"]').val() || '').trim();
+        var apiKey      = String($('input[name="ewaas_settings[api_key]"]').val() || '').trim();
         var model       = String($('#ewa-model-input').val() || '').trim();
 
         $btn.html('<span class="dashicons dashicons-update ewa-spin"></span> Testing…').prop('disabled', true);

@@ -43,19 +43,6 @@ define( 'EWAAS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'EWAAS_URL', plugin_dir_url( __FILE__ ) );
 define( 'EWAAS_BASENAME', plugin_basename( __FILE__ ) );
 
-// Backward-compatible constant aliases.
-if ( ! defined( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION' ) ) {
-	define( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_VERSION', EWAAS_VERSION );
-}
-if ( ! defined( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH' ) ) {
-	define( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_PATH', EWAAS_PATH );
-}
-if ( ! defined( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_URL' ) ) {
-	define( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_URL', EWAAS_URL );
-}
-if ( ! defined( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_BASENAME' ) ) {
-	define( 'EWA_AI_TRANSLATOR_FOR_LOCO_TRANSLATE_BASENAME', EWAAS_BASENAME );
-}
 
 final class Plugin {
 
@@ -83,7 +70,7 @@ final class Plugin {
 	}
 
 	private function init_hooks() {
-		add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
+		add_action( 'init', [ $this, 'load_textdomain' ] );
 		add_action( 'plugins_loaded', [ $this, 'check_requirements' ] );
 
 		Settings::instance();
@@ -155,9 +142,3 @@ function ewaas_plugin() {
 }
 ewaas_plugin();
 
-// Backward compatibility alias.
-if ( ! function_exists( 'ewa_ai_translator_plugin' ) ) {
-	function ewa_ai_translator_plugin() {
-		return ewaas_plugin();
-	}
-}

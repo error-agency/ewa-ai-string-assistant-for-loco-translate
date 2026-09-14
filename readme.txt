@@ -2,7 +2,7 @@
 Contributors: errorwebagency
 Tags: translation, ai, localization, gettext, loco translate
 Requires at least: 6.0
-Tested up to: 6.8
+Tested up to: 7.1
 Stable tag: 1.7.0
 Requires PHP: 7.4
 License: GPL v2 or later
@@ -30,7 +30,7 @@ Translate untranslated Gettext PO strings in seconds using top AI models via Ope
   * **Ollama**: Connect to local or remote self-hosted LLMs with zero API costs.
   * **Custom Endpoints**: Connect to any OpenAI-compatible API endpoint.
 * **Real-Time Progress & Analytics**: Monitor batch progress, elapsed time, strings translated, and token usage in real time.
-* **Privacy First**: Direct connection from your WordPress server to your chosen AI provider. No intermediary proxy servers or data harvesting.
+* **Direct API Connections**: No Error Web Agency-operated intermediary or proxy server is used. Requests are sent directly from your WordPress server to the configured service endpoint. Services such as OpenRouter may route requests to third-party model providers under their own terms and data policies.
 * **100% Free & Open Source**: No paywalls, no trial limits, no feature restrictions.
 
 = Important Disclaimer & Recommendations =
@@ -58,6 +58,7 @@ When OpenRouter is configured, HTTP requests required for AI translation are sen
   * Selected model identifier and temperature settings
   * Administrator-configured API key (transmitted via standard HTTP Authorization Bearer header)
   * Site URL (`HTTP-Referer` header) and Site Title (`X-Title` header) as requested by OpenRouter API conventions for usage attribution
+* **Downstream Model Provider Routing**: OpenRouter operates as an AI API gateway and aggregator. When using OpenRouter, your translation prompts, source strings, and context are routed by OpenRouter to the specific AI model provider (such as Anthropic, OpenAI, Google, Meta, or Mistral) selected in your settings. Each upstream model provider processes data in accordance with their respective data and privacy policies as described in the OpenRouter Privacy Policy.
 * **When Data is Transmitted**: Exclusively when an authenticated administrator clicks "AI Translate" in the Loco Translate editor, "Test Connection", or "Load Models" on the settings screen.
 * **Provider**: OpenRouter, Inc.
 * **Service Website**: https://openrouter.ai/
@@ -72,20 +73,34 @@ When Ollama is selected, HTTP requests are sent to the endpoint specified by the
 * **Data Transmitted**: Source strings, plural forms, Gettext context, target language, system prompt, and model options.
 * **Local vs Remote Hosting**:
   * When using a locally hosted Ollama instance (`http://localhost:11434`), all data processing occurs entirely within the local server environment. No data is transmitted to any third-party cloud service.
-  * If the administrator enters a remote Ollama server URL (e.g. on a private LAN or VPS), data is transmitted to that specific host.
+  * If the administrator enters a remote Ollama server URL (e.g. on a private LAN or VPS), data is transmitted to that specific host configured by the administrator.
 * **When Data is Transmitted**: Only upon explicit administrator action (running a translation batch, testing connection, or loading models).
 * **Provider**: Self-hosted application by Ollama.
 * **Service Website**: https://ollama.com/
+* **Terms of Service**: https://ollama.com/terms
 * **Privacy Policy**: https://ollama.com/privacy
 
-= 3. Custom OpenAI-Compatible Endpoints =
+= 3. OpenAI API =
 
-When a custom endpoint is configured, requests are sent directly to the URL specified by the administrator.
+When configured with the OpenAI API preset (https://api.openai.com/v1), HTTP requests are sent directly from your WordPress server to OpenAI's official API servers.
 
-* **Purpose**: Allowing site administrators to connect to arbitrary OpenAI-compatible APIs (such as OpenAI, Azure OpenAI, Groq, Mistral AI, or internal company proxies).
-* **Data Transmitted**: Source strings, Gettext context, target language, prompt parameters, model identifier, and configured API credentials.
+* **Purpose**: Translating Gettext PO strings using official OpenAI models (such as GPT-4o, GPT-4o-mini) and querying the list of available OpenAI models.
+* **Data Transmitted**: Source strings, plural forms, Gettext context (`msgctxt`), target language, system prompt instructions, selected model identifier, temperature settings, and the administrator's OpenAI API key (transmitted via standard HTTP Authorization Bearer header).
+* **When Data is Transmitted**: Exclusively upon explicit administrator action (clicking "AI Translate" in Loco Translate, "Test Connection", or "Load Models" in the settings screen). No background requests or automatic data collection occur.
+* **Provider**: OpenAI, Inc. / OpenAI Ireland Ltd.
+* **Service Website**: https://openai.com/
+* **Terms of Service**: https://openai.com/policies/terms-of-use/
+* **Privacy Policy**: https://openai.com/policies/privacy-policy/
+* **Enterprise Privacy & Data Handling**: https://openai.com/enterprise-privacy/
+
+= 4. Custom OpenAI-Compatible Endpoints =
+
+When a custom endpoint is configured, requests are sent directly from your WordPress server to the endpoint URL specified by the administrator.
+
+* **Purpose**: Allowing site administrators to connect to an administrator-configured OpenAI-compatible API service (e.g. self-hosted local proxies, corporate gateways, or other compliant AI providers).
+* **Data Transmitted**: Source strings, plural forms, Gettext context (`msgctxt`), target language, system prompt parameters, model identifier, and configured API credentials.
 * **When Data is Transmitted**: Only when an administrator explicitly initiates a translation batch, tests the connection, or queries the model list.
-* **Provider & Privacy Policy**: Because the endpoint is configured by the site administrator, no uniform third-party policy applies. Administrators are responsible for reviewing the terms of service, privacy policy, and data handling practices of their selected endpoint provider.
+* **Provider & Privacy Policy**: Because the endpoint is configured by the site administrator, no uniform third-party policy applies. Administrators are responsible for reviewing the terms of service, privacy policy, and data handling practices of their selected endpoint provider. Error Web Agency has no access to or control over custom endpoints.
 
 == Installation ==
 
@@ -147,11 +162,13 @@ The site administrator is solely responsible for creating and maintaining backup
 * WordPress.org compliance and remediation release.
 * Updated plugin name to EWA AI String Assistant for Loco Translate and canonical slug to `ewa-ai-string-assistant-for-loco-translate`.
 * Confined administrative dependency notices to relevant screens (`plugins.php` and settings screen) with dismissal capability in strict compliance with Guideline 11.
-* Namespaced and prefixed all WordPress registrations (`ewaas_*` AJAX actions, `ewaas-admin` / `ewaas-loco` script and style handles, nonces, and helper functions).
-* Preserved persistent database storage (`ewa_settings`) for complete backward compatibility.
-* Added comprehensive External Services documentation covering OpenRouter, Ollama, and Custom OpenAI-compatible endpoints with provider terms and privacy policies.
-* Added WordPress Core Privacy Policy guide integration via `wp_add_privacy_policy_content()`.
-* Evaluated WordPress 7.0 AI Client (`wp_ai_client_prompt`) and retained direct provider adapter for WordPress 6.0+ compatibility and custom endpoint flexibility.
+* Fully namespaced and prefixed all WordPress registrations with 4+ character prefix `ewaas_` (`ewaas_*` AJAX actions, `ewaas-admin` / `ewaas-loco` script and style handles, nonces, and helper functions). Removed all legacy `ewa_` runtime identifiers.
+* Implemented automatic one-time database migration from legacy `ewa_settings` to canonical `ewaas_settings` with schema tracking (`ewaas_schema_version`).
+* Added comprehensive External Services documentation covering OpenRouter, Ollama, OpenAI API, and Custom OpenAI-compatible endpoints with direct links to official terms and privacy policies.
+* Added WordPress Core Privacy Policy guide integration via `wp_add_privacy_policy_content()` disclosing header usage attribution.
+* Evaluated WordPress 7.0 AI Client (`wp_ai_client_prompt`) and retained direct provider adapter to preserve WordPress 6.0+ support, OpenRouter, local Ollama, and administrator-defined endpoint workflows.
+* Replaced NOWDOC with scanner-friendly array and implode structures in default prompt generation.
+* Moved textdomain loading to `init` action hook.
 
 = 1.6.1 =
 * Implemented full `msgctxt` context support and JSON-encoded deduplication keys across the entire pipeline.

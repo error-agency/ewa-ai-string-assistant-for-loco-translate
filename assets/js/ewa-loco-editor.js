@@ -1,9 +1,9 @@
-/* global ewaasLoco, ewaLoco, jQuery */
+/* global ewaasLoco, jQuery */
 /* EWA AI String Assistant for Loco Translate */
 (function ($) {
     'use strict';
 
-    var config = (typeof ewaasLoco !== 'undefined') ? ewaasLoco : (typeof ewaLoco !== 'undefined' ? ewaLoco : {});
+    var config = (typeof ewaasLoco !== 'undefined') ? ewaasLoco : {};
 
     /* ═══════════════════════════════════════════════════════════════════
        LOCALE MAP
